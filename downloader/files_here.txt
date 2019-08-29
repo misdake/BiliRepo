@@ -1,0 +1,3 @@
+annie (executable) -- download from https://github.com/iawia002/annie/releases
+ffmpeg (executable) -- download from https://ffmpeg.org/download.html
+cookies.txt -- extract for bilibili.com

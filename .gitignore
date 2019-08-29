@@ -1,0 +1,7 @@
+/node_modules
+/.idea
+/downloader/annie*
+/downloader/ffmpeg*
+/downloader/cookies.txt
+/repo
+/package-lock.json
