@@ -7,8 +7,11 @@ const spawn = require('child_process').spawn;
  * @returns {boolean} downloaded succeeded or not
  */
 function download(videoCode, callback) {
+    const baseFolder = 'repo';
     const downloadFolder = 'repo\\' + videoCode;
-
+    if (!fs.existsSync(baseFolder)) {
+        fs.mkdirSync(baseFolder, {recursive: true});
+    }
     if (!fs.existsSync(downloadFolder)) {
         fs.mkdirSync(downloadFolder, {recursive: true});
     }
@@ -16,11 +19,11 @@ function download(videoCode, callback) {
     const ls = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-o', './repo/' + videoCode, '-C', videoCode]);
 
     ls.stdout.on('data', (data) => {
-        // console.log(`stdout: ${data}`);
+        console.log(`stdout: ${data}`);
     });
 
     ls.stderr.on('data', (data) => {
-        // console.log(`stderr: ${data}`);
+        console.log(`stderr: ${data}`);
     });
 
     ls.on('close', (code) => {
