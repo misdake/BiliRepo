@@ -1,5 +1,7 @@
-const https = require('https');
-const {download} = require("./bilibili");
+const {httpget} = require("./util");
+const {downloadVideoByAid} = require("./bilibili");
+const {getVideoInfoByAid} = require("./bilibili");
+const fs = require('fs');
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
@@ -10,49 +12,41 @@ function next() {
     setTimeout(check, 2000);
 }
 
-//TODO rewrite with promise
-check = function () {
-    https.get('https://rgbuv.xyz/java/todos/list/bilibili-repo', (resp) => {
-        let data = '';
+check = async function () {
 
-        // A chunk of data has been recieved.
-        resp.on('data', (chunk) => {
-            data += chunk;
-        });
+    let data = await httpget('https://rgbuv.xyz/java/todos/list/bilibili-repo');
+    console.log(data);
 
-        // The whole response has been received. Print out the result.
-        resp.on('end', () => {
-            let todo = null;
-            let list = JSON.parse(data);
-            for (let item of list.list) {
-                if (item.name.match(/^av[0-9]+$/) && !item.finished) {
-                    todo = item;
-                    break;
-                }
-            }
+    let todo = null;
+    let list = JSON.parse(data);
+    for (let item of list.list) {
+        if (item.name.match(/^av[0-9]+$/) && !item.finished) {
+            todo = item;
+            break;
+        }
+    }
 
-            if (todo) {
-                let item = todo;
-                console.log("working on:", item.name);
-                download(item.name, function (returncode) {
-                    if (returncode === 0) {
-                        console.log("finished:", item.name);
-                        https.get(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
-                    } else {
-                        console.log("failed:", item.name);
-                        https.get(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
-                        https.get(`https://rgbuv.xyz/java/todos/item/bilibili-repo/fail_${item.name}/add`);
-                    }
-                    next();
-                });
-            } else {
-                next();
-            }
-        });
+    if (todo) {
+        let item = todo;
+        let name = item.name;
+        let aid = name.substring(2);
+        console.log("working on:", name);
+        let returncode = await downloadVideoByAid(aid);
+        if (returncode === 0) {
+            console.log("finished:", name);
+            await httpget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
+        } else {
+            console.log("failed:", name);
+            await httpget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
+            await httpget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/fail_${name}/add`);
+        }
 
-    }).on("error", (err) => {
-        console.log("Error: " + err.message);
-    });
+        let videoInfo = await getVideoInfoByAid("1157186");
+        fs.writeFileSync(`repo/${aid}/info.json`, JSON.stringify(videoInfo));
+    }
+
+    next();
+
 };
 
 next();

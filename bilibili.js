@@ -1,38 +1,49 @@
 const fs = require('fs');
+const {httpget} = require("./util");
 const spawn = require('child_process').spawn;
+
+async function getVideoInfoByAid(aid) {
+    let content = await httpget(`https://api.bilibili.com/x/web-interface/view?aid=${aid}`);
+    let obj = JSON.parse(content);
+    return obj;
+}
 
 /**
  * download bilibili video by the video code (like av12345)
- * @param videoCode
- * @returns {boolean} downloaded succeeded or not
+ * @param aid
+ * @returns {Promise<number>} 0 => download succeed, others => failed
  */
-function download(videoCode, callback) {
-    const baseFolder = 'repo';
-    const downloadFolder = 'repo\\' + videoCode;
-    if (!fs.existsSync(baseFolder)) {
-        fs.mkdirSync(baseFolder, {recursive: true});
-    }
-    if (!fs.existsSync(downloadFolder)) {
-        fs.mkdirSync(downloadFolder, {recursive: true});
-    }
+function download(aid) {
+    return new Promise((resolve, reject) => {
 
-    const ls = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-o', './repo/' + videoCode, '-C', videoCode]);
+        const baseFolder = 'repo';
+        const downloadFolder = 'repo\\' + aid;
+        if (!fs.existsSync(baseFolder)) {
+            fs.mkdirSync(baseFolder, {recursive: true});
+        }
+        if (!fs.existsSync(downloadFolder)) {
+            fs.mkdirSync(downloadFolder, {recursive: true});
+        }
 
-    ls.stdout.on('data', (data) => {
-        console.log(`stdout: ${data}`);
-    });
+        const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-o', './repo/' + aid, '-C', "av" + aid]);
 
-    ls.stderr.on('data', (data) => {
-        console.log(`stderr: ${data}`);
-    });
+        proc.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+        });
+        proc.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`);
+        });
 
-    ls.on('close', (code) => {
-        //TODO safe out/err output to file if error occured
-        console.log(`child process exited with code ${code}`);
-        callback(code);
+        proc.on('close', (code) => {
+            //TODO safe out/err output to file if error occured
+            console.log(`child process exited with code ${code}`);
+            resolve(code);
+        });
+
     });
 }
 
 module.exports = {
-    download: download
+    getVideoInfoByAid: getVideoInfoByAid,
+    downloadVideoByAid: download,
 };
