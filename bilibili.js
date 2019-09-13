@@ -1,9 +1,9 @@
 const fs = require('fs');
-const {httpget} = require("./util");
+const {httpsget} = require("./util");
 const spawn = require('child_process').spawn;
 
 async function getVideoInfoByAid(aid) {
-    let content = await httpget(`https://api.bilibili.com/x/web-interface/view?aid=${aid}`);
+    let content = await httpsget(`https://api.bilibili.com/x/web-interface/view?aid=${aid}`);
     let obj = JSON.parse(content);
     return obj;
 }
@@ -25,7 +25,7 @@ function download(aid) {
             fs.mkdirSync(downloadFolder, {recursive: true});
         }
 
-        const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-o', './repo/' + aid, '-C', "av" + aid]);
+        const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-o', './repo/' + aid, "av" + aid]);
 
         proc.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`);

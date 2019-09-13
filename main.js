@@ -1,7 +1,8 @@
-const {httpget} = require("./util");
+const {httpsget} = require("./util");
 const {downloadVideoByAid} = require("./bilibili");
 const {getVideoInfoByAid} = require("./bilibili");
 const fs = require('fs');
+const {httpsdownload} = require("./util");
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
@@ -14,7 +15,7 @@ function next() {
 
 check = async function () {
 
-    let data = await httpget('https://rgbuv.xyz/java/todos/list/bilibili-repo');
+    let data = await httpsget('https://rgbuv.xyz/java/todos/list/bilibili-repo');
     console.log(data);
 
     let todo = null;
@@ -34,15 +35,18 @@ check = async function () {
         let returncode = await downloadVideoByAid(aid);
         if (returncode === 0) {
             console.log("finished:", name);
-            await httpget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
+            await httpsget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
+
+            let videoInfo = await getVideoInfoByAid("1157186");
+            fs.writeFileSync(`repo/${aid}/info.json`, JSON.stringify(videoInfo));
+
+            let cid = videoInfo.data.pages[0].cid;
+            await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${aid}/video.xml`);
         } else {
             console.log("failed:", name);
-            await httpget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
-            await httpget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/fail_${name}/add`);
+            await httpsget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
+            await httpsget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/fail_${name}/add`);
         }
-
-        let videoInfo = await getVideoInfoByAid("1157186");
-        fs.writeFileSync(`repo/${aid}/info.json`, JSON.stringify(videoInfo));
     }
 
     next();

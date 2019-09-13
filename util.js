@@ -1,6 +1,8 @@
 const https = require('https');
+const fs = require('fs');
+const zlib = require('zlib');
 
-function httpget(url) {
+function httpsget(url) {
     return new Promise((resolve, reject) => {
         https.get(url, (resp) => {
             let data = '';
@@ -16,6 +18,32 @@ function httpget(url) {
     });
 }
 
+function httpsdownload(url, file) {
+    return new Promise((resolve, reject) => {
+        let request = https.get(url, response => {
+            response.on('end', () => {
+                resolve(true);
+            });
+        }).on('response', function (response) {
+            let output = fs.createWriteStream(file);
+            switch (response.headers['content-encoding']) {
+                case 'gzip':
+                    response.pipe(zlib.createGunzip()).pipe(output);
+                    break;
+                case 'deflate':
+                    response.pipe(zlib.createInflateRaw()).pipe(output);
+                    break;
+                default:
+                    response.pipe(output);
+                    break;
+            }
+        }).on("error", (err) => {
+            reject(err);
+        });
+    });
+}
+
 module.exports = {
-    httpget,
+    httpsget: httpsget,
+    httpsdownload,
 };
