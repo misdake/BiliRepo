@@ -21,11 +21,11 @@ function httpsget(url) {
 function httpsdownload(url, file) {
     return new Promise((resolve, reject) => {
         let request = https.get(url, response => {
-            response.on('end', () => {
-                resolve(true);
-            });
         }).on('response', function (response) {
             let output = fs.createWriteStream(file);
+            output.on('finish', function () {
+                resolve(true);
+            });
             switch (response.headers['content-encoding']) {
                 case 'gzip':
                     response.pipe(zlib.createGunzip()).pipe(output);

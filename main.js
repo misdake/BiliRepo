@@ -1,8 +1,7 @@
 const {httpsget} = require("./util");
-const {downloadVideoByAid} = require("./bilibili");
-const {getVideoInfoByAid} = require("./bilibili");
+const {downloadVideoByAid, getVideoInfoByAid, downloadDanmaku} = require("./bilibili");
+const {} = require("./bilibili");
 const fs = require('fs');
-const {httpsdownload} = require("./util");
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
@@ -41,7 +40,7 @@ check = async function () {
             fs.writeFileSync(`repo/${aid}/info.json`, JSON.stringify(videoInfo));
 
             let cid = videoInfo.data.pages[0].cid;
-            await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${aid}/video.xml`);
+            await downloadDanmaku(aid, cid);
         } else {
             console.log("failed:", name);
             await httpsget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
