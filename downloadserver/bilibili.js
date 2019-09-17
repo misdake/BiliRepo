@@ -9,9 +9,9 @@ async function getVideoInfoByAid(aid) {
     return JSON.parse(content);
 }
 
-async function downloadDanmaku(aid, cid) {
-    await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${aid}/video.xml`);
-    let content = fs.readFileSync(`repo/${aid}/video.xml`, 'utf8');
+async function downloadDanmaku(folder, cid) {
+    await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/video.xml`);
+    let content = fs.readFileSync(`repo/${folder}/video.xml`, 'utf8');
 
     let r = {
         code: 0,
@@ -49,20 +49,19 @@ async function downloadDanmaku(aid, cid) {
         }
     });
 
-    fs.writeFileSync(`repo/${aid}/danmaku.json`, JSON.stringify(r));
+    fs.writeFileSync(`repo/${folder}/danmaku.json`, JSON.stringify(r));
 }
 
-
 /**
- * download bilibili video by the video code (like av12345)
+ * download bilibili video by aid (like 12345)
  * @param aid
  * @returns {Promise<number>} 0 => download succeed, others => failed
  */
-function downloadVideo(aid) {
+function downloadVideo(folder, aid) {
     return new Promise((resolve, reject) => {
 
         const baseFolder = 'repo';
-        const downloadFolder = 'repo\\' + aid;
+        const downloadFolder = 'repo\\' + folder;
         if (!fs.existsSync(baseFolder)) {
             fs.mkdirSync(baseFolder, {recursive: true});
         }
@@ -70,7 +69,7 @@ function downloadVideo(aid) {
             fs.mkdirSync(downloadFolder, {recursive: true});
         }
 
-        const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-o', './repo/' + aid, "av" + aid]);
+        const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-O', 'video', '-o', './repo/' + folder, "av" + aid]);
 
         proc.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`);
