@@ -39,13 +39,7 @@ async function downloadDanmaku(folder, cid) {
                 text: text
             };
 
-            r.data.push([
-                d.time,
-                d.type,
-                d.color,
-                d.author,
-                d.text
-            ]);
+            r.data.push(d);
         }
     });
 
