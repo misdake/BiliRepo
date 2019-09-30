@@ -3,5 +3,6 @@
 /downloader/annie*
 /downloader/ffmpeg*
 /downloader/cookies.txt
+/downloader/status.txt
 /repo
 /package-lock.json

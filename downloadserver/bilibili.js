@@ -9,6 +9,11 @@ async function getVideoInfoByAid(aid) {
     return JSON.parse(content);
 }
 
+async function getVideoToDownload(mid) {
+    let content = await httpsget(`https://api.bilibili.com/x/space/coin/video?vmid=${mid}`);
+    return JSON.parse(content);
+}
+
 async function downloadDanmaku(folder, cid) {
     await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/video.xml`);
     let content = fs.readFileSync(`repo/${folder}/video.xml`, 'utf8');
@@ -78,6 +83,7 @@ function downloadVideo(folder, aid) {
 
 module.exports = {
     getVideoInfoByAid: getVideoInfoByAid,
+    getVideoToDownload: getVideoToDownload,
     downloadDanmaku: downloadDanmaku,
     downloadVideoByAid: downloadVideo,
 };
