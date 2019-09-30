@@ -46,11 +46,6 @@ async function downloadDanmaku(folder, cid) {
     fs.writeFileSync(`repo/${folder}/danmaku.json`, JSON.stringify(r));
 }
 
-/**
- * download bilibili video by aid (like 12345)
- * @param aid
- * @returns {Promise<number>} 0 => download succeed, others => failed
- */
 function downloadVideo(folder, aid) {
     return new Promise((resolve, reject) => {
 
@@ -73,7 +68,7 @@ function downloadVideo(folder, aid) {
         });
 
         proc.on('close', (code) => {
-            //TODO safe out/err output to file if error occured
+            //TODO save out/err output to file if error occured
             console.log(`child process exited with code ${code}`);
             resolve(code);
         });

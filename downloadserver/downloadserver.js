@@ -38,13 +38,12 @@ check = async function () {
             await httpsget(`https://rgbuv.xyz/java/todos/item/bilibili-repo/${item.id}/check`);
 
         } else { //need download
-            // fs.renameSync(old path, new path)
             let folder = `${aid}_download`;
             console.log("1/3 download video:", name);
             let returncode = await downloadVideoByAid(folder, aid);
             if (returncode === 0) {
                 console.log("2/3 download info:", name);
-                let videoInfo = await getVideoInfoByAid("1157186");
+                let videoInfo = await getVideoInfoByAid(aid);
                 fs.writeFileSync(`repo/${folder}/info.json`, JSON.stringify(videoInfo));
 
                 let cid = videoInfo.data.pages[0].cid;
