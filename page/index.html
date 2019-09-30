@@ -45,7 +45,9 @@
         request.send();
     }
 
-    let aid = 1157186;
+    let url_string = window.location.href;
+    let url = new URL(url_string);
+    let aid = url.searchParams.get("aid") || 68836859;
 
     get(`repo/${aid}/info.json`, content => {
         let info = JSON.parse(content);
