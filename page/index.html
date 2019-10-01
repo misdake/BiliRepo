@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="lib/DPlayer.min.css">
     <script src="lib/flv.min.js"></script>
     <script src="lib/DPlayer.min.js"></script>
@@ -16,11 +16,8 @@
             padding: 0;
         }
 
-        .dplayer-danmaku {
-            font-size: 40px
-        }
-
         .dplayer-danmaku .dplayer-danmaku-right.dplayer-danmaku-move {
+            font-size: 32px;
             will-change: transform;
             -webkit-animation: danmaku 10s linear;
             animation: danmaku 10s linear;
@@ -75,7 +72,7 @@
             }
         },
     });
-    dp.danmaku.options.height = 40 + 10;
+    dp.danmaku.options.height = 50;
     dp.danmaku.options.speed = 10;
 </script>
 </body>

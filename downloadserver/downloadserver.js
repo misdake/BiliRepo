@@ -81,4 +81,4 @@ check = async function () {
 
 };
 
-next();
+check();
