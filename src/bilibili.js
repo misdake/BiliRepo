@@ -29,9 +29,9 @@ async function downloadDanmaku(folder, cid, page) {
             let text = item._;
             let split = attrs.split(",");
 
-            let type = "right";
-            if (split[1] === "5") type = "top";
-            if (split[1] === "4") type = "bottom";
+            let type = 0; //right
+            if (split[1] === "5") type = 1; //top
+            if (split[1] === "4") type = 2; //bottom
 
             let color = parseInt(split[3]);
             let hex = '#' + ('000000' + color.toString(16).toUpperCase()).slice(-6);
