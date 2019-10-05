@@ -14,9 +14,9 @@ async function getVideoToDownload(mid) {
     return JSON.parse(content);
 }
 
-async function downloadDanmaku(folder, cid) {
-    await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/video.xml`);
-    let content = fs.readFileSync(`repo/${folder}/video.xml`, 'utf8');
+async function downloadDanmaku(folder, cid, page) {
+    await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/p${page}.xml`);
+    let content = fs.readFileSync(`repo/${folder}/p${page}.xml`, 'utf8');
 
     let r = {
         code: 0,
@@ -48,10 +48,10 @@ async function downloadDanmaku(folder, cid) {
         }
     });
 
-    fs.writeFileSync(`repo/${folder}/danmaku.json`, JSON.stringify(r));
+    fs.writeFileSync(`repo/${folder}/p${page}.json`, JSON.stringify(r));
 }
 
-function downloadVideo(folder, aid) {
+function downloadVideo(folder, aid, page = 1) {
     return new Promise((resolve, reject) => {
 
         const baseFolder = 'repo';
@@ -63,7 +63,7 @@ function downloadVideo(folder, aid) {
             fs.mkdirSync(downloadFolder, {recursive: true});
         }
 
-        const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-O', 'video', '-o', './repo/' + folder, "av" + aid]);
+        const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-O', `p${page}`, '-o', './repo/' + folder, `av${aid}/?p=${page}`]);
 
         proc.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`);

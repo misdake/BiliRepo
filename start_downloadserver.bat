@@ -1,1 +1,1 @@
-node src/downloadserver.js
+node src/main.js
