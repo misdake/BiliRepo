@@ -14,6 +14,11 @@ async function getVideoToDownload(mid) {
     return JSON.parse(content);
 }
 
+async function downloadThumb(folder, url) {
+    url = url.replace("http://", "https://");
+    await httpsdownload(url, `repo/${folder}/thumb.jpg`);
+}
+
 async function downloadDanmaku(folder, cid, page) {
     await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/p${page}.xml`);
     let content = fs.readFileSync(`repo/${folder}/p${page}.xml`, 'utf8');
@@ -85,5 +90,6 @@ module.exports = {
     getVideoInfoByAid: getVideoInfoByAid,
     getVideoToDownload: getVideoToDownload,
     downloadDanmaku: downloadDanmaku,
-    downloadVideoByAid: downloadVideo,
+    downloadThumb: downloadThumb,
+    downloadVideo: downloadVideo,
 };

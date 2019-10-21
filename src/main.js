@@ -1,4 +1,4 @@
-const {downloadVideoByAid, getVideoInfoByAid, downloadDanmaku} = require("./bilibili");
+const {downloadVideo, getVideoInfoByAid, downloadDanmaku, downloadThumb} = require("./bilibili");
 const fs = require('fs');
 const {getVideoToDownload} = require("./bilibili");
 
@@ -21,35 +21,38 @@ download = async function (aid, force = false) {
         let steps = videoInfo.data.pages.length;
         let folder = `${aid}_download`;
 
-        let good = true;
+        let count = 0;
 
         for (let i = 0; i < steps; i++) {
             let pageInfo = videoInfo.data.pages[i];
             let cid = pageInfo.cid;
             let title = pageInfo.part || videoInfo.data.title;
+            let thumb = videoInfo.data.pic;
 
             if (fs.existsSync(`repo/${aid}/p${pageInfo.page}.flv`)) { //downloaded
                 continue;
             }
             console.log(`${i + 1}/${steps} download video: ${aid} ${title}`);
 
-            let returncode = await downloadVideoByAid(folder, aid, pageInfo.page);
+            let returncode = await downloadVideo(folder, aid, pageInfo.page);
             if (returncode === 0) {
+                count++;
                 console.log(`${i + 1}/${steps} download danmaku: ${aid} ${title}`);
                 await downloadDanmaku(folder, cid, pageInfo.page);
+                await downloadThumb(folder, thumb);
             } else {
-                good = false;
                 console.log(`${i + 1}/${steps} download fail`);
             }
         }
 
-        if (good) {
+        if (count === steps) {
             console.log("finished:", aid);
             fs.writeFileSync(`repo/${folder}/info.json`, JSON.stringify(videoInfo));
             fs.renameSync(`repo/${folder}`, `repo/${aid}`);
             //TODO notice webserver
             return true;
         } else {
+            console.log(`fail: ${count}/${steps}`);
             return false;
         }
 
