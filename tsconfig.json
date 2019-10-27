@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "rootDir": "./src/",
+        "module": "commonjs",
+        "target": "es6",
+        "sourceMap": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "outDir": "./dist/",
+        "moduleResolution": "node",
+        "types": [
+            "node",
+            "express",
+            "dplayer"
+        ]
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}

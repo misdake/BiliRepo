@@ -1,33 +1,42 @@
 const fs = require('fs');
 const parser = require("xml2js");
-const {httpsdownload} = require("./util");
-const {httpsget} = require("./util");
+import {httpsdownload, httpsget} from "./network";
+
 const spawn = require('child_process').spawn;
 
-async function getVideoInfoByAid(aid) {
+export async function getVideoInfoByAid(aid: number) {
     let content = await httpsget(`https://api.bilibili.com/x/web-interface/view?aid=${aid}`);
     return JSON.parse(content);
 }
 
-async function getVideoToDownload(mid) {
+export async function getVideoToDownload(mid: number) {
     let content = await httpsget(`https://api.bilibili.com/x/space/coin/video?vmid=${mid}`);
     return JSON.parse(content);
 }
 
-async function downloadThumb(folder, url) {
+export async function downloadThumb(folder: string, url: string) {
     url = url.replace("http://", "https://");
     await httpsdownload(url, `repo/${folder}/thumb.jpg`);
 }
 
-async function downloadDanmaku(folder, cid, page) {
+class Danmaku {
+    time: number;
+    type: number;
+    color: string;
+    author: string;
+    text: string;
+}
+
+export async function downloadDanmaku(folder: string, cid: number, page: number) {
     await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/p${page}.xml`);
     let content = fs.readFileSync(`repo/${folder}/p${page}.xml`, 'utf8');
 
+    let array: Danmaku[] = [];
     let r = {
         code: 0,
-        data: [],
+        data: array,
     };
-    parser.parseString(content, function (err, result) {
+    parser.parseString(content, function (err: Error, result: any) {
         let all = result.i.d;
         for (let item of all) {
             let attrs = item.$.p;
@@ -56,7 +65,7 @@ async function downloadDanmaku(folder, cid, page) {
     fs.writeFileSync(`repo/${folder}/p${page}.json`, JSON.stringify(r));
 }
 
-function downloadVideo(folder, aid, page = 1) {
+export function downloadVideo(folder: string, aid: number, page = 1) {
     return new Promise((resolve, reject) => {
 
         const baseFolder = 'repo';
@@ -70,14 +79,14 @@ function downloadVideo(folder, aid, page = 1) {
 
         const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-O', `p${page}`, '-o', './repo/' + folder, `av${aid}/?p=${page}`]);
 
-        proc.stdout.on('data', (data) => {
+        proc.stdout.on('data', (data: any) => {
             console.log(`stdout: ${data}`);
         });
-        proc.stderr.on('data', (data) => {
+        proc.stderr.on('data', (data: any) => {
             console.log(`stderr: ${data}`);
         });
 
-        proc.on('close', (code) => {
+        proc.on('close', (code: number) => {
             //TODO save out/err output to file if error occured
             console.log(`child process exited with code ${code}`);
             resolve(code);
@@ -85,11 +94,3 @@ function downloadVideo(folder, aid, page = 1) {
 
     });
 }
-
-module.exports = {
-    getVideoInfoByAid: getVideoInfoByAid,
-    getVideoToDownload: getVideoToDownload,
-    downloadDanmaku: downloadDanmaku,
-    downloadThumb: downloadThumb,
-    downloadVideo: downloadVideo,
-};

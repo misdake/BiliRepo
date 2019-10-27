@@ -1,1 +1,1 @@
-node src/main.js
+ts-node src\app.ts

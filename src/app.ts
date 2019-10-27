@@ -1,15 +1,15 @@
-const {downloadVideo, getVideoInfoByAid, downloadDanmaku, downloadThumb} = require("./bilibili");
-const fs = require('fs');
-const {getVideoToDownload} = require("./bilibili");
+import {downloadDanmaku, downloadThumb, downloadVideo, getVideoInfoByAid, getVideoToDownload} from "./bilibiliApi";
 
-let check = null;
+const fs = require('fs');
+
+let check: () => void = null;
 
 function next() {
     process.stdout.write(".");
     setTimeout(check, 60000);
 }
 
-download = async function (aid, force = false) {
+let download = async function (aid: number, force = false) {
     if (fs.existsSync(`repo/${aid}`) && !force) { //downloaded
         console.log("skip:", aid);
         return true;
@@ -65,15 +65,15 @@ function loadDownloaded() {
         content = fs.readFileSync(`downloader\\status.txt`, 'utf8');
     }
     let [downloaded, failed] = JSON.parse(content);
-    downloaded = downloaded.filter((v, i, a) => a.indexOf(v) === i);
-    failed = failed.filter((v, i, a) => a.indexOf(v) === i);
+    downloaded = downloaded.filter((v: any, i: number, a: number[]) => a.indexOf(v) === i); //remove duplicate
+    failed = failed.filter((v: any, i: number, a: number[]) => a.indexOf(v) === i);
     return [downloaded, failed];
 }
 let [downloaded, failed] = loadDownloaded();
 
 function saveDownloaded() {
-    downloaded = downloaded.filter((v, i, a) => a.indexOf(v) === i);
-    failed = failed.filter((v, i, a) => a.indexOf(v) === i);
+    downloaded = downloaded.filter((v: any, i: number, a: number[]) => a.indexOf(v) === i);
+    failed = failed.filter((v: any, i: number, a: number[]) => a.indexOf(v) === i);
     let content = JSON.stringify([downloaded, failed]);
     fs.writeFileSync(`downloader\\status.txt`, content);
 }
@@ -81,7 +81,7 @@ function saveDownloaded() {
 check = async function () {
 
     let data = await getVideoToDownload(110213);
-    let aidArray = data.data.map(videoInfo => videoInfo.aid);
+    let aidArray = data.data.map((videoInfo: any) => videoInfo.aid);
     for (let aid of aidArray) {
         if (downloaded.indexOf(aid) < 0 && failed.indexOf(aid) < 0) {
             let result = await download(aid);

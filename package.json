@@ -1,12 +1,30 @@
 {
   "name": "bilibili-repo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dplayer": "^1.25.0",
+    "express": "^4.17.1",
+    "lit-element": "^2.2.1",
+    "lit-html": "^1.1.2",
+    "lokijs": "^1.5.7",
     "xml2js": "^0.4.22"
+  },
+  "devDependencies": {
+    "@types/dplayer": "^1.25.0",
+    "@types/express": "^4.17.1",
+    "@types/lokijs": "^1.5.2",
+    "@types/node": "^12.7.11",
+    "ts-loader": "^6.0.4",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.5.3",
+    "webpack": "^4.38.0",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2"
   }
 }

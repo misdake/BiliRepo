@@ -1,27 +1,29 @@
+import {IncomingMessage} from "http";
+
 const https = require('https');
 const fs = require('fs');
 const zlib = require('zlib');
 
-function httpsget(url) {
-    return new Promise((resolve, reject) => {
-        https.get(url, (resp) => {
+export function httpsget(url: string) {
+    return new Promise<string>((resolve, reject) => {
+        https.get(url, (response: IncomingMessage) => {
             let data = '';
-            resp.on('data', (chunk) => {
+            response.on('data', (chunk) => {
                 data += chunk;
             });
-            resp.on('end', () => {
+            response.on('end', () => {
                 resolve(data);
             });
-        }).on("error", (err) => {
+        }).on("error", (err: Error) => {
             reject(err);
         });
     });
 }
 
-function httpsdownload(url, file) {
-    return new Promise((resolve, reject) => {
-        let request = https.get(url, response => {
-        }).on('response', function (response) {
+export function httpsdownload(url: string, file: string) {
+    return new Promise<boolean>((resolve, reject) => {
+        let request = https.get(url, (response: IncomingMessage) => {
+        }).on('response', function (response: IncomingMessage) {
             let output = fs.createWriteStream(file);
             output.on('finish', function () {
                 resolve(true);
@@ -37,13 +39,8 @@ function httpsdownload(url, file) {
                     response.pipe(output);
                     break;
             }
-        }).on("error", (err) => {
+        }).on("error", (err: Error) => {
             reject(err);
         });
     });
 }
-
-module.exports = {
-    httpsget: httpsget,
-    httpsdownload,
-};
