@@ -77,10 +77,6 @@ export class VideoDownloadElement extends LitElement {
         let parts = [];
         if (this.video && this.video.parts && this.video.parts.length) {
             for (let part of this.video.parts) {
-                // part.progress = 10;
-                // part.curr = "1 Mib";
-                // part.total = "2 Mib";
-
                 let finish = part.done || part.failed;
                 let icon = finish ? (part.done ? "☑" : "☒") : "☐";
                 if (part.progress === undefined) {

@@ -80,7 +80,7 @@ export class PageElement extends LitElement {
         this.done = [];
         this.failed = [];
 
-        this.loadStatus();
+        this.loop();
     }
 
     private loadStatus() {
@@ -99,6 +99,14 @@ export class PageElement extends LitElement {
                 this.failed = this.status.failed || [];
             }
         });
+    }
+
+    private loop() {
+        this.loadStatus();
+
+        setTimeout(() => {
+            this.loop(); //TODO replace with websocket
+        }, 1000);
     }
 
     @property()
@@ -134,7 +142,15 @@ export class PageElement extends LitElement {
                 pic: v.pic,
                 title: v.title,
             }
-        })
+        });
+    }
+
+    private enqueue() {
+        if (this.inputVideo) {
+            httpget(`http://localhost:8081/download/add/${this.inputVideo.aid}`, content => {
+                this.loadStatus();
+            });
+        }
     }
 
     render() {
@@ -142,7 +158,7 @@ export class PageElement extends LitElement {
             <div id="page">
                 <div id="left_panel">
                     <input-element .input=${""} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
-                    <ul><videostatus-element .video=${this.inputVideo}></videostatus-element></ul>
+                    <ul><videostatus-element .video=${this.inputVideo} .icon=${"add"} .onIconClick=${() => this.enqueue()}></videostatus-element></ul>
                     <div class="text">下载队列: 共${this.queue.length}个</div>
                     <div id="queue_container"><videolist-element .videos=${this.queue}></videolist-element></div>
                 </div>

@@ -12,7 +12,7 @@ export class VideoStatusElement extends LitElement {
     @property()
     icon: string;
     @property()
-    oniconclick: () => void;
+    onIconClick: () => void;
 
     static styles = css`
         .videoItem {
@@ -46,7 +46,21 @@ export class VideoStatusElement extends LitElement {
             width: 140px;
             display: inline;
         }
+        
+        .icon {
+            color: #FFF;
+            background: #800;
+            padding: 5px 10px;
+            cursor: pointer;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
     `;
+
+    private trigger() {
+        if (this.onIconClick) this.onIconClick();
+    }
 
     render() {
         let video = !this.video ? html`
@@ -61,6 +75,7 @@ export class VideoStatusElement extends LitElement {
                     <img class="thumb" src="${this.video.pic}" alt="thumb"/>
                 </div>
                 <span class="title">${this.video.title}</span>
+                ${this.icon ? html`<div class="icon" @click="${() => this.trigger()}">${this.icon}</div>` : html``}
             </li>
         `;
 

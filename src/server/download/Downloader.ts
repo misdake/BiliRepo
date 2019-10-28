@@ -1,5 +1,5 @@
 import {Bilibili} from "./Bilibili";
-import {BilibiliPage, BilibiliVideo} from "../../common/types";
+import {BilibiliPage, BilibiliVideo, BilibiliVideoJson} from "../../common/types";
 import {DownloadStatus, PartStatus, VideoStatus} from "../../common/DownloadStatus";
 
 const fs = require('fs');
@@ -78,13 +78,16 @@ export class VideoDownloadProgress {
     video: BilibiliVideo;
     parts: PartDownloadProgress[];
 
+    json : BilibiliVideoJson;
+
     constructor(aid: number) {
         this.aid = aid;
         this.parts = [];
         this.done = false;
         this.failed = false;
         this.info = Bilibili.getVideoInfoByAid_promise(aid).then(result => {
-            this.video = result;
+            this.json = result;
+            this.video = result.data;
             for (let part of this.video.pages) {
                 this.parts.push(new PartDownloadProgress(this.video, part));
             }
@@ -140,7 +143,7 @@ export class VideoDownloadProgress {
             }
         }
 
-        fs.writeFileSync(`repo/${folder}/info.json`, JSON.stringify(video));
+        fs.writeFileSync(`repo/${folder}/info.json`, JSON.stringify(this.json, null, 2));
         fs.renameSync(`repo/${folder}`, `repo/${aid}`);
 
         return true;
