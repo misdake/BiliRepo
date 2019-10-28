@@ -73,8 +73,6 @@ export class PageElement extends LitElement {
         super();
         this.inputVideo = null;
 
-        this.status = null;
-
         this.queue = [];
         this.current = null;
         this.done = [];
@@ -85,18 +83,17 @@ export class PageElement extends LitElement {
 
     private loadStatus() {
         httpget("http://localhost:8081/download/status", (content: string) => {
-            this.status = JSON.parse(content) as DownloadStatus;
-
-            this.queue = null;
-            this.current = null;
-            this.done = null;
-            this.failed = null;
-
-            if (this.status) {
-                this.queue = this.status.queue || [];
-                this.current = this.status.current;
-                this.done = this.status.done || [];
-                this.failed = this.status.failed || [];
+            let status = JSON.parse(content) as DownloadStatus;
+            if (status) {
+                this.queue = status.queue || [];
+                this.current = status.current;
+                this.done = status.done || [];
+                this.failed = status.failed || [];
+            } else {
+                this.queue = [];
+                this.current = null;
+                this.done = [];
+                this.failed = [];
             }
         });
     }
@@ -111,9 +108,6 @@ export class PageElement extends LitElement {
 
     @property()
     inputVideo: VideoStatus;
-
-    @property()
-    status: DownloadStatus;
 
     @property()
     queue: VideoStatus[];

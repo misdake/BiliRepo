@@ -73,6 +73,11 @@ export class VideoDownloadElement extends LitElement {
     `;
 
     render() {
+        if (this.video) {
+            this.video.title = this.video.title || "";
+            this.video.pic = this.video.pic || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
+        }
+
         let parts = [];
         if (this.video && this.video.parts && this.video.parts.length) {
             if (this.video.parts) for (let part of this.video.parts) {

@@ -63,6 +63,11 @@ export class VideoStatusElement extends LitElement {
     }
 
     render() {
+        if (this.video) {
+            this.video.title = this.video.title || "";
+            this.video.pic = this.video.pic || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
+        }
+
         let video = !this.video ? html`
             <li class="videoItem">
                 <div class="thumbContainer" style="background:#CCCCCC">
@@ -83,7 +88,7 @@ export class VideoStatusElement extends LitElement {
             <a href="watch.html?aid=${this.video.aid}">
                 ${video}
             </a>
-        ` :html`
+        ` : html`
             ${video}
         `;
     }
