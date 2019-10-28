@@ -224,7 +224,7 @@ export class Downloader {
     enqueue(aid: number, force: boolean = false) {
         //TODO check downloaded? check done/failed?
         this.queue.push(new VideoDownloadProgress(aid));
-        this.schedule();
+        // this.schedule();
     }
 
     // remove(aid: number) {

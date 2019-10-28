@@ -1,6 +1,7 @@
 import {Request, Response} from "express";
 import {Storage} from "./storage";
 import {Downloader} from "./download/Downloader";
+import {httpsget} from "./network";
 
 const express = require('express');
 const cors = require('cors');
@@ -13,6 +14,13 @@ app.use('/', express.static('static')); //provide web pages
 
 let storage = new Storage();
 let downloader = new Downloader();
+
+//proxy
+app.get('/proxy/videoinfo/:aid', function (req: Request, res: Response) {
+    httpsget(`https://api.bilibili.com/x/web-interface/view?aid=${req.params["aid"]}`).then(value => {
+        res.send(value);
+    });
+});
 
 //download
 app.get('/download/add/:aid', function (req: Request, res: Response) {

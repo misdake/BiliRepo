@@ -41,7 +41,7 @@ export class VideoLabelElement extends LitElement {
         }
         
         .thumb {
-            object-fit: contain;
+            object-fit: cover;
             max-width: 160px;
             max-height: 90px;
             width: 100%;
@@ -50,9 +50,9 @@ export class VideoLabelElement extends LitElement {
         
         .title {
             position: absolute;
-            left: 180px;
+            left: 175px;
             top: 10px;
-            width: 130px;
+            width: 140px;
             display: inline;
         }
         
@@ -120,7 +120,7 @@ export class VideoBlockElement extends LitElement {
         
         .thumb {
             display: block;
-            object-fit: contain;
+            object-fit: cover;
             max-width: 320px;
             max-height: 180px;
             width: 100%;
