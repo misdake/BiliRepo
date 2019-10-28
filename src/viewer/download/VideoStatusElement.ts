@@ -49,13 +49,20 @@ export class VideoStatusElement extends LitElement {
     `;
 
     render() {
-        let video = !this.video ? html`` : html`
+        let video = !this.video ? html`
+            <li class="videoItem">
+                <div class="thumbContainer" style="background:#CCCCCC">
+                </div>
+                <span class="title">preview</span>
+            </li>
+        ` : html`
             <li class="videoItem">
                 <div class="thumbContainer">
                     <img class="thumb" src="${this.video.pic}" alt="thumb"/>
                 </div>
                 <span class="title">${this.video.title}</span>
-            </li>`;
+            </li>
+        `;
 
         return html`
             ${video}
