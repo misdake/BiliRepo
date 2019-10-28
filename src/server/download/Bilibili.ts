@@ -1,5 +1,5 @@
-import {BilibiliVideo} from "../types";
-import {httpsdownload, httpsget} from "./network";
+import {BilibiliVideo} from "../../common/types";
+import {httpsdownload, httpsget} from "../network";
 
 const fs = require('fs');
 const parser = require("xml2js");
@@ -16,9 +16,11 @@ class Danmaku {
 
 export class Bilibili {
     static async getVideoInfoByAid_promise(aid: number) {
-        return new Promise<BilibiliVideo>(async (resolve) => {
+        return new Promise<BilibiliVideo>(async (resolve, reject) => {
             httpsget(`https://api.bilibili.com/x/web-interface/view?aid=${aid}`).then(content => {
                 resolve(JSON.parse(content).data as BilibiliVideo);
+            }, () => {
+                reject();
             });
         });
     }

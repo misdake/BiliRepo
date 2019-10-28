@@ -4,7 +4,9 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "run_server": "ts-node src/server/webserver.ts",
+    "build": "webpack",
+    "dev": "webpack-dev-server"
   },
   "dependencies": {
     "cors": "^2.8.5",

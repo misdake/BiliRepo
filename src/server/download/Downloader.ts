@@ -1,8 +1,7 @@
 import {Bilibili} from "./Bilibili";
-import {BilibiliPage, BilibiliVideo} from "../types";
+import {BilibiliPage, BilibiliVideo} from "../../common/types";
 
 const fs = require('fs');
-const parser = require("xml2js");
 
 export class PartDownloadProgress {
     video: BilibiliVideo;
@@ -88,11 +87,9 @@ export class VideoDownloadProgress {
             for (let part of this.video.pages) {
                 this.parts.push(new PartDownloadProgress(this.video, part));
             }
+        }, () => {
+            this.failed = true; //cause downloadEntireVideo to return false
         });
-    }
-
-    private log(...params: any[]) {
-        console.log(...params);
     }
 
     async start() {
@@ -102,6 +99,10 @@ export class VideoDownloadProgress {
     }
 
     private async downloadEntireVideo(force: boolean = false) {
+        if (this.failed) {
+            return false; //getVideoInfoByAid failed
+        }
+
         let aid = this.aid;
 
         //skip if downloaded
@@ -119,7 +120,7 @@ export class VideoDownloadProgress {
             fs.mkdirSync(downloadFolder, {recursive: true});
         }
 
-        this.log("download info:", aid);
+        console.log("download info:", aid);
         await this.info;
         if (!this.video) {
             return false;
@@ -127,7 +128,7 @@ export class VideoDownloadProgress {
         let video: BilibiliVideo = this.video;
         let folder = `${aid}_download`;
 
-        this.log("download thumb:", aid);
+        console.log("download thumb:", aid);
         let thumb = video.pic;
         await Bilibili.downloadThumb(folder, thumb);
 
