@@ -25,7 +25,7 @@ export class Storage {
     public importVideo(aid: number) {
         if (this.aid_video[aid]) return;
         this.loadVideo(aid);
-        this.aid_list.sort();
+        this.aid_list.sort().reverse();
         this.refreshMid();
     }
 
