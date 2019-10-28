@@ -40,7 +40,6 @@ export class VideoDownloadElement extends LitElement {
             float: right;
             margin: 10px 10px 0 0;
             width: 430px;
-            // background: #DDD;
             height: 100px;
         }
         .part {
@@ -76,7 +75,7 @@ export class VideoDownloadElement extends LitElement {
     render() {
         let parts = [];
         if (this.video && this.video.parts && this.video.parts.length) {
-            for (let part of this.video.parts) {
+            if (this.video.parts) for (let part of this.video.parts) {
                 let finish = part.done || part.failed;
                 let icon = finish ? (part.done ? "☑" : "☒") : "☐";
                 if (part.progress === undefined) {

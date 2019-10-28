@@ -13,7 +13,10 @@ app.use(cors());
 app.use('/', express.static('static')); //provide web pages
 
 let storage = new Storage();
-let downloader = new Downloader();
+
+let downloader = new Downloader(aid => {
+    storage.importVideo(aid);
+});
 
 //proxy
 app.get('/proxy/videoinfo/:aid', function (req: Request, res: Response) {

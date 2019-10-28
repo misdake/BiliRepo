@@ -79,7 +79,11 @@ export class VideoStatusElement extends LitElement {
             </li>
         `;
 
-        return html`
+        return (this.video && this.video.done) ? html`
+            <a href="watch.html?aid=${this.video.aid}">
+                ${video}
+            </a>
+        ` :html`
             ${video}
         `;
     }

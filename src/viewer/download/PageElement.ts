@@ -150,6 +150,7 @@ export class PageElement extends LitElement {
             httpget(`http://localhost:8081/download/add/${this.inputVideo.aid}`, content => {
                 this.loadStatus();
             });
+            this.inputVideo = null;
         }
     }
 

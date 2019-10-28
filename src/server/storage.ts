@@ -22,8 +22,11 @@ export class Storage {
         console.log(`loaded: ${aid} ${video.title}`);
     }
 
-    public updateVideo(aid: number) {
-        //TODO import video
+    public importVideo(aid: number) {
+        if (this.aid_video[aid]) return;
+        this.loadVideo(aid);
+        this.aid_list.sort();
+        this.refreshMid();
     }
 
     private loadAllVideos() {
@@ -34,7 +37,9 @@ export class Storage {
                 this.loadVideo(parseInt(folder));
             }
         }
+    }
 
+    private refreshMid() {
         for (let aid of this.aid_list) {
             let video = this.aid_video[aid];
             let owner = video.owner;
