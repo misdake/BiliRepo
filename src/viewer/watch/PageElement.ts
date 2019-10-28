@@ -1,6 +1,6 @@
 import {css, html, LitElement, property} from "lit-element";
-import {BilibiliPage, BilibiliVideo} from "../common/types";
-import {Playlist} from "../common/Playlist";
+import {BilibiliPage, BilibiliVideo} from "../../common/types";
+import {Playlist} from "../../common/Playlist";
 import {VideoTitleElement} from "../elements/VideoTitleElement";
 import {GuideElement} from "../elements/GuideElement";
 import {PlayerElement} from "./PlayerElement";

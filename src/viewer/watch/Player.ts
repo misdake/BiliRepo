@@ -1,4 +1,4 @@
-import {httpget} from "../common/network";
+import {httpget} from "../../common/network";
 import DPlayer, {DPlayerAPIBackend} from "dplayer";
 
 export class Player {

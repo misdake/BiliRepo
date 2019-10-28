@@ -1,6 +1,6 @@
-import {BilibiliMember, BilibiliVideo} from "../common/types";
+import {BilibiliMember, BilibiliVideo} from "../../common/types";
 import {html, render} from 'lit-html';
-import {httpget} from "../common/network";
+import {httpget} from "../../common/network";
 import {VideoListElement} from "../elements/VideoListElement";
 import {MemberElement} from "../elements/MemberElement";
 

@@ -15,10 +15,11 @@ let storage = new Storage();
 let downloader = new Downloader();
 
 //download
-app.get('/download/:aid', function (req: Request, res: Response) {
-    res.send(downloader.enqueue(parseInt(req.params["aid"])));
+app.get('/download/add/:aid', function (req: Request, res: Response) {
+    downloader.enqueue(parseInt(req.params["aid"]));
+    res.send("true");
 });
-app.get('/status', function (req: Request, res: Response) {
+app.get('/download/status', function (req: Request, res: Response) {
     res.send(downloader.status_mini());
 });
 

@@ -1,5 +1,5 @@
 import {html, LitElement, property} from "lit-element";
-import {BilibiliPage, BilibiliVideo} from "../common/types";
+import {BilibiliPage, BilibiliVideo} from "../../common/types";
 
 export class VideoTitleElement extends LitElement {
 

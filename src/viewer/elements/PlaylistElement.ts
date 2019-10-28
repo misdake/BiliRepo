@@ -1,6 +1,6 @@
 import {css, html, LitElement, property} from "lit-element";
 import {VideoLabelElement} from "./VideoElements";
-import {Playlist} from "../common/Playlist";
+import {Playlist} from "../../common/Playlist";
 
 export class PlaylistElement extends LitElement {
 

@@ -1,5 +1,5 @@
 import {html, LitElement, property} from "lit-element";
-import {BilibiliVideo} from "../common/types";
+import {BilibiliVideo} from "../../common/types";
 import {repeat} from "lit-html/directives/repeat";
 import {VideoBlockElement} from "./VideoElements";
 

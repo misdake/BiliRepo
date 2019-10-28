@@ -1,5 +1,6 @@
 import {Bilibili} from "./Bilibili";
 import {BilibiliPage, BilibiliVideo} from "../../common/types";
+import {DownloadStatus, PartStatus, VideoStatus} from "../../common/DownloadStatus";
 
 const fs = require('fs');
 
@@ -172,39 +173,19 @@ export class Downloader {
             failed: this.failed,
         };
     }
-    status_mini() {
+    status_mini() : DownloadStatus {
         return {
-            queue: Downloader.generateVideoInfoMini(this.queue, false),
-            current: this.current ? Downloader.generateVideoInfoMini([this.current], true)[0] : null,
-            done: Downloader.generateVideoInfoMini(this.done, false),
-            failed: Downloader.generateVideoInfoMini(this.failed, false),
+            queue: Downloader.generateVideoStatus(this.queue, false),
+            current: this.current ? Downloader.generateVideoStatus([this.current], true)[0] : null,
+            done: Downloader.generateVideoStatus(this.done, false),
+            failed: Downloader.generateVideoStatus(this.failed, false),
         }
     }
 
-    private static generateVideoInfoMini(list: VideoDownloadProgress[], enableParts: boolean) {
-        class PartProgressMini {
-            p: number;
-            title: string;
-            done: boolean;
-            failed: boolean;
-            progress: number;
-            quality: string;
-            curr: string; //TODO
-            total: string; //TODO
-        }
-
-        class VideoInfoMini {
-            aid: number;
-            title: string;
-            pic: string;
-            parts: PartProgressMini[];
-            done: boolean;
-            failed: boolean;
-        }
-
-        let r: VideoInfoMini[] = [];
+    private static generateVideoStatus(list: VideoDownloadProgress[], enableParts: boolean) {
+        let r: VideoStatus[] = [];
         for (let v of list) {
-            let parts: PartProgressMini[] = null;
+            let parts: PartStatus[] = null;
             if (enableParts) {
                 parts = [];
                 if (v.parts) for (let part of v.parts) {
@@ -218,7 +199,7 @@ export class Downloader {
                         curr: part.curr,
                         total: part.total,
                     };
-                    if(part.done || part.failed) {
+                    if (part.done || part.failed) {
                         p.quality = undefined;
                         p.progress = undefined;
                         p.curr = undefined;

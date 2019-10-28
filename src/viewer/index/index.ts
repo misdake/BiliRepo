@@ -1,6 +1,6 @@
-import {BilibiliVideo} from "../common/types";
+import {BilibiliVideo} from "../../common/types";
 import {html, render} from 'lit-html';
-import {httpget} from "../common/network";
+import {httpget} from "../../common/network";
 import {VideoListElement} from "../elements/VideoListElement";
 
 VideoListElement.register();

@@ -1,5 +1,5 @@
 import {css, html, LitElement, property} from "lit-element";
-import {BilibiliMember, BilibiliVideo} from "../common/types";
+import {BilibiliMember, BilibiliVideo} from "../../common/types";
 
 export class MemberElement extends LitElement {
 

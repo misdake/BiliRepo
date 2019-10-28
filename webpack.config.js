@@ -2,9 +2,9 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        index: './src/index/index.ts',
-        member: './src/index/member.ts',
-        watch: './src/watch/watch.ts',
+        index: './src/viewer/index/index.ts',
+        member: './src/viewer/index/member.ts',
+        watch: './src/viewer/watch/watch.ts',
     },
     devtool: "source-map",
     mode: 'development',

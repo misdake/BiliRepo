@@ -1,5 +1,5 @@
 import {css, html, LitElement, property, PropertyValues} from "lit-element";
-import {BilibiliPage, BilibiliVideo} from "../common/types";
+import {BilibiliPage, BilibiliVideo} from "../../common/types";
 import {Player} from "./Player";
 
 export class PlayerElement extends LitElement {

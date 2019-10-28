@@ -1,8 +1,8 @@
 import {html, render} from 'lit-html';
 import {PageElement} from "./PageElement";
-import {httpget} from "../common/network";
-import {Playlist, PlaylistItem} from "../common/Playlist";
-import {BilibiliPage} from "../common/types";
+import {httpget} from "../../common/network";
+import {Playlist, PlaylistItem} from "../../common/Playlist";
+import {BilibiliPage} from "../../common/types";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
