@@ -50,9 +50,9 @@ export class VideoLabelElement extends LitElement {
         
         .title {
             position: absolute;
-            left: 170px;
+            left: 180px;
             top: 10px;
-            width: 140px;
+            width: 130px;
             display: inline;
         }
         

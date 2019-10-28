@@ -5,6 +5,7 @@ module.exports = {
         index: './src/viewer/index/index.ts',
         member: './src/viewer/index/member.ts',
         watch: './src/viewer/watch/watch.ts',
+        download: './src/viewer/download/download.ts',
     },
     devtool: "source-map",
     mode: 'development',
