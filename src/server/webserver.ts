@@ -9,7 +9,7 @@ const app = express();
 
 app.use(cors());
 
-app.use('/', express.static('.')); //provide web pages
+app.use('/', express.static('static')); //provide web pages
 
 let storage = new Storage();
 let downloader = new Downloader();

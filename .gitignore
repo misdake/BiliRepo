@@ -5,4 +5,5 @@
 /downloader/cookies.txt
 /downloader/status.txt
 /repo
+/static/repo
 /package-lock.json

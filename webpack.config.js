@@ -29,7 +29,7 @@ module.exports = {
     },
     devServer: {
         publicPath: "/",
-        contentBase: ".",
+        contentBase: "./static",
         open: true,
         hot: true,
         compress: true,
