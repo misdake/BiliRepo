@@ -5,6 +5,7 @@ import {BilibiliVideo} from "../../common/types";
 import {InputElement} from "./InputElement";
 import {VideoStatusElement} from "./VideoStatusElement";
 import {VideoListElement} from "./VideoListElement";
+import {VideoDownloadElement} from "./VideoDownloadElement";
 
 export class PageElement extends LitElement {
 
@@ -12,6 +13,7 @@ export class PageElement extends LitElement {
         InputElement.register();
         VideoStatusElement.register();
         VideoListElement.register();
+        VideoDownloadElement.register();
         customElements.define('page-element', PageElement);
     }
 
@@ -41,13 +43,15 @@ export class PageElement extends LitElement {
             position:absolute;
             left: 320px;
             top: 0;
-            width: 320px;
+            width: 640px;
         }
         #current_container {
+            position: relative;
             width: 620px;
-            margin: 10px;
-            height: 200px;
-            background: #CCCCCC;
+            /*background: #CCCCCC;*/
+            padding: 10px;
+            border: 1px solid;
+            margin-bottom: 10px;
         }
         #done_failed_container{
             position: relative;
@@ -144,7 +148,8 @@ export class PageElement extends LitElement {
                 </div>
                 <div id="right_panel">
                     <div id="current_container">
-                    
+                        <div class="text">正在下载: </div>
+                        <videodownload-element .video=${this.current}></videodownload-element>
                     </div>
                     <div id="done_failed_container">
                         <div id="done_container">
