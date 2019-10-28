@@ -75,12 +75,14 @@ export class Bilibili {
         fs.writeFileSync(`repo/${aid}_download/p${page}.json`, JSON.stringify(r));
     }
 
-    static async downloadVideo(aid: number, page = 1) {
+    static async downloadVideo(aid: number, page = 1, onoutput?: (lines: string[]) => void) {
         return new Promise((resolve, reject) => {
             const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-O', `p${page}`, '-o', `./repo/${aid}_download`, `av${aid}/?p=${page}`]);
 
             proc.stdout.on('data', (data: any) => {
-                console.log(`stdout: ${data}`);
+                let lines = `${data}`.split(/\r?\n/);
+                if (onoutput) onoutput(lines);
+                // console.log(`stdout: ${data}`);
             });
             proc.stderr.on('data', (data: any) => {
                 console.log(`stderr: ${data}`);

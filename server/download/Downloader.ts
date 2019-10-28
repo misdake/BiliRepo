@@ -10,10 +10,10 @@ export class PartDownloadProgress {
     done: boolean;
     failed: boolean;
 
-    // quality: string; //TODO read from annie output
-    // currSize: number;
-    // totalSize: number;
-    // progress: number;
+    quality: string;
+    curr: string; //TODO
+    total: string; //TODO
+    progress: number;
 
     constructor(video: BilibiliVideo, part: BilibiliPage) {
         this.video = video;
@@ -23,7 +23,7 @@ export class PartDownloadProgress {
     }
 
     async start() {
-        let returncode = await Bilibili.downloadVideo(this.video.aid, this.part.page);
+        let returncode = await Bilibili.downloadVideo(this.video.aid, this.part.page, lines => this.processOutput(lines));
         if (returncode === 0) {
             this.done = true;
             console.log(`download part ${this.part.page} success`);
@@ -34,6 +34,37 @@ export class PartDownloadProgress {
             this.failed = true;
             console.log(`download part ${this.part.page} fail`);
             return false;
+        }
+    }
+
+    private processOutput(lines: string[]) {
+        {
+            let qualityRegex = new RegExp('Quality:\\s+(.*)$');
+            for (let string of lines) {
+                let res = string.match(qualityRegex);
+                if (res) {
+                    // console.log(`画质：${res[1]}`);
+                    this.quality = res[1];
+                }
+            }
+        }
+        {
+            let sizeRegex = new RegExp('([0-9.]+ [KMGi]*B) \\/ ([0-9.]+ [KMGi]*B)');
+            let res = lines[lines.length - 1].match(sizeRegex);
+            if (res) {
+                this.curr = res[1];
+                this.total = res[2];
+            }
+        }
+        {
+            let progressRegex = new RegExp('([0-9.]+)%');
+            let res = lines[lines.length - 1].match(progressRegex);
+            if (res) {
+                let percent = res[1];
+                let n = parseFloat(percent);
+                // console.log(`progress：${percent}`);
+                this.progress = n;
+            }
         }
     }
 }
@@ -155,7 +186,10 @@ export class Downloader {
             title: string;
             done: boolean;
             failed: boolean;
-            //TODO progress curr/total
+            progress: number;
+            quality: string;
+            curr: string; //TODO
+            total: string; //TODO
         }
 
         class VideoInfoMini {
@@ -173,12 +207,23 @@ export class Downloader {
             if (enableParts) {
                 parts = [];
                 if (v.parts) for (let part of v.parts) {
-                    parts.push({
+                    let p = {
                         p: part.part.page,
                         title: part.part.part,
                         done: part.done,
                         failed: part.failed,
-                    });
+                        quality: part.quality,
+                        progress: part.progress,
+                        curr: part.curr,
+                        total: part.total,
+                    };
+                    if(part.done || part.failed) {
+                        p.quality = undefined;
+                        p.progress = undefined;
+                        p.curr = undefined;
+                        p.total = undefined;
+                    }
+                    parts.push(p);
                 }
             }
 
