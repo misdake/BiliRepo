@@ -1,4 +1,4 @@
-import {MemberDB, PartDB, VideoDB} from "./dbTypes";
+import {MemberDB, PartDB, VideoDB, VideoParts} from "./dbTypes";
 import {Table} from "./dbBase";
 import {PageQuery} from "../../common/page";
 import {BilibiliVideo, BilibiliVideoJson} from "../../common/types";
@@ -53,7 +53,8 @@ export class Storage {
             aid: bilibiliVideo.aid,
 
             mid: bilibiliVideo.owner.mid,
-            title: bilibiliVideo.owner.name,
+            title: bilibiliVideo.title,
+            desc: bilibiliVideo.desc,
         };
         this.table_video.insertOrUpdate(v);
 
@@ -95,10 +96,15 @@ export class Storage {
     public video(aid: number) {
         return this.table_video.get(aid)
     }
-    public videoparts(aid: number) {
+    public videoparts(aid: number): VideoParts {
+        let v = this.table_video.get(aid);
         return {
-            video: this.table_video.get(aid),
-            part: this.table_part.find({aid: aid}, "index"),
+            aid: v.aid,
+            title: v.title,
+            mid: v.mid,
+            desc: v.desc,
+            member: this.table_member.get(v.mid),
+            parts: this.table_part.find({aid: aid}, "index")
         }
     }
     public recent_videos(page: PageQuery) {

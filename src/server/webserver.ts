@@ -36,18 +36,20 @@ Storage.createInstance().then(storage => {
 
     const pagesize = 20;
     const defaultpage = {pageindex: 1, pagesize: pagesize};
-    const keys = [
-        "aid", "title", "cid", "index", "title", "mid", "name", "face", //dbTypes
-        "result", "total", "pageindex", "pagecount", "pagesize", //page
-    ];
+    const blacklist = ['meta', '$loki'];
 
     function stringify(obj: any) {
-        return JSON.stringify(obj, keys);
+        return JSON.stringify(obj, function replacer(key, value) {
+            return blacklist.indexOf(key) === -1 ? value : undefined
+        });
     }
 
     //serve video/member content
     app.get('/api/video/aid/:aid', function (req: Request, res: Response) {
         res.send(stringify(storage.video(parseInt(req.params["aid"]))));
+    });
+    app.get('/api/video/withparts/:aid', function (req: Request, res: Response) {
+        res.send(stringify(storage.videoparts(parseInt(req.params["aid"]))));
     });
     app.get('/api/video/recent', function (req: Request, res: Response) {
         res.send(stringify(storage.recent_videos(defaultpage)));

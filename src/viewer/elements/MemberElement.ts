@@ -1,5 +1,5 @@
 import {css, html, LitElement, property} from "lit-element";
-import {BilibiliMember, BilibiliVideo} from "../../common/types";
+import {MemberDB} from "../../server/storage/dbTypes";
 
 export class MemberElement extends LitElement {
 
@@ -8,7 +8,7 @@ export class MemberElement extends LitElement {
     }
 
     @property()
-    member: BilibiliMember;
+    member: MemberDB;
 
     static styles = css`
         img {

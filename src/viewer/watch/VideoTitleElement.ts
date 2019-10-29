@@ -1,5 +1,5 @@
 import {html, LitElement, property} from "lit-element";
-import {BilibiliPage, BilibiliVideo} from "../../common/types";
+import {PartDB, VideoParts} from "../../server/storage/dbTypes";
 
 export class VideoTitleElement extends LitElement {
 
@@ -8,17 +8,17 @@ export class VideoTitleElement extends LitElement {
     }
 
     @property()
-    video: BilibiliVideo;
+    video: VideoParts;
     @property()
-    part: BilibiliPage;
+    part: PartDB;
 
     render() {
         let title1 = "";
         let title2 = null;
         if (this.video && this.part) {
             title1 = this.video.title;
-            if (this.video.pages.length > 1 && this.part && this.part.part && this.part.part.length > 0) {
-                title2 = `Part ${this.part.page}: ${this.part.part}`;
+            if (this.video.parts.length > 1 && this.part && this.part.title && this.part.title.length > 0) {
+                title2 = `Part ${this.part.index}: ${this.part.title}`;
             }
         }
 

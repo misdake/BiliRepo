@@ -1,12 +1,12 @@
 import {css, html, LitElement, property} from "lit-element";
-import {BilibiliPage, BilibiliVideo} from "../../common/types";
-import {Playlist} from "../../common/Playlist";
-import {VideoTitleElement} from "../elements/VideoTitleElement";
+import {Playlist} from "./Playlist";
+import {VideoTitleElement} from "./VideoTitleElement";
 import {GuideElement} from "../elements/GuideElement";
 import {PlayerElement} from "./PlayerElement";
 import {MemberElement} from "../elements/MemberElement";
 import {VideoDescElement} from "../elements/VideoDescElement";
 import {PlaylistElement} from "../elements/PlaylistElement";
+import {PartDB, VideoDB, VideoParts} from "../../server/storage/dbTypes";
 
 export class PageElement extends LitElement {
 
@@ -20,8 +20,8 @@ export class PageElement extends LitElement {
         customElements.define('page-element', PageElement);
     }
 
-    currentVideo: BilibiliVideo;
-    currentPart: BilibiliPage;
+    currentVideo: VideoParts;
+    currentPart: PartDB;
 
     @property()
     playlist: Playlist;
@@ -41,12 +41,12 @@ export class PageElement extends LitElement {
         this.updateCurrentVideoPart(playlistItem.video, playlistItem.part);
     }
 
-    public updateCurrentVideoPart(video: BilibiliVideo, part: BilibiliPage) {
+    public updateCurrentVideoPart(video: VideoParts, part: PartDB) {
         this.currentVideo = video;
         document.title = this.currentVideo.title;
 
         this.currentPart = null;
-        for (let page of this.currentVideo.pages) {
+        for (let page of this.currentVideo.parts) {
             if (page == part) {
                 this.currentPart = page;
                 break;
@@ -110,7 +110,7 @@ export class PageElement extends LitElement {
             <div id="page">
                 <div id="header">
                     <guide-element></guide-element>
-                    <member-element .member=${this.currentVideo ? this.currentVideo.owner : null}></member-element>
+                    <member-element .member=${this.currentVideo ? this.currentVideo.member : null}></member-element>
                     <videotitle-element .video=${this.currentVideo} .part=${this.currentPart}></videotitle-element>
                 </div>
                 <div id="player">

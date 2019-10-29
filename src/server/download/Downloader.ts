@@ -15,9 +15,12 @@ export class PartDownloadProgress {
     total: string; //TODO
     progress: number;
 
-    constructor(video: BilibiliVideo, part: BilibiliPage) {
+    private setMessage: (message: string) => void;
+
+    constructor(video: BilibiliVideo, part: BilibiliPage, setMessage: (message: string) => void) {
         this.video = video;
         this.part = part;
+        this.setMessage = setMessage;
         this.done = false;
         this.failed = false;
     }
@@ -61,9 +64,14 @@ export class PartDownloadProgress {
             let res = lines[lines.length - 1].match(progressRegex);
             if (res) {
                 let percent = res[1];
-                let n = parseFloat(percent);
-                // console.log(`progress：${percent}`);
-                this.progress = n;
+                this.progress = parseFloat(percent);
+            }
+        }
+        {
+            for (let line of lines) {
+                if (line.indexOf("cookie error") >= 0) {
+                    this.setMessage("cookie error");
+                }
             }
         }
     }
@@ -80,7 +88,7 @@ export class VideoDownloadProgress {
 
     json : BilibiliVideoJson;
 
-    constructor(aid: number) {
+    constructor(aid: number, setMessage: (message: string) => void) {
         this.aid = aid;
         this.parts = [];
         this.done = false;
@@ -89,7 +97,7 @@ export class VideoDownloadProgress {
             this.json = result;
             this.video = result.data;
             for (let part of this.video.pages) {
-                this.parts.push(new PartDownloadProgress(this.video, part));
+                this.parts.push(new PartDownloadProgress(this.video, part, setMessage));
             }
         }, () => {
             this.failed = true; //cause downloadEntireVideo to return false
@@ -157,6 +165,7 @@ export class VideoDownloadProgress {
 export class Downloader {
     private onDone: (video: BilibiliVideo) => void;
 
+    private message: string;
     private queue: VideoDownloadProgress[];
     private current: VideoDownloadProgress;
     private done: VideoDownloadProgress[];
@@ -164,6 +173,7 @@ export class Downloader {
 
     constructor(onDone: (video: BilibiliVideo) => void) {
         this.onDone = onDone;
+        this.message = null;
         this.queue = [];
         this.current = null;
         this.done = [];
@@ -172,6 +182,7 @@ export class Downloader {
 
     status() {
         return {
+            message: this.message,
             queue: this.queue,
             current: this.current,
             done: this.done,
@@ -194,7 +205,7 @@ export class Downloader {
             if (enableParts) {
                 parts = [];
                 if (v.parts) for (let part of v.parts) {
-                    let p = {
+                    let p: PartStatus = {
                         p: part.part.page,
                         title: part.part.part,
                         done: part.done,
@@ -228,7 +239,9 @@ export class Downloader {
 
     enqueue(aid: number, force: boolean = false) {
         //TODO check downloaded? check done/failed?
-        this.queue.push(new VideoDownloadProgress(aid));
+        this.queue.push(new VideoDownloadProgress(aid, message => {
+            this.message = message;
+        }));
         this.schedule();
     }
 
@@ -256,6 +269,7 @@ export class Downloader {
         //schedule new download
         if (!this.current) {
             if (this.queue.length) {
+                this.message = null;
                 this.current = this.queue.splice(0, 1)[0];
                 this.current.start().then(_ => {
                     this.schedule();

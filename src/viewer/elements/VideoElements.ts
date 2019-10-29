@@ -1,5 +1,5 @@
 import {css, html, LitElement, property} from "lit-element";
-import {BilibiliPage, BilibiliVideo} from "../../common/types";
+import {PartDB, VideoDB} from "../../server/storage/dbTypes";
 
 export class VideoLabelElement extends LitElement {
 
@@ -8,9 +8,9 @@ export class VideoLabelElement extends LitElement {
     }
 
     @property()
-    video: BilibiliVideo;
+    video: VideoDB;
     @property()
-    part: BilibiliPage;
+    part: PartDB;
 
     @property()
     videoSelected: boolean;
@@ -82,7 +82,7 @@ export class VideoLabelElement extends LitElement {
             </li>`;
         let part = !this.part ? html`` : html`
             <li class="${partClass}" @click=${() => this.onitemclick()}>
-                <span>${this.part.part}</span>
+                <span>${this.part.index}</span>
             </li>`;
 
         return html`
@@ -100,7 +100,7 @@ export class VideoBlockElement extends LitElement {
     }
 
     @property()
-    video: BilibiliVideo;
+    video: VideoDB;
 
     static styles = css`
         .videoItem {

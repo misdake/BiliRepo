@@ -1,5 +1,5 @@
 import {css, html, LitElement, property} from "lit-element";
-import {BilibiliPage, BilibiliVideo} from "../../common/types";
+import {PartDB, VideoDB} from "../../server/storage/dbTypes";
 
 export class VideoDescElement extends LitElement {
 
@@ -8,9 +8,9 @@ export class VideoDescElement extends LitElement {
     }
 
     @property()
-    video: BilibiliVideo;
+    video: VideoDB;
     @property()
-    part: BilibiliPage;
+    part: PartDB;
 
     static styles = css`
         span {

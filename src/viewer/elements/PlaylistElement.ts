@@ -1,6 +1,6 @@
 import {css, html, LitElement, property} from "lit-element";
 import {VideoLabelElement} from "./VideoElements";
-import {Playlist} from "../../common/Playlist";
+import {Playlist} from "../watch/Playlist";
 
 export class PlaylistElement extends LitElement {
 
@@ -36,7 +36,7 @@ export class PlaylistElement extends LitElement {
         for (let [index, playlistItem] of this.playlist.items.entries()) {
             let video = playlistItem.video;
             let part = playlistItem.part;
-            if (video.pages.length === 1) {
+            if (video.parts.length === 1) {
                 part = null;
             }
             if (lastVideo === video) {

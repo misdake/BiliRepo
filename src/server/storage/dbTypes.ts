@@ -3,6 +3,7 @@ export class VideoDB {
 
     title: string;
     mid: number; //MemberDB
+    desc: string;
 }
 
 export class PartDB {
@@ -12,6 +13,11 @@ export class PartDB {
 
     index: number;
     title: string;
+}
+
+export class VideoParts extends VideoDB {
+    parts: PartDB[];
+    member: MemberDB;
 }
 
 export class MemberDB {

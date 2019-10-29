@@ -1,6 +1,6 @@
 import {css, html, LitElement, property, PropertyValues} from "lit-element";
-import {BilibiliPage, BilibiliVideo} from "../../common/types";
 import {Player} from "./Player";
+import {PartDB, VideoParts} from "../../server/storage/dbTypes";
 
 export class PlayerElement extends LitElement {
 
@@ -17,7 +17,7 @@ export class PlayerElement extends LitElement {
 
     private loadVideo() {
         if (this.video && this.part && this.player) {
-            this.player.loadVideoPart(this.video.aid, this.part.page);
+            this.player.loadVideoPart(this.video.aid, this.part.index);
         }
     }
 
@@ -28,9 +28,9 @@ export class PlayerElement extends LitElement {
 
 
     @property()
-    video: BilibiliVideo;
+    video: VideoParts;
     @property()
-    part: BilibiliPage;
+    part: PartDB;
 
 
     constructor() {

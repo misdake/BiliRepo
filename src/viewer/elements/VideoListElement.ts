@@ -1,7 +1,7 @@
 import {html, LitElement, property} from "lit-element";
-import {BilibiliVideo} from "../../common/types";
 import {repeat} from "lit-html/directives/repeat";
 import {VideoBlockElement} from "./VideoElements";
+import {VideoDB} from "../../server/storage/dbTypes";
 
 export class VideoListElement extends LitElement {
 
@@ -11,12 +11,12 @@ export class VideoListElement extends LitElement {
     }
 
     @property()
-    videos: BilibiliVideo[];
+    videos: VideoDB [];
 
     render() {
         return html`
             <ul>
-                ${repeat(this.videos, (video: BilibiliVideo) => html`<videoblock-element .video=${video}></videoblock-element>`)}
+                ${repeat(this.videos, (video: VideoDB) => html`<videoblock-element .video=${video}></videoblock-element>`)}
             </ul>
         `;
     }
