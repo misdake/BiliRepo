@@ -26,8 +26,6 @@ export class MemberElement extends LitElement {
         .name {
             margin-left: 10px;
             float: left;
-            width: 152px;
-            height: 64px;
         }
     `;
 

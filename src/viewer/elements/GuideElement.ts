@@ -14,8 +14,10 @@ export class GuideElement extends LitElement {
 
     render() {
         return html`
-            <div><a href="index.html">主页</a></div>
-            <div><a href="download.html">下载</a></div>
+            <div>
+                <div style="text-align:right"><a href="index.html">主页</a></div>
+                <div style="text-align:right"><a href="download.html">下载</a></div>
+            </div>
         `;
     }
 
