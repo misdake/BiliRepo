@@ -5,8 +5,8 @@ import {GuideElement} from "../elements/GuideElement";
 import {PlayerElement} from "./PlayerElement";
 import {MemberElement} from "../elements/MemberElement";
 import {VideoDescElement} from "../elements/VideoDescElement";
-import {PlaylistElement} from "../elements/PlaylistElement";
-import {PartDB, VideoDB, VideoParts} from "../../server/storage/dbTypes";
+import {PartDB, VideoParts} from "../../server/storage/dbTypes";
+import {PlaylistElement} from "./PlaylistElement";
 
 export class PageElement extends LitElement {
 
@@ -84,6 +84,7 @@ export class PageElement extends LitElement {
         
         #player {
             position: relative;
+            margin: 10px 0;
         }
         player-element {
             // width: 960px;
@@ -101,7 +102,6 @@ export class PageElement extends LitElement {
         }
         
         #info {
-            clear: both;
         }
     `;
 
@@ -112,10 +112,12 @@ export class PageElement extends LitElement {
                     <guide-element></guide-element>
                     <member-element .member=${this.currentVideo ? this.currentVideo.member : null}></member-element>
                     <videotitle-element .video=${this.currentVideo} .part=${this.currentPart}></videotitle-element>
+                    <div style="clear: both;"></div>
                 </div>
                 <div id="player">
                     <player-element .video=${this.currentVideo} .part=${this.currentPart}></player-element>
                     <playlist-element .onitemclick=${(index: number) => this.updatePlayIndex(index)} .playlist=${this.playlist} .playindex=${this.playindex}></playlist-element>
+                    <div style="clear: both;"></div>
                 </div>
                 <div id="info">
                     <videodesc-element .video=${this.currentVideo} .part=${this.currentPart}></videodesc-element>

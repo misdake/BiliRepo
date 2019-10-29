@@ -7,15 +7,15 @@ export class GuideElement extends LitElement {
     }
 
     static styles = css`
-        span {
-          color: green;
-        }`;
+        div {
+            width : 64px;
+        }
+    `;
 
     render() {
         return html`
-            <div>
-                <a href="index.html">主页</a>
-            </div>
+            <div><a href="index.html">主页</a></div>
+            <div><a href="download.html">下载</a></div>
         `;
     }
 

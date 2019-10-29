@@ -36,7 +36,7 @@ export class PlayerElement extends LitElement {
     constructor() {
         super();
         this.danmakuFontSize = 32;
-        this.danmakuMoveTime = 10;
+        this.danmakuMoveTime = 10; //TODO 根据屏幕宽度改变
     }
 
     update(_changedProperties: PropertyValues) {
