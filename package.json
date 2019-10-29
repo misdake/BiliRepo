@@ -14,7 +14,7 @@
     "express": "^4.17.1",
     "lit-element": "^2.2.1",
     "lit-html": "^1.1.2",
-    "lokijs": "^1.5.7",
+    "lokijs": "^1.5.8",
     "xml2js": "^0.4.22"
   },
   "devDependencies": {

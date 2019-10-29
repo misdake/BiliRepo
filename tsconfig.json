@@ -13,7 +13,8 @@
         "types": [
             "node",
             "express",
-            "dplayer"
+            "dplayer",
+            "lokijs"
         ]
     },
     "exclude": [

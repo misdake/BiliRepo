@@ -155,14 +155,14 @@ export class VideoDownloadProgress {
 }
 
 export class Downloader {
-    private onDone: (aid: number) => void;
+    private onDone: (video: BilibiliVideo) => void;
 
     private queue: VideoDownloadProgress[];
     private current: VideoDownloadProgress;
     private done: VideoDownloadProgress[];
     private failed: VideoDownloadProgress[];
 
-    constructor(onDone: (aid: number) => void) {
+    constructor(onDone: (video: BilibiliVideo) => void) {
         this.onDone = onDone;
         this.queue = [];
         this.current = null;
@@ -242,7 +242,7 @@ export class Downloader {
             if (this.current.done) {
                 this.done.push(this.current);
                 if (this.onDone) {
-                    this.onDone(this.current.aid);
+                    this.onDone(this.current.video);
                 }
                 this.current = null;
             } else if (this.current.failed) {
