@@ -19,6 +19,7 @@ export class VideoStatus {
 }
 
 export class DownloadStatus {
+    message: string;
     queue: VideoStatus[];
     current: VideoStatus;
     done: VideoStatus[];

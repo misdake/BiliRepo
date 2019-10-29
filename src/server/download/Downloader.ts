@@ -191,6 +191,7 @@ export class Downloader {
     }
     status_mini() : DownloadStatus {
         return {
+            message: this.message,
             queue: Downloader.generateVideoStatus(this.queue, false),
             current: this.current ? Downloader.generateVideoStatus([this.current], true)[0] : null,
             done: Downloader.generateVideoStatus(this.done, false),

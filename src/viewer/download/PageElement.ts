@@ -85,11 +85,13 @@ export class PageElement extends LitElement {
         httpget("http://localhost:8081/download/status", (content: string) => {
             let status = JSON.parse(content) as DownloadStatus;
             if (status) {
+                this.message = status.message;
                 this.queue = status.queue || [];
                 this.current = status.current;
                 this.done = status.done || [];
                 this.failed = status.failed || [];
             } else {
+                this.message = null;
                 this.queue = [];
                 this.current = null;
                 this.done = [];
@@ -109,6 +111,8 @@ export class PageElement extends LitElement {
     @property()
     inputVideo: VideoStatus;
 
+    @property()
+    message: string;
     @property()
     queue: VideoStatus[];
     @property()
@@ -158,6 +162,7 @@ export class PageElement extends LitElement {
                     <div id="queue_container"><videolist-element .videos=${this.queue}></videolist-element></div>
                 </div>
                 <div id="right_panel">
+                    ${this.message ? html`<div style="color:#F00">${this.message}</div>` : ""}
                     <div id="current_container">
                         <div class="text">正在下载: </div>
                         <videodownload-element .video=${this.current}></videodownload-element>
