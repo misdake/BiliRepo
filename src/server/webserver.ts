@@ -2,7 +2,6 @@ import {Request, Response} from "express";
 import {Storage} from "./storage/Storage";
 import {Downloader} from "./download/Downloader";
 import {httpsget} from "./network";
-import {VideoDB} from "./storage/dbTypes";
 
 const express = require('express');
 const cors = require('cors');
@@ -12,6 +11,7 @@ const app = express();
 app.use(cors());
 
 app.use('/', express.static('static')); //provide web pages
+app.use('/dist/', express.static('dist')); //provide web pages
 
 //proxy
 app.get('/proxy/videoinfo/:aid', function (req: Request, res: Response) {
@@ -34,7 +34,7 @@ Storage.createInstance().then(storage => {
         res.send(downloader.status_mini());
     });
 
-    const pagesize = 20;
+    const pagesize = 6;
     const defaultpage = {pageindex: 1, pagesize: pagesize};
     const blacklist = ['meta', '$loki'];
 
@@ -67,6 +67,5 @@ Storage.createInstance().then(storage => {
         res.send(stringify(storage.member(parseInt(req.params["mid"]))));
     });
 });
-
 
 app.listen(8081);

@@ -1,16 +1,22 @@
 import {html, render} from 'lit-html';
 import {httpget} from "../../common/network";
-import {VideoListElement} from "../elements/VideoListElement";
 import {Paged} from "../../common/page";
 import {VideoDB} from "../../server/storage/dbTypes";
+import {PagedVideoContainer} from "../elements/PagedVideoContainer";
 
-VideoListElement.register();
+PagedVideoContainer.register();
 
-const pageTemplate = (videos: VideoDB[]) => html`
-    <videolist-element .videos=${videos}></videolist-element>
+function request(pageindex: number) {
+    return new Promise(resolve => {
+        httpget(`http://localhost:8081/api/video/recent/${pageindex}`, (content: string) => {
+            let r = JSON.parse(content) as Paged<VideoDB>;
+            resolve(r);
+        });
+    });
+}
+
+const pageTemplate = html`
+    <pagedvideo-container .request=${request}></pagedvideo-container>
 `;
 
-httpget("http://localhost:8081/api/video/recent", (content: string) => {
-    let videos = JSON.parse(content) as Paged<VideoDB>;
-    render(pageTemplate(videos.result), document.body);
-});
+render(pageTemplate, document.body);

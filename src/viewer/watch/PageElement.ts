@@ -59,8 +59,6 @@ export class PageElement extends LitElement {
         if (this.playlist && this.playindex >= 0 && this.playindex < this.playlist.items.length) {
             this.updatePlayIndex(this.playindex);
         }
-        // @ts-ignore
-        window.page = this;
     }
 
     static styles = css`
