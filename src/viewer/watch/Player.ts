@@ -1,15 +1,42 @@
 import {httpget} from "../../common/network";
 import DPlayer, {DPlayerAPIBackend} from "dplayer";
 
-// @ts-ignore
-let saved = flvjs.createPlayer;
-// @ts-ignore
-flvjs.createPlayer = function (options: any) {
+// if dplayer switchs videos when flvjs is fetching data, dplayer will not stop flvjs, causing errors and infinite loading.
+// this seems to be fixed in later versions (currently 1.25).
+
+// here is the 99% fix:
+// hijack createPlayer to save the player object.
+// when unloading video, call relevant functions to unload flvjs player correctly.
+// this is a 99% fix. infinite loading still occurs after extreme actions.
+
+let currentPlayer: any = null;
+{
     // @ts-ignore
-    window.flvPlayer = saved(options);
+    let saved = flvjs.createPlayer;
     // @ts-ignore
-    return window.flvPlayer;
-};
+    flvjs.createPlayer = function (options: any) {
+        // @ts-ignore
+        currentPlayer = saved(options);
+        // @ts-ignore
+        return currentPlayer;
+    };
+}
+
+function unloadPlayer() {
+    if (!currentPlayer) return;
+    currentPlayer.pause();
+    // @ts-ignore
+    currentPlayer.unload();
+    // @ts-ignore
+    currentPlayer.detachMediaElement();
+    // @ts-ignore
+    currentPlayer.destroy();
+    // @ts-ignore
+    currentPlayer = null;
+}
+
+// ↑
+// fix end
 
 export class Player {
 
@@ -43,17 +70,7 @@ export class Player {
 
         if (this.dp) {
             this.dp.pause();
-            // @ts-ignore
-            if (window.flvPlayer) {
-                // @ts-ignore
-                window.flvPlayer.unload();
-                // @ts-ignore
-                window.flvPlayer.detachMediaElement();
-                // @ts-ignore
-                window.flvPlayer.destroy();
-                // @ts-ignore
-                window.flvPlayer = null;
-            }
+            unloadPlayer(); //unload flvjs player
             this.dp.destroy();
             this.dp = null;
         }
@@ -64,16 +81,6 @@ export class Player {
         this.dp.danmaku.options.height = 50;
         // @ts-ignore
         this.dp.danmaku.options.speed = 10;
-
-        // this.dp.switchVideo(
-        //     {
-        //         url: `repo/${aid}/p${part}.flv`,
-        //     },
-        //     {
-        //         id: '',
-        //         api: '',
-        //     }
-        // );
 
         if (!document.hidden) {
             this.dp.play();
