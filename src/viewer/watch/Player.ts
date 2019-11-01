@@ -1,15 +1,27 @@
 import {httpget} from "../../common/network";
 import DPlayer, {DPlayerAPIBackend} from "dplayer";
 
+// @ts-ignore
+let saved = flvjs.createPlayer;
+// @ts-ignore
+flvjs.createPlayer = function (options: any) {
+    // @ts-ignore
+    window.flvPlayer = saved(options);
+    // @ts-ignore
+    return window.flvPlayer;
+};
+
 export class Player {
 
-    private readonly dp: DPlayer;
+    private dp: DPlayer;
     private readonly apiBackend: DPlayerAPIBackend;
 
     private aid: number;
     private part: number;
+    private container: HTMLElement;
 
     constructor(container: HTMLElement) {
+        this.container = container;
         console.log("new Player()");
         this.apiBackend = {
             read: (options) => {
@@ -21,15 +33,6 @@ export class Player {
             send: (options) => {
             }
         };
-
-        // @ts-ignore
-        this.dp = window.createPlayer(container, this.apiBackend);
-        // @ts-ignore
-        window.player = this;
-        // @ts-ignore
-        this.dp.danmaku.options.height = 50;
-        // @ts-ignore
-        this.dp.danmaku.options.speed = 10;
     }
 
     loadVideoPart(aid: number, part: number) {
@@ -38,15 +41,39 @@ export class Player {
         this.aid = aid;
         this.part = part;
 
-        this.dp.switchVideo(
-            {
-                url: `repo/${aid}/p${part}.flv`,
-            },
-            {
-                id: '',
-                api: '',
+        if (this.dp) {
+            this.dp.pause();
+            // @ts-ignore
+            if (window.flvPlayer) {
+                // @ts-ignore
+                window.flvPlayer.unload();
+                // @ts-ignore
+                window.flvPlayer.detachMediaElement();
+                // @ts-ignore
+                window.flvPlayer.destroy();
+                // @ts-ignore
+                window.flvPlayer = null;
             }
-        );
+            this.dp.destroy();
+            this.dp = null;
+        }
+
+        // @ts-ignore
+        this.dp = window.createPlayer(this.container, this.apiBackend, {url: `repo/${aid}/p${part}.flv`});
+        // @ts-ignore
+        this.dp.danmaku.options.height = 50;
+        // @ts-ignore
+        this.dp.danmaku.options.speed = 10;
+
+        // this.dp.switchVideo(
+        //     {
+        //         url: `repo/${aid}/p${part}.flv`,
+        //     },
+        //     {
+        //         id: '',
+        //         api: '',
+        //     }
+        // );
 
         if (!document.hidden) {
             this.dp.play();
