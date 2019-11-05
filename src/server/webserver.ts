@@ -5,10 +5,15 @@ import {httpsget} from "./network";
 
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
 const app = express();
 
 app.use(cors());
+app.use(bodyParser.json());       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+    extended: true
+}));
 
 app.use('/', express.static('static')); //provide web pages
 app.use('/dist/', express.static('dist')); //provide web pages
@@ -32,6 +37,14 @@ Storage.createInstance().then(storage => {
     });
     app.get('/download/status', function (req: Request, res: Response) {
         res.send(downloader.status_mini());
+    });
+    app.post('/download/cookie', (req: Request, res: Response) => {
+        if (req.body && req.body.cookie) {
+            downloader.setCookie(req.body.cookie);
+            res.send("good");
+        } else {
+            res.send("bad");
+        }
     });
 
     const pagesize = 6;

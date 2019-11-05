@@ -86,7 +86,7 @@ export class VideoDownloadProgress {
     video: BilibiliVideo;
     parts: PartDownloadProgress[];
 
-    json : BilibiliVideoJson;
+    json: BilibiliVideoJson;
 
     constructor(aid: number, setMessage: (message: string) => void) {
         this.aid = aid;
@@ -189,7 +189,7 @@ export class Downloader {
             failed: this.failed,
         };
     }
-    status_mini() : DownloadStatus {
+    status_mini(): DownloadStatus {
         return {
             message: this.message,
             queue: Downloader.generateVideoStatus(this.queue, false),
@@ -197,6 +197,10 @@ export class Downloader {
             done: Downloader.generateVideoStatus(this.done, false),
             failed: Downloader.generateVideoStatus(this.failed, false),
         }
+    }
+
+    setCookie(cookie: string) {
+        fs.writeFileSync("downloader/cookies.txt", cookie);
     }
 
     private static generateVideoStatus(list: VideoDownloadProgress[], enableParts: boolean) {

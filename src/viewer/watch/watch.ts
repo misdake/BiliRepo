@@ -11,7 +11,7 @@ let part = parseInt(url.searchParams.get("p")) || 1;
 
 PageElement.register();
 
-httpget(`http://localhost:8081/api/video/withparts/${aid}`, content => { //TODO replace with /api/video/withparts/:aid
+httpget(`http://localhost:8081/api/video/withparts/${aid}`, content => {
     let video = JSON.parse(content) as VideoParts;
     document.title = video.title;
 
