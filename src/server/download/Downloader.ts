@@ -201,6 +201,7 @@ export class Downloader {
 
     setCookie(cookie: string) {
         fs.writeFileSync("downloader/cookies.txt", cookie);
+        this.message = null;
     }
 
     private static generateVideoStatus(list: VideoDownloadProgress[], enableParts: boolean) {

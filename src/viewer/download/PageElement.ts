@@ -1,6 +1,6 @@
 import {css, html, LitElement, property} from "lit-element";
 import {DownloadStatus, VideoStatus} from "../../common/DownloadStatus";
-import {httpget} from "../../common/network";
+import {httpget, httppost} from "../../common/network";
 import {BilibiliVideo} from "../../common/types";
 import {InputElement} from "./InputElement";
 import {VideoStatusElement} from "./VideoStatusElement";
@@ -152,6 +152,24 @@ export class PageElement extends LitElement {
         }
     }
 
+    private updateCookie() {
+        navigator.clipboard.readText().then(value => {
+            if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
+                httppost("http://localhost:8081/download/cookie", {cookie: value}, (content) => {
+                    if (content === "good") {
+                        this.message = "";
+                        alert("cookie updated!")
+                    } else {
+                        this.message = content;
+                        alert("cookie update failed!\nresponse: " + content)
+                    }
+                });
+            } else {
+                alert("copy cookie content into clipboard and retry")
+            }
+        });
+    }
+
     render() {
         return html`
             <div id="page">
@@ -162,7 +180,7 @@ export class PageElement extends LitElement {
                     <div id="queue_container"><videolist-element .videos=${this.queue}></videolist-element></div>
                 </div>
                 <div id="right_panel">
-                    ${this.message ? html`<div style="color:#F00">${this.message}</div>` : ""}
+                    ${this.message ? html`<div style="color:#F00">${this.message}<button @click=${() => this.updateCookie()}>updateCookie</button></div>` : ""}
                     <div id="current_container">
                         <div class="text">正在下载: </div>
                         <videodownload-element .video=${this.current}></videodownload-element>
