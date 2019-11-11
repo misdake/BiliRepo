@@ -259,24 +259,27 @@ export class Downloader {
         //clear current
         if (this.current) {
             if (this.current.done) {
-                this.done.push(this.current);
-                if (this.onDone) {
+                this.done.unshift(this.current);
+                if (this.onDone && this.current.video) {
                     this.onDone(this.current.video);
                 }
                 this.current = null;
             } else if (this.current.failed) {
-                this.failed.push(this.current);
+                this.failed.unshift(this.current);
                 this.current = null;
             }
         }
 
-        //TODO check done/failed length, remove item if too long
+        const LIST_MAX = 10;
+
+        if (this.done.length > LIST_MAX) this.done = this.done.slice(0, LIST_MAX);
+        if (this.failed.length > LIST_MAX) this.failed = this.failed.slice(0, LIST_MAX);
 
         //schedule new download
         if (!this.current) {
             if (this.queue.length) {
                 this.message = null;
-                this.current = this.queue.splice(0, 1)[0];
+                this.current = this.queue.shift();
                 this.current.start().then(_ => {
                     this.schedule();
                 });

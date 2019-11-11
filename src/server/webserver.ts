@@ -47,7 +47,7 @@ Storage.createInstance().then(storage => {
         }
     });
 
-    const pagesize = 6;
+    const pagesize = 10;
     const defaultpage = {pageindex: 1, pagesize: pagesize};
     const blacklist = ['meta', '$loki'];
 
