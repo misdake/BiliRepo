@@ -15,6 +15,7 @@ export class VideoDownloadElement extends LitElement {
             width: 160px;
             height: 90px;
             position: relative;
+            cursor: default;
         }
         
         .thumb {
@@ -27,6 +28,7 @@ export class VideoDownloadElement extends LitElement {
         
         .left {
             float: left;
+            cursor: default;
             margin: 10px 0 0 10px;
             width: 160px;
         }
@@ -36,34 +38,50 @@ export class VideoDownloadElement extends LitElement {
             width: 160px;
         }
         
-        .right {
+        .right { 
             float: right;
-            margin: 10px 10px 0 0;
-            width: 430px;
-            height: 100px;
-        }
-        .part {
-            clear: left;
-            position: relative;
+            cursor: default;
+            margin: 10px 0 0 0;
+            width: 440px;
         }
         .part_state {
-            float: left;
+            display: inline-flex;
             width: 15px;
             white-space: nowrap;
             overflow: hidden;
         }
         .part_title {
-            float: left;
+            display: inline-flex;
             width: 345px;
             white-space: nowrap;
             overflow: hidden;
         }
         .part_percent {
-            float: right;
+            display: inline-block;
+            position: relative;
             width: 70px;
             text-align: right;
             white-space: nowrap;
-            overflow: hidden;
+            overflow: visible;
+        }
+        .part_percent:hover .part_size {
+            visibility: visible;
+            opacity: 1;
+        }
+        .part_size {
+            display: inline-block;
+            position: absolute;
+            visibility: hidden;
+            background: gray;
+            color: white;
+            top: -100%;
+            right: 100%;
+            margin-right: -100%;
+            margin-top: -5px;
+            padding: 2px 5px;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         .part_progress {
             position: relative;
@@ -95,7 +113,10 @@ export class VideoDownloadElement extends LitElement {
                         <div class="part">
                             <span class="part_state">${icon}</span>
                             <span class="part_title">${part.title}</span>
-                            <span class="part_percent">${part.progress}%</span>
+                            <span class="part_percent" >
+                                ${part.progress}%
+                                <span class="part_size">${part.curr || "?"} / ${part.total || "?"}</span>
+                            </span>
                             <progress class="part_progress" max="100" value="${part.progress}"></progress>
                         </div>
                     `);

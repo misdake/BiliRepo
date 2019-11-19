@@ -79,7 +79,9 @@ export class Bilibili {
 
     static async downloadVideo(aid: number, page = 1, onoutput?: (lines: string[]) => void) {
         return new Promise((resolve, reject) => {
-            const proc = spawn('downloader/annie', ['-c', 'downloader/cookies.txt', '-O', `p${page}`, '-o', `./repo/${aid}_download`, `av${aid}/?p=${page}`]);
+            let params = ['-c', 'downloader/cookies.txt', '-n','1', '-O', `p${page}`, '-o', `./repo/${aid}_download`, '-p', '-start', `${page}`, '-end', `${page}`, `av${aid}`];
+            console.log("run: annie " + params.join(' '));
+            const proc = spawn('downloader/annie', params);
 
             proc.stdout.on('data', (data: any) => {
                 let lines = `${data}`.split(/\r?\n/);
