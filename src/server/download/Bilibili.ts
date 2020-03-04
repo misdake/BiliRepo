@@ -86,7 +86,7 @@ export class Bilibili {
             proc.stdout.on('data', (data: any) => {
                 let lines = `${data}`.split(/\r?\n/);
                 if (onoutput) onoutput(lines);
-                // console.log(`stdout: ${data}`);
+                console.log(`stdout: ${data}`);
             });
             proc.stderr.on('data', (data: any) => {
                 console.log(`stderr: ${data}`);

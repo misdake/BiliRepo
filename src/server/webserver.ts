@@ -33,7 +33,11 @@ Storage.createInstance().then(storage => {
     //download
     app.get('/download/add/:aid', function (req: Request, res: Response) {
         downloader.enqueue(parseInt(req.params["aid"]));
-        res.send("true");
+        res.send("true"); //TODO return result
+    });
+    app.get('/download/remove/:aid', function (req: Request, res: Response) {
+        downloader.remove(parseInt(req.params["aid"]));
+        res.send("true"); //TODO return result
     });
     app.get('/download/status', function (req: Request, res: Response) {
         res.send(downloader.status_mini());

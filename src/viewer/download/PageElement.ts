@@ -145,6 +145,14 @@ export class PageElement extends LitElement {
         }
     }
 
+    private removeVideo(video: VideoStatus) {
+        if (video) {
+            httpget(`http://localhost:8081/download/remove/${video.aid}`, content => {
+                this.loadStatus();
+            });
+        }
+    }
+
     private updateCookie() {
         navigator.clipboard.readText().then(value => {
             if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
@@ -170,7 +178,7 @@ export class PageElement extends LitElement {
                     <input-element .input=${""} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
                     <ul><videostatus-element .video=${this.inputVideo} .icon=${"add"} .onIconClick=${() => this.enqueue()}></videostatus-element></ul>
                     <div class="text">下载队列: 共${this.queue.length}个</div>
-                    <div id="queue_container"><videolist-element .videos=${this.queue}></videolist-element></div>
+                    <div id="queue_container"><videolist-element .videos=${this.queue} .icon=${"remove"} .onIconClick=${(video: VideoStatus) => this.removeVideo(video)}></videolist-element></div>
                 </div>
                 <div id="right_panel">
                     ${this.message ? html`<div style="color:#F00">${this.message}<button @click=${() => this.updateCookie()}>updateCookie</button></div>` : ""}

@@ -251,9 +251,10 @@ export class Downloader {
         this.schedule();
     }
 
-    // remove(aid: number) {
-    //
-    // }
+    remove(aid: number) {
+        this.queue = this.queue.filter(video => video.aid !== aid);
+        //TODO remove current downloading
+    }
 
     private schedule() {
         //clear current
