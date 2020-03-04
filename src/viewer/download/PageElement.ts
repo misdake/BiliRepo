@@ -1,21 +1,14 @@
-import {css, html, LitElement, property} from "lit-element";
+import {css, customElement, html, LitElement, property} from "lit-element";
 import {DownloadStatus, VideoStatus} from "../../common/DownloadStatus";
 import {httpget, httppost} from "../../common/network";
 import {BilibiliVideo} from "../../common/types";
-import {InputElement} from "./InputElement";
-import {VideoStatusElement} from "./VideoStatusElement";
-import {VideoListElement} from "./VideoListElement";
-import {VideoDownloadElement} from "./VideoDownloadElement";
+import "./InputElement";
+import "./VideoStatusElement";
+import "./VideoListElement";
+import "./VideoDownloadElement";
 
+@customElement('page-element')
 export class PageElement extends LitElement {
-
-    static register() {
-        InputElement.register();
-        VideoStatusElement.register();
-        VideoListElement.register();
-        VideoDownloadElement.register();
-        customElements.define('page-element', PageElement);
-    }
 
     static styles = css`
         #page {

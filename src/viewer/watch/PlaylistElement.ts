@@ -1,13 +1,9 @@
-import {css, html, LitElement, property} from "lit-element";
-import {VideoLabelElement} from "../elements/VideoElements";
+import {css, customElement, html, LitElement, property} from "lit-element";
+import "../elements/VideoElements";
 import {Playlist} from "./Playlist";
 
+@customElement('playlist-element')
 export class PlaylistElement extends LitElement {
-
-    static register() {
-        VideoLabelElement.register();
-        customElements.define('playlist-element', PlaylistElement);
-    }
 
     @property()
     playlist: Playlist;

@@ -1,11 +1,8 @@
-import {css, html, LitElement, property} from "lit-element";
+import {css, customElement, html, LitElement, property} from "lit-element";
 import {PartDB, VideoDB} from "../../server/storage/dbTypes";
 
+@customElement('videodesc-element')
 export class VideoDescElement extends LitElement {
-
-    static register() {
-        customElements.define('videodesc-element', VideoDescElement);
-    }
 
     @property()
     video: VideoDB;

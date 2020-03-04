@@ -1,11 +1,8 @@
-import {css, html, LitElement, property} from "lit-element";
+import {css, customElement, html, LitElement, property} from "lit-element";
 import {MemberDB} from "../../server/storage/dbTypes";
 
+@customElement('member-element')
 export class MemberElement extends LitElement {
-
-    static register() {
-        customElements.define('member-element', MemberElement);
-    }
 
     @property()
     member: MemberDB;

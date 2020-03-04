@@ -1,12 +1,9 @@
-import {css, html, LitElement, property, PropertyValues} from "lit-element";
+import {css, customElement, html, LitElement, property, PropertyValues} from "lit-element";
 import {Player} from "./Player";
 import {PartDB, VideoParts} from "../../server/storage/dbTypes";
 
+@customElement('player-element')
 export class PlayerElement extends LitElement {
-
-    static register() {
-        customElements.define('player-element', PlayerElement);
-    }
 
     private player: Player = null;
     private loadPlayer() {

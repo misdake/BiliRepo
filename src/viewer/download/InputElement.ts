@@ -1,10 +1,7 @@
-import {css, html, LitElement, property} from "lit-element";
+import {css, customElement, html, LitElement, property} from "lit-element";
 
+@customElement('input-element')
 export class InputElement extends LitElement {
-
-    static register() {
-        customElements.define('input-element', InputElement);
-    }
 
     @property()
     input: string;

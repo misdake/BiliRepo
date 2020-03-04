@@ -87,32 +87,22 @@ export class Player {
         }
     }
 
-    // play() {
-    //
-    // }
-    // stop() {
-    //
-    // }
-
-    // setVolume() {
-    //
-    // }
     move(second: number) {
         if (this.dp) this.dp.seek(second);
     }
 
-    setHighlight() {
-        // highlight: [
-        //     {
-        //         text: 'marker for 20s',
-        //         time: 20,
-        //     },
-        //     {
-        //         text: 'marker for 2mins',
-        //         time: 120,
-        //     },
-        // ],
-    }
+    // setHighlight() {
+    //     highlight: [
+    //         {
+    //             text: 'marker for 20s',
+    //             time: 20,
+    //         },
+    //         {
+    //             text: 'marker for 2mins',
+    //             time: 120,
+    //         },
+    //     ],
+    // }
 
 }
 

@@ -2,9 +2,7 @@ import {html, render} from 'lit-html';
 import {httpget} from "../../common/network";
 import {Paged} from "../../common/page";
 import {VideoDB} from "../../server/storage/dbTypes";
-import {PagedVideoContainer} from "../elements/PagedVideoContainer";
-
-PagedVideoContainer.register();
+import "../elements/PagedVideoContainer";
 
 function request(pageindex: number) {
     return new Promise(resolve => {

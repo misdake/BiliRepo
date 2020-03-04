@@ -1,16 +1,13 @@
 import {html, render} from 'lit-html';
 import {httpget} from "../../common/network";
-import {MemberElement} from "../elements/MemberElement";
+import "../elements/MemberElement";
 import {MemberDB, VideoDB} from "../../server/storage/dbTypes";
 import {Paged} from "../../common/page";
-import {PagedVideoContainer} from "../elements/PagedVideoContainer";
+import "../elements/PagedVideoContainer";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
 let mid = parseInt(url.searchParams.get("mid")) || 212230;
-
-MemberElement.register();
-PagedVideoContainer.register();
 
 function request(pageindex: number) {
     return new Promise(resolve => {

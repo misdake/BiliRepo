@@ -1,14 +1,10 @@
-import {html, LitElement, property} from "lit-element";
+import {customElement, html, LitElement, property} from "lit-element";
 import {repeat} from "lit-html/directives/repeat";
-import {VideoBlockElement} from "./VideoElements";
+import "./VideoElements";
 import {VideoDB} from "../../server/storage/dbTypes";
 
+@customElement('videolist-element')
 export class VideoListElement extends LitElement {
-
-    static register() {
-        VideoBlockElement.register();
-        customElements.define('videolist-element', VideoListElement);
-    }
 
     @property()
     videos: VideoDB[];

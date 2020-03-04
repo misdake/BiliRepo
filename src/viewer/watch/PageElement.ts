@@ -1,24 +1,15 @@
-import {css, html, LitElement, property} from "lit-element";
+import {css, customElement, html, LitElement, property} from "lit-element";
 import {Playlist} from "./Playlist";
-import {VideoTitleElement} from "./VideoTitleElement";
-import {GuideElement} from "../elements/GuideElement";
-import {PlayerElement} from "./PlayerElement";
-import {MemberElement} from "../elements/MemberElement";
-import {VideoDescElement} from "../elements/VideoDescElement";
+import "./VideoTitleElement";
+import "../elements/GuideElement";
+import "./PlayerElement";
+import "../elements/MemberElement";
+import "../elements/VideoDescElement";
+import "./PlaylistElement";
 import {PartDB, VideoParts} from "../../server/storage/dbTypes";
-import {PlaylistElement} from "./PlaylistElement";
 
+@customElement('page-element')
 export class PageElement extends LitElement {
-
-    static register() {
-        VideoTitleElement.register();
-        GuideElement.register();
-        PlayerElement.register();
-        MemberElement.register();
-        VideoDescElement.register();
-        PlaylistElement.register();
-        customElements.define('page-element', PageElement);
-    }
 
     currentVideo: VideoParts;
     currentPart: PartDB;

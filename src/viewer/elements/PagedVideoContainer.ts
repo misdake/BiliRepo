@@ -1,14 +1,10 @@
-import {css, html, LitElement, property, TemplateResult} from "lit-element";
+import {css, customElement, html, LitElement, property, TemplateResult} from "lit-element";
 import {Paged} from "../../common/page";
 import {VideoDB} from "../../server/storage/dbTypes";
-import {VideoListElement} from "./VideoListElement";
+import "./VideoListElement";
 
+@customElement('pagedvideo-container')
 export class PagedVideoContainer extends LitElement {
-
-    static register() {
-        VideoListElement.register();
-        customElements.define('pagedvideo-container', PagedVideoContainer);
-    }
 
     @property()
     request: (pageindex: number) => Promise<Paged<VideoDB>>;

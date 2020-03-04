@@ -1,11 +1,8 @@
-import {css, html, LitElement, property} from "lit-element";
+import {css, customElement, html, LitElement, property} from "lit-element";
 import {PartDB, VideoDB} from "../../server/storage/dbTypes";
 
+@customElement('videolabel-element')
 export class VideoLabelElement extends LitElement {
-
-    static register() {
-        customElements.define('videolabel-element', VideoLabelElement);
-    }
 
     @property()
     video: VideoDB;
@@ -93,11 +90,8 @@ export class VideoLabelElement extends LitElement {
 
 }
 
+@customElement('videoblock-element')
 export class VideoBlockElement extends LitElement {
-
-    static register() {
-        customElements.define('videoblock-element', VideoBlockElement);
-    }
 
     @property()
     video: VideoDB;

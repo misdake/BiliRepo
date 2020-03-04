@@ -1,10 +1,7 @@
-import {css, html, LitElement} from "lit-element";
+import {css, customElement, html, LitElement} from "lit-element";
 
+@customElement('guide-element')
 export class GuideElement extends LitElement {
-
-    static register() {
-        customElements.define('guide-element', GuideElement);
-    }
 
     static styles = css`
         div {

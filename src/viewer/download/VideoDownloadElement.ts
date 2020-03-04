@@ -1,11 +1,8 @@
-import {css, html, LitElement, property} from "lit-element";
+import {css, customElement, html, LitElement, property} from "lit-element";
 import {VideoStatus} from "../../common/DownloadStatus";
 
+@customElement('videodownload-element')
 export class VideoDownloadElement extends LitElement {
-
-    static register() {
-        customElements.define('videodownload-element', VideoDownloadElement);
-    }
 
     @property()
     video: VideoStatus;
