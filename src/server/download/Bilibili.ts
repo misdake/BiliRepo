@@ -1,5 +1,6 @@
 import {BilibiliVideo, BilibiliVideoJson} from "../../common/types";
 import {httpsdownload, httpsget} from "../network";
+import {ChildProcess} from "child_process";
 
 const fs = require('fs');
 const parser = require("xml2js");
@@ -77,11 +78,13 @@ export class Bilibili {
         fs.writeFileSync(`repo/${aid}_download/p${page}.json`, JSON.stringify(r));
     }
 
-    static async downloadVideo(aid: number, page = 1, onoutput?: (lines: string[]) => void) {
+    static async downloadVideo(aid: number, page = 1, onoutput?: (lines: string[]) => void, onbind?: (proc: ChildProcess) => void) {
         return new Promise((resolve, reject) => {
-            let params = ['-c', 'downloader/cookies.txt', '-n','1', '-O', `p${page}`, '-o', `./repo/${aid}_download`, '-p', '-start', `${page}`, '-end', `${page}`, `av${aid}`];
+            let params = ['-c', 'downloader/cookies.txt', '-n', '1', '-O', `p${page}`, '-o', `./repo/${aid}_download`, '-p', '-start', `${page}`, '-end', `${page}`, `av${aid}`];
             console.log("run: annie " + params.join(' '));
             const proc = spawn('downloader/annie', params);
+
+            if (onbind) onbind(proc);
 
             proc.stdout.on('data', (data: any) => {
                 let lines = `${data}`.split(/\r?\n/);

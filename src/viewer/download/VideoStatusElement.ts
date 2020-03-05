@@ -7,6 +7,8 @@ export class VideoStatusElement extends LitElement {
     @property()
     video: VideoStatus;
     @property()
+    iconShow: boolean;
+    @property()
     icon: string;
     @property()
     onIconClick: () => void;
@@ -52,6 +54,12 @@ export class VideoStatusElement extends LitElement {
             position: absolute;
             bottom: 10px;
             right: 10px;
+            
+            display: none;
+        }
+        
+        .videoItem:hover .icon {
+            display: block;
         }
     `;
 
@@ -65,6 +73,9 @@ export class VideoStatusElement extends LitElement {
             this.video.pic = this.video.pic || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
         }
 
+        let iconCss = (this.icon && this.iconShow) ? "display: block;" : "";
+        let icon = this.icon ? html`<div class="icon" style=${iconCss} @click="${() => this.trigger()}">${this.icon}</div>` : html``;
+
         let video = !this.video ? html`
             <li class="videoItem">
                 <div class="thumbContainer" style="background:#CCCCCC">
@@ -77,7 +88,7 @@ export class VideoStatusElement extends LitElement {
                     <img class="thumb" src="${this.video.pic}" alt="thumb"/>
                 </div>
                 <span class="title">${this.video.title}</span>
-                ${this.icon ? html`<div class="icon" @click="${() => this.trigger()}">${this.icon}</div>` : html``}
+                ${icon}
             </li>
         `;
 

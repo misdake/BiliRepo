@@ -16,6 +16,7 @@ export class PartDownloadProgress {
     progress: number;
 
     private setMessage: (message: string) => void;
+    private shutdownMethod: () => void;
 
     constructor(video: BilibiliVideo, part: BilibiliPage, setMessage: (message: string) => void) {
         this.video = video;
@@ -26,7 +27,11 @@ export class PartDownloadProgress {
     }
 
     async start() {
-        let returncode = await Bilibili.downloadVideo(this.video.aid, this.part.page, lines => this.processOutput(lines));
+        this.shutdownMethod = undefined;
+        let returncode = await Bilibili.downloadVideo(this.video.aid, this.part.page, lines => this.processOutput(lines), proc => {
+            this.shutdownMethod = () => proc.kill();
+        });
+        this.shutdownMethod = undefined;
         if (returncode === 0) {
             this.done = true;
             console.log(`download part ${this.part.page} success`);
@@ -38,6 +43,14 @@ export class PartDownloadProgress {
             console.log(`download part ${this.part.page} fail`);
             return false;
         }
+    }
+
+    shutdown(): boolean {
+        if (this.shutdownMethod) {
+            this.shutdownMethod();
+            return true;
+        }
+        return false;
     }
 
     private processOutput(lines: string[]) {
@@ -85,6 +98,7 @@ export class VideoDownloadProgress {
     info: Promise<void | BilibiliVideo>;
     video: BilibiliVideo;
     parts: PartDownloadProgress[];
+    downloadingPart: PartDownloadProgress;
 
     json: BilibiliVideoJson;
 
@@ -108,6 +122,13 @@ export class VideoDownloadProgress {
         let success = await this.downloadEntireVideo(false);
         this.done = success;
         this.failed = !success;
+    }
+
+    shutdown(): boolean {
+        if (this.downloadingPart) {
+            return this.downloadingPart.shutdown()
+        }
+        return false;
     }
 
     private async downloadEntireVideo(force: boolean = false) {
@@ -145,7 +166,9 @@ export class VideoDownloadProgress {
         await Bilibili.downloadThumb(folder, thumb);
 
         for (let part of this.parts) {
+            this.downloadingPart = part;
             let success = await part.start();
+            this.downloadingPart = undefined;
             if (!success) {
                 return false;
             }
@@ -243,8 +266,7 @@ export class Downloader {
         return r;
     }
 
-    enqueue(aid: number, force: boolean = false) {
-        //TODO check downloaded? check done/failed?
+    enqueue(aid: number) {
         this.queue.push(new VideoDownloadProgress(aid, message => {
             this.message = message;
         }));
@@ -252,8 +274,20 @@ export class Downloader {
     }
 
     remove(aid: number) {
+        //from from queue => simply remove
         this.queue = this.queue.filter(video => video.aid !== aid);
-        //TODO remove current downloading
+
+        //remove current => treat current as failed
+        if (this.current.aid === aid) {
+            let success = this.current.shutdown();
+            console.log(success);
+            this.failed.unshift(this.current);
+            this.current = null;
+        }
+
+        //TODO remove from done/failed
+
+        this.schedule();
     }
 
     private schedule() {

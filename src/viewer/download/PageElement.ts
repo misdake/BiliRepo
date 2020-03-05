@@ -60,6 +60,16 @@ export class PageElement extends LitElement {
             left: 320px;
             width: 320px;
         }
+        
+        .icon {
+            color: #FFF;
+            background: #800;
+            padding: 5px 10px;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
     `;
 
     constructor() {
@@ -138,16 +148,24 @@ export class PageElement extends LitElement {
 
     private enqueue() {
         if (this.inputVideo) {
-            httpget(`http://localhost:8081/download/add/${this.inputVideo.aid}`, content => {
+            httpget(`http://localhost:8081/download/add/${this.inputVideo.aid}`, _content => {
                 this.loadStatus();
             });
             this.inputVideo = null;
         }
     }
 
+    private enqueueVideo(video: VideoStatus) {
+        if (video) {
+            httpget(`http://localhost:8081/download/add/${video.aid}`, _content => {
+                this.loadStatus();
+            });
+        }
+    }
+
     private removeVideo(video: VideoStatus) {
         if (video) {
-            httpget(`http://localhost:8081/download/remove/${video.aid}`, content => {
+            httpget(`http://localhost:8081/download/remove/${video.aid}`, _content => {
                 this.loadStatus();
             });
         }
@@ -176,14 +194,14 @@ export class PageElement extends LitElement {
             <div id="page">
                 <div id="left_panel">
                     <input-element .input=${""} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
-                    <ul><videostatus-element .video=${this.inputVideo} .icon=${"add"} .onIconClick=${() => this.enqueue()}></videostatus-element></ul>
+                    <ul><videostatus-element .video=${this.inputVideo} .iconShow=${true} .icon=${"添加"} .onIconClick=${() => this.enqueue()}></videostatus-element></ul>
                     <div class="text">下载队列: 共${this.queue.length}个</div>
-                    <div id="queue_container"><videolist-element .videos=${this.queue} .icon=${"remove"} .onIconClick=${(video: VideoStatus) => this.removeVideo(video)}></videolist-element></div>
+                    <div id="queue_container"><videolist-element .videos=${this.queue} .icon=${"删除"} .onIconClick=${(video: VideoStatus) => this.removeVideo(video)}></videolist-element></div>
                 </div>
                 <div id="right_panel">
                     ${this.message ? html`<div style="color:#F00">${this.message}<button @click=${() => this.updateCookie()}>updateCookie</button></div>` : ""}
                     <div id="current_container">
-                        <div class="text">正在下载: </div>
+                        <div class="text">正在下载: ${this.current ? html`<div class="icon" @click="${() => this.removeVideo(this.current)}">停止</div>` : html``}</div>
                         <videodownload-element .video=${this.current}></videodownload-element>
                     </div>
                     <div id="done_failed_container">
@@ -193,7 +211,7 @@ export class PageElement extends LitElement {
                         </div>
                         <div id="failed_container">
                             <div class="text">失败队列: 共${this.failed.length}个</div>
-                            <videolist-element .videos=${this.failed}></videolist-element>
+                            <videolist-element .videos=${this.failed} .icon=${"重试"} .onIconClick=${(video: VideoStatus) => this.enqueueVideo(video)}></videolist-element>
                         </div>
                     </div>
                 </div>
