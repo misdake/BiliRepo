@@ -1,6 +1,7 @@
 import {Bilibili} from "./Bilibili";
 import {BilibiliPage, BilibiliVideo, BilibiliVideoJson} from "../../common/types";
 import {DownloadStatus, PartStatus, VideoStatus} from "../../common/DownloadStatus";
+import {PartDB} from "../storage/dbTypes";
 
 const fs = require('fs');
 
@@ -222,6 +223,10 @@ export class Downloader {
         }
     }
 
+    updateDanmaku(part: PartDB) {
+        return Bilibili.downloadDanmaku(part.aid, part.cid, part.index, true);
+    }
+
     setCookie(cookie: string) {
         fs.writeFileSync("downloader/cookies.txt", cookie);
         this.message = null;
@@ -279,13 +284,10 @@ export class Downloader {
 
         //remove current => treat current as failed
         if (this.current.aid === aid) {
-            let success = this.current.shutdown();
-            console.log(success);
+            this.current.shutdown();
             this.failed.unshift(this.current);
             this.current = null;
         }
-
-        //TODO remove from done/failed
 
         this.schedule();
     }

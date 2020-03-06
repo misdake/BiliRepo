@@ -40,9 +40,10 @@ export class Bilibili {
         await httpsdownload(url, `repo/${folder}/thumb.jpg`);
     }
 
-    static async downloadDanmaku(aid: number, cid: number, page: number) {
-        await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${aid}_download/p${page}.xml`);
-        let content = fs.readFileSync(`repo/${aid}_download/p${page}.xml`, 'utf8');
+    static async downloadDanmaku(aid: number, cid: number, page: number, isUpdate: boolean = false) {
+        let folder = isUpdate ? `${aid}` : `${aid}_download`;
+        await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/p${page}.xml`);
+        let content = fs.readFileSync(`repo/${folder}/p${page}.xml`, 'utf8');
 
         let array: Danmaku[] = [];
         let r = {
@@ -51,6 +52,7 @@ export class Bilibili {
         };
         parser.parseString(content, function (err: Error, result: any) {
             let all = result.i.d;
+            if (!all) return;
             for (let item of all) {
                 let attrs = item.$.p;
                 let text = item._;
@@ -75,7 +77,7 @@ export class Bilibili {
             }
         });
 
-        fs.writeFileSync(`repo/${aid}_download/p${page}.json`, JSON.stringify(r));
+        fs.writeFileSync(`repo/${folder}/p${page}.json`, JSON.stringify(r));
     }
 
     static async downloadVideo(aid: number, page = 1, onoutput?: (lines: string[]) => void, onbind?: (proc: ChildProcess) => void) {

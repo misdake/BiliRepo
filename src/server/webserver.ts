@@ -50,6 +50,17 @@ Storage.createInstance().then(storage => {
             res.send("bad");
         }
     });
+    app.post('/download/danmaku/update', function (req: Request, res: Response) {
+        if (req.body && req.body.part) {
+            downloader.updateDanmaku(req.body.part).then(value => {
+                res.send("good");
+            }).catch(reason => {
+                res.send(reason);
+            });
+        } else {
+            res.send("bad");
+        }
+    });
 
     const pagesize = 10;
     const defaultpage = {pageindex: 1, pagesize: pagesize};
