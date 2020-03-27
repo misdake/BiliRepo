@@ -19,8 +19,17 @@ app.use('/', express.static('static')); //provide web pages
 app.use('/dist/', express.static('dist')); //provide web pages
 
 //proxy
-app.get('/proxy/videoinfo/:aid', function (req: Request, res: Response) {
-    httpsget(`https://api.bilibili.com/x/web-interface/view?aid=${req.params["aid"]}`).then(value => {
+app.get('/proxy/videoinfo/:id', function (req: Request, res: Response) {
+    let id = req.params["id"];
+    let query = "";
+    if (id.toLowerCase().startsWith("av")) {
+        query = `aid=${id.substring(2)}`;
+    }
+    if (id.toLowerCase().startsWith("bv")) {
+        query = `bvid=${id}`;
+    }
+    console.log("query", query);
+    httpsget(`https://api.bilibili.com/x/web-interface/view?${query}`).then(value => {
         res.send(value);
     });
 });
@@ -32,6 +41,11 @@ Storage.createInstance().then(storage => {
 
     //download
     app.get('/download/add/:aid', function (req: Request, res: Response) {
+        downloader.enqueue(parseInt(req.params["aid"]));
+        res.send("true"); //TODO return result
+    });
+    app.get('/download/retry/:aid', function (req: Request, res: Response) {
+        downloader.remove(parseInt(req.params["aid"]));
         downloader.enqueue(parseInt(req.params["aid"]));
         res.send("true"); //TODO return result
     });

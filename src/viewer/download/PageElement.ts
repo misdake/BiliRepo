@@ -127,11 +127,9 @@ export class PageElement extends LitElement {
 
     private checkInput(input: string) {
         this.inputVideo = null;
+        if(!input.toLowerCase().startsWith("av") && !input.toLowerCase().startsWith("bv")) return;
 
-        let aid = parseInt(input);
-        if (!aid) return;
-
-        httpget(`http://localhost:8081/proxy/videoinfo/${aid}`, content => {
+        httpget(`http://localhost:8081/proxy/videoinfo/${input}`, content => {
             if (!content) return;
             let v = JSON.parse(content).data as BilibiliVideo;
             if (!v) return;
@@ -155,9 +153,9 @@ export class PageElement extends LitElement {
         }
     }
 
-    private enqueueVideo(video: VideoStatus) {
+    private retryVideo(video: VideoStatus) {
         if (video) {
-            httpget(`http://localhost:8081/download/add/${video.aid}`, _content => {
+            httpget(`http://localhost:8081/download/retry/${video.aid}`, _content => {
                 this.loadStatus();
             });
         }
@@ -211,7 +209,7 @@ export class PageElement extends LitElement {
                         </div>
                         <div id="failed_container">
                             <div class="text">失败队列: 共${this.failed.length}个</div>
-                            <videolist-element .videos=${this.failed} .icon=${"重试"} .onIconClick=${(video: VideoStatus) => this.enqueueVideo(video)}></videolist-element>
+                            <videolist-element .videos=${this.failed} .icon=${"重试"} .onIconClick=${(video: VideoStatus) => this.retryVideo(video)}></videolist-element>
                         </div>
                     </div>
                 </div>
