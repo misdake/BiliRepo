@@ -35,10 +35,29 @@ export class PagedVideoContainer extends LitElement {
     render() {
         let pages: TemplateResult[] = [];
         if (this.response && this.response.pagecount > 1) {
-            for (let i = 1; i <= this.response.pagecount; i++) {
+            let pageIndices = [];
+            if (this.response.pagecount > 10) {
+                let left = this.response.pageindex - 1;
+                let right = this.response.pageindex + 1;
+                pageIndices.push(this.response.pageindex);
+                while (pageIndices.length < 7) {
+                    if (left >= 1) pageIndices.unshift(left--);
+                    if (right <= this.response.pagecount) pageIndices.push(right++);
+                }
+                if (left > 1) pageIndices.unshift(-1);
+                if (left >= 1) pageIndices.unshift(1);
+                if (right < this.response.pagecount) pageIndices.push(-1);
+                if (right <= this.response.pagecount) pageIndices.push(this.response.pagecount);
+            } else {
+                for (let i = 1; i <= this.response.pagecount; i++) pageIndices.push(i);
+            }
+
+            for (let i of pageIndices) {
                 let classes = i === this.response.pageindex ? "page currentpage" : "page otherpage";
+                let text = i > 0 ? `${i}` : "…";
+                let click = i > 0 ? () => this.loadPage(i) : undefined;
                 pages.push(html`
-                    <div class="${classes}" @click="${() => this.loadPage(i)}">${i}</div>
+                    <div class="${classes}" @click="${click}">${text}</div>
                 `);
             }
         }
