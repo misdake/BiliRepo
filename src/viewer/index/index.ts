@@ -13,8 +13,16 @@ function request(pageindex: number) {
     });
 }
 
+let url_string = window.location.href;
+let url = new URL(url_string);
+let loadpage = parseInt(url.searchParams.get("page") || "1");
+function replaceUrl(pageindex: number) {
+    let url = `${location.pathname}?page=${pageindex}`;
+    history.replaceState(null, "", url);
+}
+
 const pageTemplate = html`
-    <pagedvideo-container .request=${request}></pagedvideo-container>
+    <pagedvideo-container .request=${request} .loadpage=${loadpage} .afterLoad=${replaceUrl}></pagedvideo-container>
 `;
 
 render(pageTemplate, document.body);
