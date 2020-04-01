@@ -9,6 +9,10 @@ export class VideoListElement extends LitElement {
     @property()
     videos: VideoDB[];
 
+    createRenderRoot() {
+        return this;
+    }
+
     render() {
         return html`
             <ul style="padding: 0; margin: 0;">

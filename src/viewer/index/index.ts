@@ -3,6 +3,7 @@ import {httpget} from "../../common/network";
 import {Paged} from "../../common/page";
 import {VideoDB} from "../../server/storage/dbTypes";
 import "../elements/PagedVideoContainer";
+import "../elements/TitleElement";
 
 function request(pageindex: number) {
     return new Promise(resolve => {
@@ -22,7 +23,10 @@ function replaceUrl(pageindex: number) {
 }
 
 const pageTemplate = html`
-    <pagedvideo-container .request=${request} .loadpage=${loadpage} .afterLoad=${replaceUrl}></pagedvideo-container>
+    <div style="height: 100%; width: 1360px; max-width: 100%; margin: 0 auto;">
+        <title-element .title=${"最新视频"}></title-element>
+        <pagedvideo-container .request=${request} .loadpage=${loadpage} .afterLoad=${replaceUrl}></pagedvideo-container>
+    </div>
 `;
 
 render(pageTemplate, document.body);
