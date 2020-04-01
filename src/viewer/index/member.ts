@@ -4,6 +4,7 @@ import "../elements/MemberElement";
 import {MemberDB, VideoDB} from "../../server/storage/dbTypes";
 import {Paged} from "../../common/page";
 import "../elements/PagedVideoContainer";
+import "../elements/GuideElement";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
@@ -19,8 +20,13 @@ function request(pageindex: number) {
 }
 
 const pageTemplate = (member: MemberDB) => html`
-    <member-element .member=${member}></member-element>
-    <pagedvideo-container .request=${request}></pagedvideo-container>
+    <div style="height: 100%; width: 1280px; max-width: 100%; margin: 0 auto;">
+        <div style="margin: 20px 0; position: relative;">
+            <div style="position: absolute; right: 0;"><guide-element></guide-element></div>
+            <member-element .member=${member}></member-element>
+        </div>
+        <pagedvideo-container .request=${request}></pagedvideo-container>
+    </div>
 `;
 
 let member: MemberDB = null;

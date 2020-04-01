@@ -101,22 +101,27 @@ export class VideoBlockElement extends LitElement {
             display: inline;
             float: left;
             margin: 10px;
-            width: 320px;
-            height: 240px;
+            width: 305px;
+            height: 220px;
             overflow: hidden;
         }
         
+        a {
+            text-decoration: none;
+        }
+        
         .thumbContainer {
-            width: 320px;
-            height: 180px;
+            width: 305px;
+            height: 172px;
             position: relative;
+            margin-bottom: 3px;
         }
         
         .thumb {
             display: block;
             object-fit: cover;
-            max-width: 320px;
-            max-height: 180px;
+            max-width: 305px;
+            max-height: 172px;
             width: 100%;
             height: 100%;
         }

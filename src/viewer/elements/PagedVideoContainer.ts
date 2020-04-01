@@ -77,12 +77,12 @@ export class PagedVideoContainer extends LitElement {
 
     static styles = css`        
         .header {
-            margin: 10px;
+            margin: 10px 0;
+            user-select: none;
         }
         
         .header_text {
             margin-right: 20px;
-            user-select: none;
         }
         
         .page {

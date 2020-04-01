@@ -23,6 +23,7 @@ export class PageElement extends LitElement {
                 
         #left_panel {
             width: 320px;
+            margin-left: -10px;
         }
         input-element {
             padding: 10px;

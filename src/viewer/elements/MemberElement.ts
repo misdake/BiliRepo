@@ -9,7 +9,7 @@ export class MemberElement extends LitElement {
 
     static styles = css`
         .member {
-            margin: 0 10px;
+            margin: 0;
             width: 236px;
             height: 64px;
             overflow: hidden;
