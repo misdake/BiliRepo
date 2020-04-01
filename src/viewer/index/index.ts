@@ -1,5 +1,5 @@
 import {html, render} from 'lit-html';
-import {httpget} from "../../common/network";
+import {apiget} from "../../common/network";
 import {Paged} from "../../common/page";
 import {VideoDB} from "../../server/storage/dbTypes";
 import "../elements/PagedVideoContainer";
@@ -7,7 +7,7 @@ import "../elements/GuideElement";
 
 function request(pageindex: number) {
     return new Promise(resolve => {
-        httpget(`http://localhost:8081/api/video/recent/${pageindex}`, (content: string) => {
+        apiget(`/api/video/recent/${pageindex}`, (content: string) => {
             let r = JSON.parse(content) as Paged<VideoDB>;
             resolve(r);
         });

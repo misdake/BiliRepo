@@ -1,3 +1,7 @@
+export function apiget(url: string, callback: (content: string) => void) {
+    httpget(serverConfig.apiRoot + url, callback);
+}
+
 export function httpget(url: string, callback: (content: string) => void) {
     let request = new XMLHttpRequest();
     request.onreadystatechange = function () {
