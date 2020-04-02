@@ -2,7 +2,7 @@ import {css, customElement, html, LitElement, property} from "lit-element";
 import {DownloadStatus, VideoStatus} from "../../common/DownloadStatus";
 import {apiget, httppost} from "../../common/network";
 import {BilibiliVideo} from "../../common/types";
-import "./InputElement";
+import "../elements/InputElement";
 import "./VideoStatusElement";
 import "./VideoListElement";
 import "./VideoDownloadElement";
@@ -173,7 +173,7 @@ export class PageElement extends LitElement {
     private updateCookie() {
         navigator.clipboard.readText().then(value => {
             if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
-                httppost("http://localhost:8081/download/cookie", {cookie: value}, (content) => {
+                httppost(serverConfig.apiRoot + "/download/cookie", {cookie: value}, (content) => {
                     if (content === "good") {
                         this.message = "";
                         alert("cookie updated!")
@@ -192,7 +192,7 @@ export class PageElement extends LitElement {
         return html`
             <div id="page">
                 <div id="left_panel">
-                    <input-element .input=${""} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
+                    <input-element .input=${""} .buttonText=${"查看"} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
                     <ul><videostatus-element .video=${this.inputVideo} .iconShow=${true} .icon=${"添加"} .onIconClick=${() => this.enqueue()}></videostatus-element></ul>
                     <div class="text">下载队列: 共${this.queue.length}个</div>
                     <div id="queue_container"><videolist-element .videos=${this.queue} .icon=${"删除"} .onIconClick=${(video: VideoStatus) => this.removeVideo(video)}></videolist-element></div>

@@ -25,6 +25,7 @@ module.exports = {
     entry: {
         index: './src/viewer/index/index.ts',
         member: './src/viewer/index/member.ts',
+        search: './src/viewer/index/search.ts',
         watch: './src/viewer/watch/watch.ts',
         download: './src/viewer/download/download.ts',
     },

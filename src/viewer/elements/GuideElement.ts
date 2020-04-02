@@ -14,6 +14,7 @@ export class GuideElement extends LitElement {
             <div>
                 <div style="text-align:right"><a href="index.html">主页</a></div>
                 <div style="text-align:right"><a href="download.html">下载</a></div>
+                <div style="text-align:right"><a href="search.html">搜索</a></div>
             </div>
         `;
     }

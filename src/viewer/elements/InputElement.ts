@@ -1,19 +1,19 @@
-import {css, customElement, html, LitElement, property} from "lit-element";
+import {customElement, html, LitElement, property} from "lit-element";
 
 @customElement('input-element')
 export class InputElement extends LitElement {
 
+    @property()
+    buttonText: string;
     @property()
     input: string;
 
     @property()
     checkInput: (input: string) => void;
 
-    static styles = css`
-        input {
-            width: 200px;
-        }
-    `;
+    createRenderRoot() {
+        return this;
+    }
 
     private onInput(input: string) {
         this.input = input;
@@ -31,10 +31,10 @@ export class InputElement extends LitElement {
 
     render() {
         return html`
-            <input value="${this.input}"
+            <input style="width: 200px;" value="${this.input}"
                 @input="${(e: Event) => this.onInput((<HTMLInputElement>e.target).value)}" 
                 @keyup="${(e: KeyboardEvent) => this.onKeyUp(e)}" />
-            <button @click=${() => this.trigger()}>check</button>
+            <button @click=${() => this.trigger()}>${this.buttonText}</button>
         `;
     }
 
