@@ -281,9 +281,11 @@ export class Downloader {
     remove(aid: number) {
         //from from queue => simply remove
         this.queue = this.queue.filter(video => video.aid !== aid);
+        //from from queue => simply remove
+        this.failed = this.failed.filter(video => video.aid !== aid);
 
         //remove current => treat current as failed
-        if (this.current.aid === aid) {
+        if (this.current && this.current.aid === aid) {
             this.current.shutdown();
             this.failed.unshift(this.current);
             this.current = null;
