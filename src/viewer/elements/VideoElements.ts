@@ -102,7 +102,7 @@ export class VideoBlockElement extends LitElement {
             float: left;
             margin: 10px;
             width: 305px;
-            height: 220px;
+            height: 228px;
             overflow: hidden;
         }
         
@@ -112,7 +112,7 @@ export class VideoBlockElement extends LitElement {
         
         .thumbContainer {
             width: 305px;
-            height: 172px;
+            height: 180px;
             position: relative;
             margin-bottom: 3px;
         }
@@ -121,7 +121,7 @@ export class VideoBlockElement extends LitElement {
             display: block;
             object-fit: cover;
             max-width: 305px;
-            max-height: 172px;
+            max-height: 180px;
             width: 100%;
             height: 100%;
         }
