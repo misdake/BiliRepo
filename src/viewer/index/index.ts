@@ -4,8 +4,9 @@ import {Paged} from "../../common/page";
 import {VideoDB} from "../../server/storage/dbTypes";
 import "../elements/PagedVideoContainer";
 import "../elements/GuideElement";
+import "../elements/InputElement";
 
-function request(pageindex: number) {
+function request(pageindex: number) { //TODO replace with multiple apis
     return new Promise(resolve => {
         apiget(`/api/video/recent/${pageindex}`, (content: string) => {
             let r = JSON.parse(content) as Paged<VideoDB>;
@@ -22,11 +23,15 @@ function replaceUrl(pageindex: number) {
     history.replaceState(null, "", url);
 }
 
+function checkInput(input: string) {
+    console.log(input);
+}
+
 const pageTemplate = html`
     <div style="height: 100%; width: 1280px; max-width: 100%; margin: 0 auto;">
         <div style="margin: 0; position: relative;">
             <div style="position: absolute; right: 0;"><guide-element></guide-element></div>
-            <h1 style="margin: 20px 0;">最新视频</h1>
+            <h1 style="margin: 20px 0;">视频<input-element .input=${""} .buttonText=${"搜索"} .checkInput="${(input: string) => checkInput(input)}"></input-element></h1>
         </div>
         <pagedvideo-container .request=${request} .loadpage=${loadpage} .afterLoad=${replaceUrl}></pagedvideo-container>
     </div>
