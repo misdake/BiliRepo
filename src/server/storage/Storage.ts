@@ -117,5 +117,8 @@ export class Storage {
     public mid_videos(mid: number, page: PageQuery) {
         return this.table_video.find_paged({mid: mid}, page.pageindex, page.pagesize, "aid", true);
     }
+    public search_video_by_title(phrase: string, page: PageQuery) {
+        return this.table_video.find_paged({title: {'$contains': phrase}}, page.pageindex, page.pagesize, "aid", true);
+    }
 
 }

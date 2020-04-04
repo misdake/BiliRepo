@@ -9,6 +9,8 @@ export class InputElement extends LitElement {
     input: string;
 
     @property()
+    showClearButton: boolean;
+    @property()
     checkInput: (input: string) => void;
 
     createRenderRoot() {
@@ -25,16 +27,25 @@ export class InputElement extends LitElement {
         }
     }
 
+    private onClearClick() {
+        this.input = "";
+        this.trigger();
+    }
+
     private trigger() {
         if (this.checkInput) this.checkInput(this.input);
     }
 
     render() {
+        let clearButton = this.showClearButton ? html`<button @click=${() => this.onClearClick()}>清空</button>` : html``;
+        console.log("render", this.input);
+
         return html`
-            <input style="width: 200px;" value="${this.input}"
+            <input style="width: 200px;" .value="${this.input}"
                 @input="${(e: Event) => this.onInput((<HTMLInputElement>e.target).value)}" 
                 @keyup="${(e: KeyboardEvent) => this.onKeyUp(e)}" />
             <button @click=${() => this.trigger()}>${this.buttonText}</button>
+            ${clearButton}
         `;
     }
 

@@ -7,7 +7,9 @@ import "./VideoListElement";
 export class PagedVideoContainer extends LitElement {
 
     @property()
-    loadpage: number = 1;
+    firstLoadPage: number = 1;
+    @property()
+    onElementLoaded: (element: PagedVideoContainer) => void;
     @property()
     request: (pageindex: number) => Promise<Paged<VideoDB>>;
     @property()
@@ -27,10 +29,11 @@ export class PagedVideoContainer extends LitElement {
     }
 
     protected firstUpdated(_changedProperties: Map<PropertyKey, unknown>): void {
-        this.loadPage(this.loadpage);
+        this.loadPage(this.firstLoadPage);
+        if (this.onElementLoaded) this.onElementLoaded(this);
     }
 
-    private loadPage(pageindex: number) {
+    loadPage(pageindex: number) {
         this.request(pageindex).then(result => {
             this.response = result;
             if (this.afterLoad) this.afterLoad(pageindex);

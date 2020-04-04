@@ -108,6 +108,11 @@ Storage.createInstance().then(storage => {
     app.get('/api/member/mid/:mid', function (req: Request, res: Response) {
         res.send(stringify(storage.member(parseInt(req.params["mid"]))));
     });
+
+    //search
+    app.get('/api/video/search/:content/:page', function (req: Request, res: Response) {
+        res.send(stringify(storage.search_video_by_title(req.params["content"], {pageindex: parseInt(req.params["page"]), pagesize})));
+    });
 });
 
 app.listen(8081);
