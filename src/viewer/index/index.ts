@@ -14,13 +14,17 @@ function replaceUrl(pageindex: number) { //TODO add view type and search content
 }
 
 
-let currentViewType: ViewType = ViewType.video;
+let currentViewType: ViewType = undefined;
 let currentViewTypeContent: ViewTypeContent<any, any>;
 
 function setViewType(viewType: ViewType) {
-    currentViewType = viewType;
-    currentViewTypeContent = viewTypes.get(viewType);
-    renderPage();
+    console.log("setViewType", viewType, currentViewType);
+    if (viewType !== currentViewType) {
+        //TODO clear search input
+        currentViewType = viewType;
+        currentViewTypeContent = viewTypes.get(viewType);
+        renderPage();
+    }
 }
 
 function checkInput(input: string) {
@@ -49,4 +53,4 @@ function renderPage() {
     render(pageTemplate(), document.body);
 }
 
-setViewType(currentViewType); //will render page
+setViewType(ViewType.video); //will render page

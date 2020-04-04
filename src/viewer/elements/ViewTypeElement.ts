@@ -13,6 +13,7 @@ export class ViewTypeElement extends LitElement {
             padding: 5px 10px;
             cursor: pointer;
             min-width: 48px;
+            user-select: none;
         }
         
         .viewtype {
@@ -24,11 +25,9 @@ export class ViewTypeElement extends LitElement {
         }
         
         .download {
-            border-radius: 5px;
             border-width: 1px;
-            border-style: solid;
             border-color: rgba(135, 206, 235, 0);
-            border-image: initial;
+            color: blue;
         }
         
         .selectedtype {

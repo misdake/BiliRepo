@@ -5,8 +5,8 @@ export class PartStatus {
     failed: boolean;
     progress: number;
     quality: string;
-    curr: string; //TODO use number
-    total: string; //TODO use number
+    curr: string;
+    total: string;
 }
 
 export class VideoStatus {

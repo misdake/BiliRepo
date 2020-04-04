@@ -76,7 +76,7 @@ Storage.createInstance().then(storage => {
         }
     });
 
-    const pagesize = 12;
+    const pagesize = 12; //TODO different page sizes for different types?
     const defaultpage = {pageindex: 1, pagesize: pagesize};
     const blacklist = ['meta', '$loki'];
 

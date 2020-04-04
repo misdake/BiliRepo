@@ -12,8 +12,8 @@ export class PartDownloadProgress {
     failed: boolean;
 
     quality: string;
-    curr: string; //TODO
-    total: string; //TODO
+    curr: string;
+    total: string;
     progress: number;
 
     private setMessage: (message: string) => void;
