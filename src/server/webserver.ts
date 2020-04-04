@@ -86,7 +86,7 @@ Storage.createInstance().then(storage => {
         });
     }
 
-    //serve video/member content
+    //video
     app.get('/api/video/aid/:aid', function (req: Request, res: Response) {
         res.send(stringify(storage.video(parseInt(req.params["aid"]))));
     });
@@ -105,13 +105,21 @@ Storage.createInstance().then(storage => {
     app.get('/api/video/member/:mid/:page', function (req: Request, res: Response) {
         res.send(stringify(storage.mid_videos(parseInt(req.params["mid"]), {pageindex: parseInt(req.params["page"]), pagesize})));
     });
+
+    //member
     app.get('/api/member/mid/:mid', function (req: Request, res: Response) {
         res.send(stringify(storage.member(parseInt(req.params["mid"]))));
     });
+    app.get('/api/member/all/:page', function (req: Request, res: Response) {
+        res.send(stringify(storage.all_members({pageindex: parseInt(req.params["page"]), pagesize})));
+    });
 
     //search
-    app.get('/api/video/search/:content/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.search_video_by_title(req.params["content"], {pageindex: parseInt(req.params["page"]), pagesize})));
+    app.get('/api/video/search/:input/:page', function (req: Request, res: Response) {
+        res.send(stringify(storage.search_video_by_title(req.params["input"], {pageindex: parseInt(req.params["page"]), pagesize})));
+    });
+    app.get('/api/member/search/:input/:page', function (req: Request, res: Response) {
+        res.send(stringify(storage.search_member_by_name(req.params["input"], {pageindex: parseInt(req.params["page"]), pagesize})));
     });
 });
 

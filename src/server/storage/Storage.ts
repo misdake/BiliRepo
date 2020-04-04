@@ -114,11 +114,19 @@ export class Storage {
     public member(mid: number) {
         return this.table_member.get(mid);
     }
+    public all_members(page: PageQuery) {
+        return this.table_member.all_paged(page.pageindex, page.pagesize, "mid", true);
+    }
     public mid_videos(mid: number, page: PageQuery) {
         return this.table_video.find_paged({mid: mid}, page.pageindex, page.pagesize, "aid", true);
     }
-    public search_video_by_title(phrase: string, page: PageQuery) {
-        return this.table_video.find_paged({title: {'$contains': phrase}}, page.pageindex, page.pagesize, "aid", true);
+
+    //search
+    public search_video_by_title(input: string, page: PageQuery) {
+        return this.table_video.find_paged({title: {'$contains': input}}, page.pageindex, page.pagesize, "aid", true);
+    }
+    public search_member_by_name(input: string, page: PageQuery) {
+        return this.table_member.find_paged({name: {'$contains': input}}, page.pageindex, page.pagesize, "mid", true);
     }
 
 }

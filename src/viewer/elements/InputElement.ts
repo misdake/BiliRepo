@@ -38,7 +38,6 @@ export class InputElement extends LitElement {
 
     render() {
         let clearButton = this.showClearButton ? html`<button @click=${() => this.onClearClick()}>清空</button>` : html``;
-        console.log("render", this.input);
 
         return html`
             <input style="width: 200px;" .value="${this.input}"
