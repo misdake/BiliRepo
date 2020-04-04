@@ -7,21 +7,37 @@ import "../elements/Guide2Element";
 import "../elements/InputElement";
 import {PagedVideoContainer} from "../elements/PagedVideoContainer";
 
-let pageRequest: (pageindex: number) => Promise<Paged<VideoDB>> = (pageindex: number) => { //TODO replace with multiple apis
-    return new Promise(resolve => {
-        apiget(`/api/video/recent/${pageindex}`, (content: string) => {
-            let r = JSON.parse(content) as Paged<VideoDB>;
-            resolve(r);
+function requestMaker<T>(api: () => string) {
+    return (pageindex: number) => {
+        return new Promise<Paged<T>>(resolve => {
+            apiget(`/api/${api()}/${pageindex}`, (content: string) => {
+                let r = JSON.parse(content) as Paged<T>;
+                resolve(r);
+            });
         });
-    });
+    };
+}
+
+interface ViewType<T> {
+    name: string,
+    allRequest: (pageindex: number) => Promise<Paged<T>>;
+    searchRequestMaker: (input: number) => (pageindex: number) => Promise<Paged<T>>;
+}
+
+const ViewType_Video = {
+    name: "video",
+    allRequest: requestMaker<VideoDB>(() => "video/recent"),
+    searchRequestMaker: (input: string) => requestMaker<VideoDB>(() => `video/search/${input}`),
 };
 
-let currentRequest = pageRequest;
+let viewtype = ViewType_Video;
+
+let currentRequest = viewtype.allRequest;
 
 let url_string = window.location.href;
 let url = new URL(url_string);
 let loadpage = parseInt(url.searchParams.get("page") || "1");
-function replaceUrl(pageindex: number) {
+function replaceUrl(pageindex: number) { //TODO add view type and search content to url.
     let url = `${location.pathname}?page=${pageindex}`;
     history.replaceState(null, "", url);
 }
@@ -34,16 +50,9 @@ let onElementLoaded = (element: PagedVideoContainer) => {
 function checkInput(input: string) {
     input = input.trim();
     if (input.length) {
-        pagedVideoContainer.request = (pageindex: number) => {
-            return new Promise(resolve => {
-                apiget(`/api/video/search/${encodeURIComponent(input)}/${pageindex}`, (content: string) => {
-                    let r = JSON.parse(content) as Paged<VideoDB>;
-                    resolve(r);
-                });
-            });
-        };
+        pagedVideoContainer.request = viewtype.searchRequestMaker(input);
     } else {
-        pagedVideoContainer.request = pageRequest;
+        pagedVideoContainer.request = viewtype.allRequest;
     }
 
     pagedVideoContainer.loadPage(1);
@@ -55,7 +64,7 @@ const pageTemplate = () => html`
             <div style="position: absolute; right: 0;"><guide2-element></guide2-element></div>
             <h1 style="margin: 20px 0;">
                 视频
-                <input-element .input=${"abc"} .buttonText=${"搜索"} .checkInput="${(input: string) => checkInput(input)}" .showClearButton=${true}></input-element>
+                <input-element .input=${""} .buttonText=${"搜索"} .checkInput="${(input: string) => checkInput(input)}" .showClearButton=${true}></input-element>
             </h1>
         </div>
         <pagedvideo-container .request=${currentRequest} .onElementLoaded=${onElementLoaded} .firstLoadPage=${loadpage} .afterLoad=${replaceUrl}></pagedvideo-container>
