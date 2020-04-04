@@ -3,7 +3,7 @@ import {apiget} from "../../common/network";
 import {Paged} from "../../common/page";
 import {VideoDB} from "../../server/storage/dbTypes";
 import "../elements/PagedVideoContainer";
-import "../elements/GuideElement";
+import "../elements/Guide2Element";
 import "../elements/InputElement";
 
 function request(pageindex: number) { //TODO replace with multiple apis
@@ -30,7 +30,7 @@ function checkInput(input: string) {
 const pageTemplate = html`
     <div style="height: 100%; width: 1280px; max-width: 100%; margin: 0 auto;">
         <div style="margin: 0; position: relative;">
-            <div style="position: absolute; right: 0;"><guide-element></guide-element></div>
+            <div style="position: absolute; right: 0;"><guide2-element></guide2-element></div>
             <h1 style="margin: 20px 0;">视频<input-element .input=${""} .buttonText=${"搜索"} .checkInput="${(input: string) => checkInput(input)}"></input-element></h1>
         </div>
         <pagedvideo-container .request=${request} .loadpage=${loadpage} .afterLoad=${replaceUrl}></pagedvideo-container>

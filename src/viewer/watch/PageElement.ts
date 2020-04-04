@@ -65,10 +65,12 @@ export class PageElement extends LitElement {
         title-element {
         }
         guide-element {
-            float:right;
+            float: right;
+            width: 54px;
         }
         member-element {
-            float:right;
+            float: right;
+            width: 256px;
         }
         
         #player {

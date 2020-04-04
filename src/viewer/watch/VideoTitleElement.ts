@@ -20,7 +20,7 @@ export class VideoTitleElement extends LitElement {
         }
 
         return html`
-            <div>
+            <div style="width: 960px;">
                 <h1>${title1}</h1>
                 <h3>${title2}</h3>
             </div>
