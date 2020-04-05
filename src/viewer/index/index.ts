@@ -8,17 +8,16 @@ import {ViewType, ViewTypeContent, viewTypes} from "./indexViewType";
 let url_string = window.location.href;
 let url = new URL(url_string);
 let loadpage = parseInt(url.searchParams.get("page") || "1");
-function replaceUrl(pageindex: number) { //TODO add view type and search content to url.
-    let url = `${location.pathname}?page=${pageindex}`;
+let viewtype = parseInt(url.searchParams.get("type") || "1");
+function replaceUrl(type: ViewType, pageindex: number) { //TODO add view type and search content to url.
+    let url = `${location.pathname}?type=${type}&page=${pageindex}`;
     history.replaceState(null, "", url);
 }
-
 
 let currentViewType: ViewType = undefined;
 let currentViewTypeContent: ViewTypeContent<any, any>;
 
 function setViewType(viewType: ViewType) {
-    console.log("setViewType", viewType, currentViewType);
     if (viewType !== currentViewType) {
         //TODO clear search input
         currentViewType = viewType;
@@ -32,12 +31,12 @@ function checkInput(input: string) {
 }
 
 const pageTemplate = () => {
-    let container = currentViewTypeContent.render(loadpage);
+    let container = currentViewTypeContent.render(loadpage, replaceUrl);
     return html`
         <div style="height: 100%; width: 1280px; max-width: 100%; margin: 0 auto;">
             <div style="margin: 0; position: relative;">
                 <div style="position: absolute; right: 0; bottom: 0;">
-                    <viewtype-element .selectedType=${currentViewType} .onClick=${(viewType: ViewType) => setViewType(viewType)}></viewtype-element>
+                    <viewtype-element .selectedType=${currentViewType} .afterLoad=${(type: ViewType, pageindex: number) => replaceUrl(type, pageindex)} .onClick=${(viewType: ViewType) => setViewType(viewType)}></viewtype-element>
                 </div>
                 <h1 style="margin: 20px 0;">
                     ${currentViewTypeContent.title}
@@ -53,4 +52,4 @@ function renderPage() {
     render(pageTemplate(), document.body);
 }
 
-setViewType(ViewType.video); //will render page
+setViewType(viewtype); //will render page

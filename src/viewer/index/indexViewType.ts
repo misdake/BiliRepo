@@ -48,10 +48,6 @@ export class ViewTypeContent<T, viewType extends ViewType> {
         this.containerRenderer = containerRenderer;
     }
 
-    afterLoad(pageindex: number) {
-        //TODO afterLoad, replace url
-        console.log("afterLoad", pageindex);
-    }
     search(input: string) {
         input = input.trim();
         if (input.length) {
@@ -61,9 +57,9 @@ export class ViewTypeContent<T, viewType extends ViewType> {
         }
         this.container.loadPage(1);
     }
-    render(loadPage: number) {
+    render(loadPage: number, afterLoad: (type: ViewType, pageindex: number) => void) {
         let onContainerLoaded = (element: PagedContainer<T>) => this.container = element;
-        return this.containerRenderer(loadPage, this.allRequest, onContainerLoaded, pageindex => this.afterLoad(pageindex));
+        return this.containerRenderer(loadPage, this.allRequest, onContainerLoaded, pageindex => afterLoad(this.type, pageindex));
     }
 }
 

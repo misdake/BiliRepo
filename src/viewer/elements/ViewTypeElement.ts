@@ -8,7 +8,6 @@ export class ViewTypeElement extends LitElement {
         span {
             display: inline-block;
             text-align: center;
-            text-decoration: none;
             margin: 5px;
             padding: 5px 10px;
             cursor: pointer;
@@ -22,6 +21,11 @@ export class ViewTypeElement extends LitElement {
             border-style: solid;
             border-color: rgb(135, 206, 235);
             border-image: initial;
+        }
+        
+        a {
+            text-decoration: none;
+            color: blue;
         }
         
         .download {
@@ -38,20 +42,25 @@ export class ViewTypeElement extends LitElement {
     @property()
     onClick: (viewType: ViewType) => void;
     @property()
+    afterLoad: (viewType: ViewType, pageindex: number) => void;
+    @property()
     selectedType: ViewType;
 
     render() {
         let types: TemplateResult[] = [];
         viewTypes.forEach((value, key) => {
-            console.log(value);
             let classes = key === this.selectedType ? " selectedtype" : "";
-            types.push(html`<span class="viewtype${classes}" @click=${() => this.onClick(value.type)}>${value.title}</span>`)
+            types.push(html`<span class="viewtype${classes}"><a href="index.html?type=${value.type}" @click=${(e: Event) => {
+                this.onClick(value.type);
+                e.preventDefault();
+                return true;
+            }}>${value.title}</a></span>`)
         });
 
         return html`
             <div style="text-align: right;">
                 ${types}
-                <span class="download" @click=${() => {window.location.href = "download.html";}}>下载</span>
+                <span class="download" @click=${() => window.open("download.html")}>下载</span>
             </div>
         `;
     }

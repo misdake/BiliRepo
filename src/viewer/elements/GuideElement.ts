@@ -7,6 +7,7 @@ export class GuideElement extends LitElement {
         a {
             text-decoration: none;
             padding: 0 5px;
+            color: blue;
         }
     `;
 
