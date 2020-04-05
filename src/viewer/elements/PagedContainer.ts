@@ -1,6 +1,5 @@
-import {css, customElement, html, LitElement, property, TemplateResult} from "lit-element";
+import {css, html, LitElement, property, TemplateResult} from "lit-element";
 import {Paged} from "../../common/page";
-import {VideoDB} from "../../server/storage/dbTypes";
 import "./VideoListElement";
 
 export class PagedContainer<T> extends LitElement {
@@ -15,6 +14,8 @@ export class PagedContainer<T> extends LitElement {
     response: Paged<T>;
     @property()
     afterLoad: (pageindex: number) => void;
+    @property()
+    autoLoad: boolean = true;
 
     protected listRenderer: (list: Paged<T>) => TemplateResult;
 
@@ -31,7 +32,7 @@ export class PagedContainer<T> extends LitElement {
     }
 
     protected firstUpdated(_changedProperties: Map<PropertyKey, unknown>): void {
-        this.loadPage(this.firstLoadPage);
+        if (this.autoLoad) this.loadPage(this.firstLoadPage);
         if (this.onElementLoaded) this.onElementLoaded(this);
     }
 

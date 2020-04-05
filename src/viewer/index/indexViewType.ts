@@ -49,6 +49,7 @@ export class ViewTypeContent<T, viewType extends ViewType> {
     }
 
     search(input: string) {
+        input = input || "";
         input = input.trim();
         if (input.length) {
             this.container.request = this.searchRequestMaker(input);
@@ -57,9 +58,12 @@ export class ViewTypeContent<T, viewType extends ViewType> {
         }
         this.container.loadPage(1);
     }
-    render(loadPage: number, afterLoad: (type: ViewType, pageindex: number) => void) {
-        let onContainerLoaded = (element: PagedContainer<T>) => this.container = element;
-        return this.containerRenderer(loadPage, this.allRequest, onContainerLoaded, pageindex => afterLoad(this.type, pageindex));
+    render(loadPage: number, firstSearch: string, afterLoad: (type: ViewType, pageindex: number, input: string) => void) {
+        let onContainerLoaded = (element: PagedContainer<T>) => {
+            this.container = element;
+            this.search(firstSearch);
+        };
+        return this.containerRenderer(loadPage, this.allRequest, onContainerLoaded, pageindex => afterLoad(this.type, pageindex, undefined));
     }
 }
 
@@ -68,6 +72,7 @@ const viewType_video: ViewTypeContent<VideoDB, ViewType.video> = new ViewTypeCon
     (loadPage, request, onContainerLoaded, afterLoad) => {
         return html`
             <pagedvideo-container
+                .autoLoad=${false}
                 .request=${request} 
                 .onElementLoaded=${onContainerLoaded} 
                 .firstLoadPage=${loadPage} 
@@ -82,6 +87,7 @@ const viewType_member: ViewTypeContent<MemberDB, ViewType.member> = new ViewType
     (loadPage, request, onContainerLoaded, afterLoad) => {
         return html`
             <pagedmember-container
+                .autoLoad=${false}
                 .request=${request} 
                 .onElementLoaded=${onContainerLoaded} 
                 .firstLoadPage=${loadPage} 
