@@ -45,6 +45,14 @@ export class Table<T extends Object, K extends keyof T> {
         }
     }
 
+    deleteAll(confirm: string) {
+        if (confirm === "confirm deleteAll") {
+            let list = this.collection.chain().data();
+            for (let item of list) this.collection.remove(item);
+            console.log("deleteAll!");
+        }
+    }
+
     find(query: LokiQuery<T & LokiObj>, sort?: keyof T, desc: boolean = false) {
         let chain = this.collection.chain().find(query);
         if (sort) chain = chain.simplesort(sort, {desc: desc});

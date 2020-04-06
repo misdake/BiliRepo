@@ -33,7 +33,7 @@ export class PlaylistDB {
     pid: number; //Key
 
     title: string;
-    videoAid: number[];
+    videosAid: number[];
 }
 
 export class PlaylistVideos extends PlaylistDB {

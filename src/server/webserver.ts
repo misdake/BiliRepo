@@ -41,8 +41,8 @@ Storage.createInstance().then(storage => {
 
 
     app.get('/test', function (req: Request, res: Response) { //TODO test
-        storage.addPlaylist();
-        res.send(stringify(storage.getPlaylist()));
+        // storage.addPlaylist();
+        res.send(stringify(storage.getPlaylistVideos(1)));
     });
 
 

@@ -1,4 +1,4 @@
-import {MemberDB, PartDB, PlaylistDB, VideoDB, VideoParts} from "./dbTypes";
+import {MemberDB, PartDB, PlaylistDB, PlaylistVideos, VideoDB, VideoParts} from "./dbTypes";
 import {Table} from "./Table";
 import {PageQuery} from "../../common/page";
 import {BilibiliVideo, BilibiliVideoJson} from "../../common/types";
@@ -133,14 +133,27 @@ export class Storage {
 
     //playlist
     public addPlaylist() {
+        this.table_playlist.deleteAll("confirm deleteAll");
         let p = new PlaylistDB();
-        p.pid = 2;
+        p.pid = 1;
         p.title = "playlist title";
-        p.videoAid = [1,2];
+        p.videosAid = [597082, 1157186];
         this.table_playlist.insert(p);
     }
     public getPlaylist() {
         return this.table_playlist.all_paged(1, 12);
+    }
+    public getPlaylistVideos(pid: number) {
+        let playlist = this.table_playlist.get(pid);
+        let pv = new PlaylistVideos();
+        Object.assign(pv, playlist);
+        if (playlist.videosAid) {
+            pv.videos = this.table_video.find({aid: {'$in': playlist.videosAid}});
+            //TODO re-order
+        } else {
+            pv.videos = [];
+        }
+        return pv;
     }
 
 }
