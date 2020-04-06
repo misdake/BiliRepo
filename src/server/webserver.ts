@@ -42,16 +42,16 @@ Storage.createInstance().then(storage => {
     //download
     app.get('/download/add/:aid', function (req: Request, res: Response) {
         downloader.enqueue(parseInt(req.params["aid"]));
-        res.send("true"); //TODO return result
+        res.send("true");
     });
     app.get('/download/retry/:aid', function (req: Request, res: Response) {
         downloader.remove(parseInt(req.params["aid"]));
         downloader.enqueue(parseInt(req.params["aid"]));
-        res.send("true"); //TODO return result
+        res.send("true");
     });
     app.get('/download/remove/:aid', function (req: Request, res: Response) {
         downloader.remove(parseInt(req.params["aid"]));
-        res.send("true"); //TODO return result
+        res.send("true");
     });
     app.get('/download/status', function (req: Request, res: Response) {
         res.send(downloader.status_mini());
@@ -76,8 +76,9 @@ Storage.createInstance().then(storage => {
         }
     });
 
-    const pagesize = 12; //TODO different page sizes for different types?
-    const defaultpage = {pageindex: 1, pagesize: pagesize};
+    const video_pagesize = 12;
+    const member_pagesize = 24;
+    const video_defaultpage = {pageindex: 1, pagesize: video_pagesize};
     const blacklist = ['meta', '$loki'];
 
     function stringify(obj: any) {
@@ -94,16 +95,16 @@ Storage.createInstance().then(storage => {
         res.send(stringify(storage.videoparts(parseInt(req.params["aid"]))));
     });
     app.get('/api/video/recent', function (req: Request, res: Response) {
-        res.send(stringify(storage.recent_videos(defaultpage)));
+        res.send(stringify(storage.recent_videos(video_defaultpage)));
     });
     app.get('/api/video/recent/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.recent_videos({pageindex: parseInt(req.params["page"]), pagesize})));
+        res.send(stringify(storage.recent_videos({pageindex: parseInt(req.params["page"]), pagesize: video_pagesize})));
     });
     app.get('/api/video/member/:mid', function (req: Request, res: Response) {
-        res.send(stringify(storage.mid_videos(parseInt(req.params["mid"]), defaultpage)));
+        res.send(stringify(storage.mid_videos(parseInt(req.params["mid"]), video_defaultpage)));
     });
     app.get('/api/video/member/:mid/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.mid_videos(parseInt(req.params["mid"]), {pageindex: parseInt(req.params["page"]), pagesize})));
+        res.send(stringify(storage.mid_videos(parseInt(req.params["mid"]), {pageindex: parseInt(req.params["page"]), pagesize: video_pagesize})));
     });
 
     //member
@@ -111,15 +112,15 @@ Storage.createInstance().then(storage => {
         res.send(stringify(storage.member(parseInt(req.params["mid"]))));
     });
     app.get('/api/member/all/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.all_members({pageindex: parseInt(req.params["page"]), pagesize})));
+        res.send(stringify(storage.all_members({pageindex: parseInt(req.params["page"]), pagesize: member_pagesize})));
     });
 
     //search
     app.get('/api/video/search/:input/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.search_video_by_title(req.params["input"], {pageindex: parseInt(req.params["page"]), pagesize})));
+        res.send(stringify(storage.search_video_by_title(req.params["input"], {pageindex: parseInt(req.params["page"]), pagesize: video_pagesize})));
     });
     app.get('/api/member/search/:input/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.search_member_by_name(req.params["input"], {pageindex: parseInt(req.params["page"]), pagesize})));
+        res.send(stringify(storage.search_member_by_name(req.params["input"], {pageindex: parseInt(req.params["page"]), pagesize: member_pagesize})));
     });
 });
 
