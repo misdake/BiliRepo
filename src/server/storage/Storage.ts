@@ -1,5 +1,5 @@
-import {MemberDB, PartDB, VideoDB, VideoParts} from "./dbTypes";
-import {Table} from "./dbBase";
+import {MemberDB, PartDB, PlaylistDB, VideoDB, VideoParts} from "./dbTypes";
+import {Table} from "./Table";
 import {PageQuery} from "../../common/page";
 import {BilibiliVideo, BilibiliVideoJson} from "../../common/types";
 
@@ -11,6 +11,7 @@ export class Storage {
     private table_video: Table<VideoDB, "aid">;
     private table_part: Table<PartDB, "cid">;
     private table_member: Table<MemberDB, "mid">;
+    private table_playlist: Table<PlaylistDB, "pid">;
 
     private static instance: Promise<Storage> = null;
     static async createInstance(): Promise<Storage> {
@@ -86,6 +87,7 @@ export class Storage {
         this.table_video = new Table<VideoDB, "aid">(db, "video", "aid", ["mid"]);
         this.table_part = new Table<PartDB, "cid">(db, "part", "cid", ["aid"]);
         this.table_member = new Table<MemberDB, "mid">(db, "member", "mid");
+        this.table_playlist = new Table<PlaylistDB, "pid">(db, "playlist", "pid");
 
         if (!db.getCollection("initialized")) {
             db.addCollection("initialized");
@@ -127,6 +129,18 @@ export class Storage {
     }
     public search_member_by_name(input: string, page: PageQuery) {
         return this.table_member.find_paged({name: {'$contains': input}}, page.pageindex, page.pagesize, "mid", true);
+    }
+
+    //playlist
+    public addPlaylist() {
+        let p = new PlaylistDB();
+        p.pid = 2;
+        p.title = "playlist title";
+        p.videoAid = [1,2];
+        this.table_playlist.insert(p);
+    }
+    public getPlaylist() {
+        return this.table_playlist.all_paged(1, 12);
     }
 
 }

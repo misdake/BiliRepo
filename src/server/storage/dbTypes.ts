@@ -29,3 +29,13 @@ export class MemberDB {
     lastAid: number;
 }
 
+export class PlaylistDB {
+    pid: number; //Key
+
+    title: string;
+    videoAid: number[];
+}
+
+export class PlaylistVideos extends PlaylistDB {
+    videos: VideoDB[];
+}

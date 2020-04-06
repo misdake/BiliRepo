@@ -39,6 +39,13 @@ Storage.createInstance().then(storage => {
         storage.importVideo(video);
     });
 
+
+    app.get('/test', function (req: Request, res: Response) { //TODO test
+        storage.addPlaylist();
+        res.send(stringify(storage.getPlaylist()));
+    });
+
+
     //download
     app.get('/download/add/:aid', function (req: Request, res: Response) {
         downloader.enqueue(parseInt(req.params["aid"]));
