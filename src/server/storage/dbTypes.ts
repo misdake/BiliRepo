@@ -4,6 +4,7 @@ export class VideoDB {
     title: string;
     mid: number; //MemberDB
     desc: string;
+    ctime: number;
 }
 
 export class PartDB {

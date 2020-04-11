@@ -56,6 +56,7 @@ export class Storage {
             mid: bilibiliVideo.owner.mid,
             title: bilibiliVideo.title,
             desc: bilibiliVideo.desc,
+            ctime: bilibiliVideo.ctime,
         };
         this.table_video.insertOrUpdate(v);
 
@@ -84,7 +85,7 @@ export class Storage {
     }
 
     private constructor(db: Loki) {
-        this.table_video = new Table<VideoDB, "aid">(db, "video", "aid", ["mid"]);
+        this.table_video = new Table<VideoDB, "aid">(db, "video", "aid", ["mid", "ctime"]);
         this.table_part = new Table<PartDB, "cid">(db, "part", "cid", ["aid"]);
         this.table_member = new Table<MemberDB, "mid">(db, "member", "mid");
         this.table_playlist = new Table<PlaylistDB, "pid">(db, "playlist", "pid");
@@ -105,12 +106,13 @@ export class Storage {
             title: v.title,
             mid: v.mid,
             desc: v.desc,
+            ctime: v.ctime,
             member: this.table_member.get(v.mid),
             parts: this.table_part.find({aid: aid}, "index")
         }
     }
     public recent_videos(page: PageQuery) {
-        return this.table_video.all_paged(page.pageindex, page.pagesize, "aid", true);
+        return this.table_video.all_paged(page.pageindex, page.pagesize, "ctime", true);
     }
 
     public member(mid: number) {
@@ -120,12 +122,12 @@ export class Storage {
         return this.table_member.all_paged(page.pageindex, page.pagesize, "mid", true);
     }
     public mid_videos(mid: number, page: PageQuery) {
-        return this.table_video.find_paged({mid: mid}, page.pageindex, page.pagesize, "aid", true);
+        return this.table_video.find_paged({mid: mid}, page.pageindex, page.pagesize, "ctime", true);
     }
 
     //search
     public search_video_by_title(input: string, page: PageQuery) {
-        return this.table_video.find_paged({title: {'$contains': input}}, page.pageindex, page.pagesize, "aid", true);
+        return this.table_video.find_paged({title: {'$contains': input}}, page.pageindex, page.pagesize, "ctime", true);
     }
     public search_member_by_name(input: string, page: PageQuery) {
         return this.table_member.find_paged({name: {'$contains': input}}, page.pageindex, page.pagesize, "mid", true);
