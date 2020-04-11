@@ -4,8 +4,9 @@
   "description": "",
   "main": "main.js",
   "scripts": {
+    "build_server": "ncc build src/server/webserver.ts -o dist/server",
     "run_server": "ts-node src/server/webserver.ts",
-    "build": "webpack",
+    "build": "webpack --env.production",
     "dev": "webpack-dev-server"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "@types/express": "^4.17.1",
     "@types/lokijs": "^1.5.2",
     "@types/node": "^12.7.11",
+    "@zeit/ncc": "^0.22.1",
     "ts-loader": "^6.0.4",
     "ts-node": "^8.4.1",
     "typescript": "^3.5.3",

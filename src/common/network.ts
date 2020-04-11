@@ -2,6 +2,10 @@ export function apiget(url: string, callback: (content: string) => void) {
     httpget(serverConfig.apiRoot + url, callback);
 }
 
+export function apipost(url: string, body: object, callback: (content: string) => void) {
+    httppost(serverConfig.apiRoot + url, body, callback);
+}
+
 export function httpget(url: string, callback: (content: string) => void) {
     let request = new XMLHttpRequest();
     request.onreadystatechange = function () {

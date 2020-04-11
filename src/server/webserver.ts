@@ -16,6 +16,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 }));
 
 app.use('/', express.static('static')); //provide web pages
+app.use('/repo/', express.static('repo')); //provide video content
 app.use('/dist/', express.static('dist')); //provide web pages
 
 //proxy

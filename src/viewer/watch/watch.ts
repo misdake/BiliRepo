@@ -9,7 +9,7 @@ let url = new URL(url_string);
 let aid = parseInt(url.searchParams.get("aid")) || 68836859;
 let part = parseInt(url.searchParams.get("p")) || 1;
 
-apiget(`/api/video/withparts/${aid}`, content => {
+apiget(`api/video/withparts/${aid}`, content => {
     let video = JSON.parse(content) as VideoParts;
     document.title = video.title;
 

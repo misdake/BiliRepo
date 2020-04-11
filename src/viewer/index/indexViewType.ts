@@ -14,7 +14,7 @@ export enum ViewType {
 function requestMaker<T>(api: () => string) {
     return (pageindex: number) => {
         return new Promise<Paged<T>>(resolve => {
-            apiget(`/api/${api()}/${pageindex}`, (content: string) => {
+            apiget(`api/${api()}/${pageindex}`, (content: string) => {
                 let r = JSON.parse(content) as Paged<T>;
                 resolve(r);
             });

@@ -1,6 +1,6 @@
 import {css, customElement, html, LitElement, property} from "lit-element";
 import {DownloadStatus, VideoStatus} from "../../common/DownloadStatus";
-import {apiget, httppost} from "../../common/network";
+import {apiget, apipost} from "../../common/network";
 import {BilibiliVideo} from "../../common/types";
 import "../elements/InputElement";
 import "./VideoStatusElement";
@@ -86,7 +86,7 @@ export class PageElement extends LitElement {
     }
 
     private loadStatus() {
-        apiget(`/download/status`, (content: string) => {
+        apiget(`download/status`, (content: string) => {
             let status = JSON.parse(content) as DownloadStatus;
             if (status) {
                 this.message = status.message;
@@ -130,7 +130,7 @@ export class PageElement extends LitElement {
         this.inputVideo = null;
         if(!input.toLowerCase().startsWith("av") && !input.toLowerCase().startsWith("bv")) return;
 
-        apiget(`/proxy/videoinfo/${input}`, content => {
+        apiget(`proxy/videoinfo/${input}`, content => {
             if (!content) return;
             let v = JSON.parse(content).data as BilibiliVideo;
             if (!v) return;
@@ -147,7 +147,7 @@ export class PageElement extends LitElement {
 
     private enqueue() {
         if (this.inputVideo) {
-            apiget(`/download/add/${this.inputVideo.aid}`, _content => {
+            apiget(`download/add/${this.inputVideo.aid}`, _content => {
                 this.loadStatus();
             });
             this.inputVideo = null;
@@ -156,7 +156,7 @@ export class PageElement extends LitElement {
 
     private retryVideo(video: VideoStatus) {
         if (video) {
-            apiget(`/download/retry/${video.aid}`, _content => {
+            apiget(`download/retry/${video.aid}`, _content => {
                 this.loadStatus();
             });
         }
@@ -164,7 +164,7 @@ export class PageElement extends LitElement {
 
     private removeVideo(video: VideoStatus) {
         if (video) {
-            apiget(`/download/remove/${video.aid}`, _content => {
+            apiget(`download/remove/${video.aid}`, _content => {
                 this.loadStatus();
             });
         }
@@ -173,7 +173,7 @@ export class PageElement extends LitElement {
     private updateCookie() {
         navigator.clipboard.readText().then(value => {
             if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
-                httppost(serverConfig.apiRoot + "/download/cookie", {cookie: value}, (content) => {
+                apipost("download/cookie", {cookie: value}, (content) => {
                     if (content === "good") {
                         this.message = "";
                         alert("cookie updated!")
