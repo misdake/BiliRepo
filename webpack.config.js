@@ -25,7 +25,7 @@ module.exports = env =>{
         }
     });
     ip = ip || "0.0.0.0";
-    let apiRoot = env && env.production ? "" : `http://${ip}:${port}/`;
+    let root = env && env.production ? "" : `http://${ip}:${port}/`;
 
     return {
         entry: {
@@ -48,7 +48,8 @@ module.exports = env =>{
         plugins: [
             new webpack.DefinePlugin({
                 'serverConfig': {
-                    'apiRoot': JSON.stringify(apiRoot)
+                    'apiRoot': JSON.stringify(root),
+                    'repoRoot': JSON.stringify(root),
                 },
             })
         ],

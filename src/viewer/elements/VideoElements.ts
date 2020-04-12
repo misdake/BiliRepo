@@ -73,7 +73,7 @@ export class VideoLabelElement extends LitElement {
         let video = !this.video ? html`` : html`
             <li class="${videoClass}" @click=${() => this.onitemclick()}>
                 <div class="thumbContainer">
-                    <img class="thumb" src="repo/${this.video.aid}/thumb.jpg" alt="thumb"/>
+                    <img class="thumb" src="${serverConfig.repoRoot}repo/${this.video.aid}/thumb.jpg" alt="thumb"/>
                 </div>
                 <span class="title">${this.video.title}</span>
             </li>`;
@@ -132,7 +132,7 @@ export class VideoBlockElement extends LitElement {
             <li class="videoItem">
                 <a href=${'watch.html?aid=' + this.video.aid}>
                     <div class="thumbContainer">
-                        <img class="thumb" src="repo/${this.video.aid}/thumb.jpg" alt="thumb"/>
+                        <img class="thumb" src="${serverConfig.repoRoot}repo/${this.video.aid}/thumb.jpg" alt="thumb"/>
                     </div>
                     <span>${this.video.title}</span>
                 </a>

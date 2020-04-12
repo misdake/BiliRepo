@@ -53,7 +53,7 @@ export class Player {
         this.apiBackend = {
             read: (options) => {
                 if (!(this.aid && this.part)) return;
-                httpget(`repo/${this.aid}/p${this.part}.json`, content => {
+                httpget(`${serverConfig.repoRoot}repo/${this.aid}/p${this.part}.json`, content => {
                     options.success(JSON.parse(content).data);
                 });
             },
@@ -76,7 +76,7 @@ export class Player {
         }
 
         // @ts-ignore
-        this.dp = window.createPlayer(this.container, this.apiBackend, {url: `repo/${aid}/p${part}.flv`});
+        this.dp = window.createPlayer(this.container, this.apiBackend, {url: `${serverConfig.repoRoot}repo/${aid}/p${part}.flv`});
         // @ts-ignore
         this.dp.danmaku.options.height = 50;
         // @ts-ignore

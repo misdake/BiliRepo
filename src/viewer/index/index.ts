@@ -39,6 +39,7 @@ function checkInput(input: string) {
 
 const pageTemplate = () => {
     let container = currentViewTypeContent.render(loadpage, searchInput, replaceUrl);
+    document.title = currentViewTypeContent.title;
     return html`
         <div style="height: 100%; width: 1280px; max-width: 100%; margin: 0 auto;">
             <div style="margin: 0; position: relative;">
