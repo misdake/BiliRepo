@@ -4,6 +4,7 @@ import "../elements/PagedMemberContainer";
 import "../elements/ViewTypeElement";
 import "../elements/InputElement";
 import {ViewType, ViewTypeContent, viewTypes} from "./indexViewType";
+import {ClientApis} from "../common/api/ClientApi";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
@@ -61,3 +62,8 @@ function renderPage() {
 }
 
 setViewType(viewtype); //will render page
+
+//TODO
+ClientApis.GetVideo.run(327709504).then(value => {
+    console.log(value);
+});

@@ -2,7 +2,7 @@ export function apiget(url: string, callback: (content: string) => void) {
     httpget(serverConfig.apiRoot + url, callback);
 }
 
-export function apipost(url: string, body: object, callback: (content: string) => void) {
+export function apipost(url: string, body: any, callback: (content: string) => void) {
     httppost(serverConfig.apiRoot + url, body, callback);
 }
 
@@ -17,7 +17,7 @@ export function httpget(url: string, callback: (content: string) => void) {
     request.send();
 }
 
-export function httppost(url: string, body: object, callback: (content: string) => void) {
+export function httppost(url: string, body: any, callback: (content: string) => void) {
     let request = new XMLHttpRequest();
     request.onreadystatechange = function () {
         if (request.readyState === 4 && request.status === 200) {
