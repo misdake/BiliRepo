@@ -1,6 +1,6 @@
 import {css, customElement, html, LitElement, property} from "lit-element";
 import {DownloadStatus, VideoStatus} from "../../common/DownloadStatus";
-import {apiget, apipost} from "../../common/network";
+import {apiget, apipost} from "../common/network";
 import {BilibiliVideo} from "../../common/types";
 import "../elements/InputElement";
 import "./VideoStatusElement";

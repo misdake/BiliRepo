@@ -1,6 +1,6 @@
 import {html, render} from 'lit-html';
 import "./PageElement";
-import {apiget} from "../../common/network";
+import {apiget} from "../common/network";
 import {Playlist, PlaylistItem} from "./Playlist";
 import {PartDB, VideoParts} from "../../server/storage/dbTypes";
 

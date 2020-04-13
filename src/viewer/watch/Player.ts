@@ -1,4 +1,4 @@
-import {httpget} from "../../common/network";
+import {httpget} from "../common/network";
 import DPlayer, {DPlayerAPIBackend} from "dplayer";
 
 // if dplayer switchs videos when flvjs is fetching data, dplayer will not stop flvjs, causing errors and infinite loading.

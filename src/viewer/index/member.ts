@@ -1,5 +1,5 @@
 import {html, render} from 'lit-html';
-import {apiget} from "../../common/network";
+import {apiget} from "../common/network";
 import "../elements/MemberElement";
 import {MemberDB, VideoDB} from "../../server/storage/dbTypes";
 import {Paged} from "../../common/page";

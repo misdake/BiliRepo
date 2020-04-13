@@ -1,6 +1,6 @@
 import {Paged} from "../../common/page";
 import {MemberDB, VideoDB} from "../../server/storage/dbTypes";
-import {apiget} from "../../common/network";
+import {apiget} from "../common/network";
 import {html, TemplateResult} from "lit-html";
 import {PagedContainer} from "../elements/PagedContainer";
 

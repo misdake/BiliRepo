@@ -1,6 +1,6 @@
 import {css, customElement, html, LitElement, property} from "lit-element";
 import {PartDB, VideoDB} from "../../server/storage/dbTypes";
-import {httppost} from "../../common/network";
+import {apipost, httppost} from "../common/network";
 
 @customElement('videodesc-element')
 export class VideoDescElement extends LitElement {
@@ -23,7 +23,7 @@ export class VideoDescElement extends LitElement {
             index: this.part.index,
         };
 
-        httppost("http://localhost:8081/download/danmaku/update", {part: part}, (content) => {
+        apipost("download/danmaku/update", {part: part}, (content) => {
             if (content === "good") {
                 alert("danmaku updated!");
                 window.location.reload();
