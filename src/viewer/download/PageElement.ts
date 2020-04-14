@@ -1,11 +1,11 @@
 import {css, customElement, html, LitElement, property} from "lit-element";
 import {DownloadStatus, VideoStatus} from "../../common/DownloadStatus";
 import {apiget, apipost} from "../common/network";
-import {BilibiliVideo} from "../../common/types";
 import "../elements/InputElement";
 import "./VideoStatusElement";
 import "./VideoListElement";
 import "./VideoDownloadElement";
+import {ClientApis} from "../common/api/ClientApi";
 
 @customElement('page-element')
 export class PageElement extends LitElement {
@@ -130,9 +130,8 @@ export class PageElement extends LitElement {
         this.inputVideo = null;
         if(!input.toLowerCase().startsWith("av") && !input.toLowerCase().startsWith("bv")) return;
 
-        apiget(`proxy/videoinfo/${input}`, content => {
-            if (!content) return;
-            let v = JSON.parse(content).data as BilibiliVideo;
+        ClientApis.GetVideoInfo.run(input).then(videoJson => {
+            let v = videoJson.data;
             if (!v) return;
             this.inputVideo = {
                 aid: v.aid,
@@ -141,7 +140,7 @@ export class PageElement extends LitElement {
                 parts: null,
                 pic: v.pic,
                 title: v.title,
-            }
+            };
         });
     }
 

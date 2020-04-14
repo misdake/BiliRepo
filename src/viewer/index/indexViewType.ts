@@ -1,8 +1,9 @@
 import {Paged} from "../../common/page";
 import {MemberDB, VideoDB} from "../../server/storage/dbTypes";
-import {apiget} from "../common/network";
 import {html, TemplateResult} from "lit-html";
 import {PagedContainer} from "../elements/PagedContainer";
+import {ApiGet} from "../../common/api/Api";
+import {ClientApis} from "../common/api/ClientApi";
 
 export enum ViewType {
     video = 1,
@@ -11,14 +12,14 @@ export enum ViewType {
     timestamp,
 }
 
-function requestMaker<T>(api: () => string) {
-    return (pageindex: number) => {
-        return new Promise<Paged<T>>(resolve => {
-            apiget(`api/${api()}/${pageindex}`, (content: string) => {
-                let r = JSON.parse(content) as Paged<T>;
-                resolve(r);
-            });
-        });
+function requestListMaker<T>(api: ApiGet<number, Paged<T>>) {
+    return (page: number) => {
+        return api.run(page);
+    };
+}
+function requestSearchMaker<T>(input: string, api: ApiGet<{ input: string, page: number }, Paged<T>>) {
+    return (page: number) => {
+        return api.run({input, page});
     };
 }
 
@@ -34,7 +35,7 @@ export class ViewTypeContent<T, viewType extends ViewType> {
                                 onContainerLoaded: (element: PagedContainer<T>) => void,
                                 afterLoad: (pageindex: number) => void) => TemplateResult;
 
-    constructor(type: ViewType, title: string, allApi: string, searchApi: string,
+    constructor(type: ViewType, title: string, allApi: ApiGet<number, Paged<T>>, searchApi: ApiGet<{ input: string, page: number }, Paged<T>>,
                 containerRenderer: (loadPage: number,
                                     request: (pageindex: number) => Promise<Paged<T>>,
                                     onContainerLoaded: (element: PagedContainer<T>) => void,
@@ -42,8 +43,8 @@ export class ViewTypeContent<T, viewType extends ViewType> {
     ) {
         this.type = type;
         this.title = title;
-        this.allRequest = requestMaker<T>(() => allApi);
-        this.searchRequestMaker = (input: string) => requestMaker<T>(() => `${searchApi}/${input}`);
+        this.allRequest = requestListMaker<T>(allApi);
+        this.searchRequestMaker = (input: string) => requestSearchMaker<T>(input, searchApi);
 
         this.containerRenderer = containerRenderer;
     }
@@ -68,7 +69,7 @@ export class ViewTypeContent<T, viewType extends ViewType> {
 }
 
 const viewType_video: ViewTypeContent<VideoDB, ViewType.video> = new ViewTypeContent<VideoDB, ViewType.video>(
-    ViewType.video, "视频", "video/recent", "video/search",
+    ViewType.video, "视频", ClientApis.ListVideo, ClientApis.SearchVideo,
     (loadPage, request, onContainerLoaded, afterLoad) => {
         return html`
             <pagedvideo-container
@@ -83,7 +84,7 @@ const viewType_video: ViewTypeContent<VideoDB, ViewType.video> = new ViewTypeCon
 );
 
 const viewType_member: ViewTypeContent<MemberDB, ViewType.member> = new ViewTypeContent<MemberDB, ViewType.member>(
-    ViewType.member, "UP主", "member/all", "member/search",
+    ViewType.member, "UP主", ClientApis.ListMember, ClientApis.SearchMember,
     (loadPage, request, onContainerLoaded, afterLoad) => {
         return html`
             <pagedmember-container

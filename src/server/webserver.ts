@@ -101,14 +101,8 @@ Storage.createInstance().then(storage => {
     app.get('/api/video/withparts/:aid', function (req: Request, res: Response) {
         res.send(stringify(storage.videoparts(parseInt(req.params["aid"]))));
     });
-    app.get('/api/video/recent', function (req: Request, res: Response) {
-        res.send(stringify(storage.recent_videos(defaultpage)));
-    });
     app.get('/api/video/recent/:page', function (req: Request, res: Response) {
         res.send(stringify(storage.recent_videos({pageindex: parseInt(req.params["page"]), pagesize})));
-    });
-    app.get('/api/video/member/:mid', function (req: Request, res: Response) {
-        res.send(stringify(storage.mid_videos(parseInt(req.params["mid"]), defaultpage)));
     });
     app.get('/api/video/member/:mid/:page', function (req: Request, res: Response) {
         res.send(stringify(storage.mid_videos(parseInt(req.params["mid"]), {pageindex: parseInt(req.params["page"]), pagesize})));

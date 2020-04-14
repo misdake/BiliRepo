@@ -1,16 +1,15 @@
 import {html, render} from 'lit-html';
 import "./PageElement";
-import {apiget} from "../common/network";
 import {Playlist, PlaylistItem} from "./Playlist";
-import {PartDB, VideoParts} from "../../server/storage/dbTypes";
+import {PartDB} from "../../server/storage/dbTypes";
+import {ClientApis} from "../common/api/ClientApi";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
 let aid = parseInt(url.searchParams.get("aid")) || 68836859;
 let part = parseInt(url.searchParams.get("p")) || 1;
 
-apiget(`api/video/withparts/${aid}`, content => {
-    let video = JSON.parse(content) as VideoParts;
+ClientApis.GetVideoParts.run(aid).then(video => {
     document.title = video.title;
 
     let index = null;

@@ -1,20 +1,19 @@
 import {html, render} from 'lit-html';
-import {apiget} from "../common/network";
 import "../elements/MemberElement";
 import {MemberDB, VideoDB} from "../../server/storage/dbTypes";
 import {Paged} from "../../common/page";
 import "../elements/PagedVideoContainer";
 import "../elements/GuideElement";
+import {ClientApis} from "../common/api/ClientApi";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
 let mid = parseInt(url.searchParams.get("mid")) || 212230;
 
-function request(pageindex: number) {
-    return new Promise(resolve => {
-        apiget(`api/video/member/${mid}/${pageindex}`, (content: string) => {
-            let r = JSON.parse(content) as Paged<VideoDB>;
-            resolve(r);
+function request(page: number) {
+    return new Promise<Paged<VideoDB>>(resolve => {
+        ClientApis.ListVideoByMember.run({mid, page}).then(paged => {
+            resolve(paged);
         });
     });
 }
@@ -29,9 +28,6 @@ const pageTemplate = (member: MemberDB) => html`
     </div>
 `;
 
-let member: MemberDB = null;
-
-apiget(`api/member/mid/${mid}`, (content: string) => {
-    member = JSON.parse(content) as MemberDB;
+ClientApis.GetMember.run(mid).then(member => {
     render(pageTemplate(member), document.body);
 });
