@@ -1,6 +1,7 @@
 import {MemberDB, VideoDB, VideoParts} from "../../server/storage/dbTypes";
 import {Paged} from "../page";
 import {BilibiliVideoJson} from "../types";
+import {DownloadStatus} from "../DownloadStatus";
 
 export let runner = {
     apiGet: (_api: any, _param: any) => {
@@ -56,5 +57,8 @@ export let RawApis = {
     GetVideoInfo: new ApiGet<string, BilibiliVideoJson>("/proxy/videoinfo/:id", id => `proxy/videoinfo/${id}`),
 
     //Download
-    //TODO download apis
+    AddDownload: new ApiGet<number, boolean>("/download/add/:aid", aid => `download/add/${aid}`),
+    RetryDownload: new ApiGet<number, boolean>("/download/retry/:aid", aid => `download/retry/${aid}`),
+    RemoveDownload: new ApiGet<number, boolean>("/download/remove/:aid", aid => `download/remove/${aid}`),
+    StatusDownload: new ApiGet<{}, DownloadStatus>("/download/status", () => `download/status`),
 };

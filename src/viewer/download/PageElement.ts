@@ -1,6 +1,6 @@
 import {css, customElement, html, LitElement, property} from "lit-element";
-import {DownloadStatus, VideoStatus} from "../../common/DownloadStatus";
-import {apiget, apipost} from "../common/network";
+import {VideoStatus} from "../../common/DownloadStatus";
+import {apipost} from "../common/network";
 import "../elements/InputElement";
 import "./VideoStatusElement";
 import "./VideoListElement";
@@ -86,8 +86,7 @@ export class PageElement extends LitElement {
     }
 
     private loadStatus() {
-        apiget(`download/status`, (content: string) => {
-            let status = JSON.parse(content) as DownloadStatus;
+        ClientApis.StatusDownload.run({}).then(status => {
             if (status) {
                 this.message = status.message;
                 this.queue = status.queue || [];
@@ -146,7 +145,7 @@ export class PageElement extends LitElement {
 
     private enqueue() {
         if (this.inputVideo) {
-            apiget(`download/add/${this.inputVideo.aid}`, _content => {
+            ClientApis.AddDownload.run(this.inputVideo.aid).then(_r => {
                 this.loadStatus();
             });
             this.inputVideo = null;
@@ -155,7 +154,7 @@ export class PageElement extends LitElement {
 
     private retryVideo(video: VideoStatus) {
         if (video) {
-            apiget(`download/retry/${video.aid}`, _content => {
+            ClientApis.RetryDownload.run(video.aid).then(_r => {
                 this.loadStatus();
             });
         }
@@ -163,7 +162,7 @@ export class PageElement extends LitElement {
 
     private removeVideo(video: VideoStatus) {
         if (video) {
-            apiget(`download/remove/${video.aid}`, _content => {
+            ClientApis.RemoveDownload.run(video.aid).then(_r => {
                 this.loadStatus();
             });
         }
