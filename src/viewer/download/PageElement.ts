@@ -85,7 +85,7 @@ export class PageElement extends LitElement {
     }
 
     private loadStatus() {
-        ClientApis.StatusDownload.run({}).then(status => {
+        ClientApis.StatusDownload.fetch({}).then(status => {
             if (status) {
                 this.message = status.message;
                 this.queue = status.queue || [];
@@ -128,7 +128,7 @@ export class PageElement extends LitElement {
         this.inputVideo = null;
         if(!input.toLowerCase().startsWith("av") && !input.toLowerCase().startsWith("bv")) return;
 
-        ClientApis.GetVideoInfo.run(input).then(videoJson => {
+        ClientApis.GetVideoInfo.fetch(input).then(videoJson => {
             let v = videoJson.data;
             if (!v) return;
             this.inputVideo = {
@@ -144,7 +144,7 @@ export class PageElement extends LitElement {
 
     private enqueue() {
         if (this.inputVideo) {
-            ClientApis.AddDownload.run(this.inputVideo.aid).then(_r => {
+            ClientApis.AddDownload.fetch(this.inputVideo.aid).then(_r => {
                 this.loadStatus();
             });
             this.inputVideo = null;
@@ -153,7 +153,7 @@ export class PageElement extends LitElement {
 
     private retryVideo(video: VideoStatus) {
         if (video) {
-            ClientApis.RetryDownload.run(video.aid).then(_r => {
+            ClientApis.RetryDownload.fetch(video.aid).then(_r => {
                 this.loadStatus();
             });
         }
@@ -161,7 +161,7 @@ export class PageElement extends LitElement {
 
     private removeVideo(video: VideoStatus) {
         if (video) {
-            ClientApis.RemoveDownload.run(video.aid).then(_r => {
+            ClientApis.RemoveDownload.fetch(video.aid).then(_r => {
                 this.loadStatus();
             });
         }
@@ -170,7 +170,7 @@ export class PageElement extends LitElement {
     private updateCookie() {
         navigator.clipboard.readText().then(value => {
             if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
-                ClientApis.UpdateCookie.run({}, {cookie: value}).then(content => {
+                ClientApis.UpdateCookie.fetch({}, {cookie: value}).then(content => {
                     if (content === "good") {
                         this.message = "";
                         alert("cookie updated!");

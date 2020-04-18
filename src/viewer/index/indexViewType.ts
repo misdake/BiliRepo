@@ -14,12 +14,12 @@ export enum ViewType {
 
 function requestListMaker<T>(api: ApiGet<number, Paged<T>>) {
     return (page: number) => {
-        return api.run(page);
+        return api.fetch(page);
     };
 }
 function requestSearchMaker<T>(input: string, api: ApiGet<{ input: string, page: number }, Paged<T>>) {
     return (page: number) => {
-        return api.run({input, page});
+        return api.fetch({input, page});
     };
 }
 

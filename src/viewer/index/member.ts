@@ -12,7 +12,7 @@ let mid = parseInt(url.searchParams.get("mid")) || 212230;
 
 function request(page: number) {
     return new Promise<Paged<VideoDB>>(resolve => {
-        ClientApis.ListVideoByMember.run({mid, page}).then(paged => {
+        ClientApis.ListVideoByMember.fetch({mid, page}).then(paged => {
             resolve(paged);
         });
     });
@@ -28,6 +28,6 @@ const pageTemplate = (member: MemberDB) => html`
     </div>
 `;
 
-ClientApis.GetMember.run(mid).then(member => {
+ClientApis.GetMember.fetch(mid).then(member => {
     render(pageTemplate(member), document.body);
 });

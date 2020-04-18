@@ -17,7 +17,7 @@ export class VideoDescElement extends LitElement {
     `;
 
     updateDanmaku() {
-        ClientApis.UpdateDanmaku.run({}, {part: this.part}).then(content => {
+        ClientApis.UpdateDanmaku.fetch({}, {part: this.part}).then(content => {
             if (content === "good") {
                 alert("danmaku updated!");
                 window.location.reload();

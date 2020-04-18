@@ -64,6 +64,6 @@ function renderPage() {
 setViewType(viewtype); //will render page
 
 //TODO
-ClientApis.GetVideo.run(327709504).then(value => {
+ClientApis.GetVideo.fetch(327709504).then(value => {
     console.log(value);
 });

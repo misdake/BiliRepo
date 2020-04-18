@@ -2,11 +2,18 @@ import {MemberDB, PartDB, VideoDB, VideoParts} from "../../server/storage/dbType
 import {Paged} from "../page";
 import {BilibiliVideoJson} from "../types";
 import {DownloadStatus} from "../DownloadStatus";
+import {Request} from "express";
 
-export let runner = {
-    apiGet: (_api: any, _param: any) => {
+export let server = {
+    serveGet: (_api: any, param: (req: Request) => any, callback: (param: any) => any) => {
     },
-    apiPost: (_api: any, _param: any, _payload: any) => {
+    servePost: (_api: any, param: (req: Request) => any, callback: (param: any, body: any) => any) => {
+    },
+};
+export let client = {
+    fetchGet: (_api: any, _param: any) => {
+    },
+    fetchPost: (_api: any, _param: any, _payload: any) => {
     },
 };
 
@@ -18,9 +25,12 @@ export class ApiGet<Param, Result> {
         this.reqPattern = reqPattern;
     }
 
-    run(param: Param): Promise<Result> {
+    serve(param: (req: Request) => Param, callback: (param: Param) => Result) {
+        server.serveGet(this, param, callback);
+    }
+    fetch(param: Param): Promise<Result> {
         // @ts-ignore
-        return runner.apiGet(this, param);
+        return client.fetchGet(this, param);
     }
 }
 
@@ -32,9 +42,12 @@ export class ApiPost<Param, Payload, Result> {
         this.reqPattern = reqPattern;
     }
 
-    run(param: Param, payload: Payload): Promise<Result> {
+    serve(param: (req: Request) => Param, callback: (req: Request, body: Payload) => Result) {
+        server.servePost(this, param, callback);
+    }
+    fetch(param: Param, payload: Payload): Promise<Result> {
         // @ts-ignore
-        return runner.apiPost(this, param, payload);
+        return client.fetchPost(this, param, payload);
     }
 }
 

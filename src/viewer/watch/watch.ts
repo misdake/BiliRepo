@@ -9,7 +9,7 @@ let url = new URL(url_string);
 let aid = parseInt(url.searchParams.get("aid")) || 68836859;
 let part = parseInt(url.searchParams.get("p")) || 1;
 
-ClientApis.GetVideoParts.run(aid).then(video => {
+ClientApis.GetVideoParts.fetch(aid).then(video => {
     document.title = video.title;
 
     let index = null;

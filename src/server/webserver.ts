@@ -1,13 +1,14 @@
-import {Request, Response} from "express";
+import {Application, Request, Response} from "express";
 import {Storage} from "./storage/Storage";
 import {Downloader} from "./download/Downloader";
 import {httpsget} from "./network";
+import {initServerApi, ServerApis} from "./ServerApi";
 
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
-const app = express();
+const app: Application = express();
 
 app.use(cors());
 app.use(bodyParser.json());       // to support JSON-encoded bodies
@@ -40,6 +41,7 @@ Storage.createInstance().then(storage => {
         storage.importVideo(video);
     });
 
+    initServerApi(app, downloader);
 
     app.get('/test', function (req: Request, res: Response) { //TODO test
         // storage.addPlaylist();
@@ -90,23 +92,27 @@ Storage.createInstance().then(storage => {
 
     function stringify(obj: any) {
         return JSON.stringify(obj, function replacer(key, value) {
-            return blacklist.indexOf(key) === -1 ? value : undefined
+            return blacklist.indexOf(key) === -1 ? value : undefined;
         });
     }
 
     //video
-    app.get('/api/video/aid/:aid', function (req: Request, res: Response) {
-        res.send(stringify(storage.video(parseInt(req.params["aid"]))));
-    });
-    app.get('/api/video/withparts/:aid', function (req: Request, res: Response) {
-        res.send(stringify(storage.videoparts(parseInt(req.params["aid"]))));
-    });
-    app.get('/api/video/recent/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.recent_videos({pageindex: parseInt(req.params["page"]), pagesize})));
-    });
-    app.get('/api/video/member/:mid/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.mid_videos(parseInt(req.params["mid"]), {pageindex: parseInt(req.params["page"]), pagesize})));
-    });
+    ServerApis.GetVideo.serve(
+        req => parseInt(req.params["aid"]),
+        aid => storage.video(aid)
+    );
+    ServerApis.GetVideoParts.serve(
+        req => parseInt(req.params["aid"]),
+        aid => storage.videoparts(aid)
+    );
+    ServerApis.ListVideo.serve(
+        req => parseInt(req.params["page"]),
+        page => storage.recent_videos({pageindex: page, pagesize})
+    );
+    ServerApis.ListVideoByMember.serve(
+        req => ({mid: parseInt(req.params["mid"]), page: parseInt(req.params["page"])}),
+        ({mid, page}) => storage.mid_videos(mid, {pageindex: page, pagesize}),
+    );
 
     //member
     app.get('/api/member/mid/:mid', function (req: Request, res: Response) {
