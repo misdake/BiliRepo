@@ -94,6 +94,8 @@ export class Storage {
             db.addCollection("initialized");
             this.initialize();
         }
+
+        this.loadPlaylistMap();
     }
 
     public video(aid: number) {
@@ -134,24 +136,74 @@ export class Storage {
     }
 
     //playlist
-    public addPlaylist() {
-        this.table_playlist.deleteAll("confirm deleteAll");
+    private lastPid = 0;
+    private video_playlist: Map<number, Set<number>> = new Map<number, Set<number>>();
+    private loadPlaylistMap() {
+        for (let playlist of this.table_playlist.all()) {
+            this.lastPid = Math.max(this.lastPid, playlist.pid);
+            this.registerVideoPlaylist(playlist);
+        }
+    }
+    private registerVideoPlaylist(playlist: PlaylistDB) {
+        let aids = playlist.videosAid;
+        for (let aid of aids) {
+            if (!this.video_playlist.has(aid)) {
+                this.video_playlist.set(aid, new Set<number>([playlist.pid]));
+            } else {
+                this.video_playlist.get(aid).add(playlist.pid);
+            }
+        }
+    }
+    private unregisterVideoPlaylist(playlist: PlaylistDB) {
+        for (let aid of playlist.videosAid) {
+            let set = this.video_playlist.get(aid);
+            if (set) set.delete(playlist.pid);
+        }
+    }
+    public addPlaylist(title: string, withAids: number[] = []) {
         let p = new PlaylistDB();
-        p.pid = 1;
-        p.title = "playlist title";
-        p.videosAid = [597082, 1157186];
+        p.pid = this.lastPid++;
+        p.title = title;
+        p.videosAid = withAids;
         this.table_playlist.insert(p);
     }
-    public getPlaylist() {
-        return this.table_playlist.all_paged(1, 12);
+    public updatePlaylist(pid: number, title: string | null, aids: number[] | null) {
+        let playlist = this.table_playlist.get(pid);
+        if (playlist) {
+            if (title) playlist.title = title;
+            if (aids) {
+                this.unregisterVideoPlaylist(playlist);
+                playlist.videosAid = aids;
+                this.registerVideoPlaylist(playlist);
+            }
+            this.table_playlist.update(playlist);
+        }
+    }
+    public removePlaylist(pid: number) { //TODO return value
+        let playlist = this.table_playlist.get(pid);
+        if (playlist) {
+            this.table_playlist.delete(playlist);
+            this.unregisterVideoPlaylist(playlist);
+        }
+    }
+    public listPlaylist(page: PageQuery) {
+        return this.table_playlist.all_paged(page.pageindex, page.pagesize, "pid", true);
+    }
+    public getPlaylist(pid: number) {
+        let playlist = this.table_playlist.get(pid);
+        return playlist;
     }
     public getPlaylistVideos(pid: number) {
         let playlist = this.table_playlist.get(pid);
         let pv = new PlaylistVideos();
         Object.assign(pv, playlist);
         if (playlist.videosAid) {
-            pv.videos = this.table_video.find({aid: {'$in': playlist.videosAid}});
-            //TODO re-order
+            let array: VideoDB[] = this.table_video.find({aid: {'$in': playlist.videosAid}});
+            let map: Map<number, VideoDB> = new Map<number, VideoDB>();
+            for (let video of array) {
+                map.set(video.aid, video);
+            }
+            pv.videos = playlist.videosAid.map(aid => map.get(aid));
         } else {
             pv.videos = [];
         }

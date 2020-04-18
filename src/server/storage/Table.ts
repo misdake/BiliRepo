@@ -45,6 +45,9 @@ export class Table<T extends Object, K extends keyof T> {
         }
     }
 
+    delete(t: T) {
+        this.collection.remove(t);
+    }
     deleteAll(confirm: string) {
         if (confirm === "confirm deleteAll") {
             let list = this.collection.chain().data();
@@ -64,6 +67,11 @@ export class Table<T extends Object, K extends keyof T> {
         return this.page(chain, pageindex, pagesize);
     }
 
+    all(sort?: keyof T, desc: boolean = false) {
+        let chain = this.collection.chain();
+        if (sort) chain = chain.simplesort(sort, {desc: desc});
+        return chain.data();
+    }
     all_paged(pageindex: number, pagesize: number, sort?: keyof T, desc: boolean = false): Paged<T> {
         let chain = this.collection.chain();
         if (sort) chain = chain.simplesort(sort, {desc: desc});
