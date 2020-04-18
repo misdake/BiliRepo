@@ -1,6 +1,7 @@
 import {html, render} from 'lit-html';
 import "../elements/PagedVideoContainer";
 import "../elements/PagedMemberContainer";
+import "../elements/PagedPlaylistContainer";
 import "../elements/ViewTypeElement";
 import "../elements/InputElement";
 import {ViewType, ViewTypeContent, viewTypes} from "./indexViewType";
@@ -62,8 +63,3 @@ function renderPage() {
 }
 
 setViewType(viewtype); //will render page
-
-//TODO
-ClientApis.GetVideo.fetch(327709504).then(value => {
-    console.log(value);
-});

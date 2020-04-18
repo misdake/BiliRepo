@@ -1,6 +1,5 @@
 import {css, html, LitElement, property, TemplateResult} from "lit-element";
 import {Paged} from "../../common/page";
-import "./VideoListElement";
 
 export class PagedContainer<T> extends LitElement {
 
@@ -46,7 +45,7 @@ export class PagedContainer<T> extends LitElement {
     render() {
         let pages: TemplateResult[] = [];
         if (this.response && this.response.pagecount > 1) {
-            let pageIndices = [];
+            let pageIndices: number[] = [];
             if (this.response.pagecount > 10) {
                 let left = this.response.pageindex - 1;
                 let right = this.response.pageindex + 1;

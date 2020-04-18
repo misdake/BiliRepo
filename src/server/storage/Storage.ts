@@ -127,14 +127,6 @@ export class Storage {
         return this.table_video.find_paged({mid: mid}, page.pageindex, page.pagesize, "ctime", true);
     }
 
-    //search
-    public search_video_by_title(input: string, page: PageQuery) {
-        return this.table_video.find_paged({title: {'$contains': input}}, page.pageindex, page.pagesize, "ctime", true);
-    }
-    public search_member_by_name(input: string, page: PageQuery) {
-        return this.table_member.find_paged({name: {'$contains': input}}, page.pageindex, page.pagesize, "mid", true);
-    }
-
     //playlist
     private lastPid = 0;
     private video_playlist: Map<number, Set<number>> = new Map<number, Set<number>>();
@@ -166,11 +158,15 @@ export class Storage {
         p.title = title;
         p.videosAid = withAids;
         this.table_playlist.insert(p);
+        this.registerVideoPlaylist(p);
+        return p;
     }
     public updatePlaylist(pid: number, title: string | null, aids: number[] | null) {
         let playlist = this.table_playlist.get(pid);
         if (playlist) {
-            if (title) playlist.title = title;
+            if (title) {
+                playlist.title = title;
+            }
             if (aids) {
                 this.unregisterVideoPlaylist(playlist);
                 playlist.videosAid = aids;
@@ -178,6 +174,7 @@ export class Storage {
             }
             this.table_playlist.update(playlist);
         }
+        return playlist;
     }
     public removePlaylist(pid: number) { //TODO return value
         let playlist = this.table_playlist.get(pid);
@@ -208,6 +205,17 @@ export class Storage {
             pv.videos = [];
         }
         return pv;
+    }
+
+    //search
+    public search_video_by_title(input: string, page: PageQuery) {
+        return this.table_video.find_paged({title: {'$contains': input}}, page.pageindex, page.pagesize, "ctime", true);
+    }
+    public search_member_by_name(input: string, page: PageQuery) {
+        return this.table_member.find_paged({name: {'$contains': input}}, page.pageindex, page.pagesize, "mid", true);
+    }
+    public search_playlist_by_title(input: string, page: PageQuery) {
+        return this.table_playlist.find_paged({title: {'$contains': input}}, page.pageindex, page.pagesize, "pid", true);
     }
 
 }

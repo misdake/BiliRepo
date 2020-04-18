@@ -1,5 +1,5 @@
 import {Paged} from "../../common/page";
-import {MemberDB, VideoDB} from "../../server/storage/dbTypes";
+import {MemberDB, PlaylistDB, VideoDB} from "../../server/storage/dbTypes";
 import {html, TemplateResult} from "lit-html";
 import {PagedContainer} from "../elements/PagedContainer";
 import {ApiGet} from "../../common/api/Api";
@@ -98,6 +98,22 @@ const viewType_member: ViewTypeContent<MemberDB, ViewType.member> = new ViewType
     }
 );
 
+const viewType_playlist: ViewTypeContent<PlaylistDB, ViewType.playlist> = new ViewTypeContent<PlaylistDB, ViewType.playlist>(
+    ViewType.playlist, "播放列表", ClientApis.ListPlaylist, ClientApis.SearchPlaylist,
+    (loadPage, request, onContainerLoaded, afterLoad) => {
+        return html`
+            <pagedplaylist-container
+                .autoLoad=${false}
+                .request=${request} 
+                .onElementLoaded=${onContainerLoaded} 
+                .firstLoadPage=${loadPage} 
+                .afterLoad=${afterLoad}
+            ></pagedplaylist-container>
+        `;
+    }
+);
+
 export const viewTypes = new Map<ViewType, ViewTypeContent<any, any>>();
 viewTypes.set(ViewType.video, viewType_video);
 viewTypes.set(ViewType.member, viewType_member);
+viewTypes.set(ViewType.playlist, viewType_playlist);

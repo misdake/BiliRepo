@@ -35,7 +35,6 @@ export class PlaylistDB {
 
     title: string;
     videosAid: number[];
-    //TODO latest video aid
 }
 
 export class PlaylistVideos extends PlaylistDB {

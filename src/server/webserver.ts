@@ -122,14 +122,46 @@ Storage.createInstance().then(storage => {
         page => storage.all_members({pageindex: page, pagesize}),
     );
 
+    //playlist
+    ServerApis.AddPlaylist.serve(
+        _req => ({}),
+        (param, body) => new Promise(resolve => {
+            let created = storage.addPlaylist(body.title, body.aids);
+            resolve(created);
+        }),
+    );
+    ServerApis.UpdatePlaylist.serve(
+        req => parseInt(req.params["pid"]),
+        (param, body) => new Promise(resolve => {
+            let updated = storage.updatePlaylist(param, body.title, body.aids);
+            resolve(updated);
+        }),
+    );
+    ServerApis.GetPlaylist.serve(
+        req => parseInt(req.params["pid"]),
+        pid => storage.getPlaylist(pid)
+    );
+    ServerApis.GetPlaylistVideos.serve(
+        req => parseInt(req.params["pid"]),
+        pid => storage.getPlaylistVideos(pid)
+    );
+    ServerApis.ListPlaylist.serve(
+        req => parseInt(req.params["page"]),
+        page => storage.listPlaylist({pageindex: page, pagesize})
+    );
+
     //search
     ServerApis.SearchVideo.serve(
-        req => ({input: req.params["page"], page: parseInt(req.params["page"])}),
+        req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
         ({input, page}) => storage.search_video_by_title(input, {pageindex: page, pagesize}),
     );
     ServerApis.SearchMember.serve(
-        req => ({input: req.params["page"], page: parseInt(req.params["page"])}),
+        req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
         ({input, page}) => storage.search_member_by_name(input, {pageindex: page, pagesize}),
+    );
+    ServerApis.SearchPlaylist.serve(
+        req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
+        ({input, page}) => storage.search_playlist_by_title(input, {pageindex: page, pagesize}),
     );
 });
 

@@ -73,6 +73,7 @@ export let RawApis = {
     //Search
     SearchVideo: new ApiGet<{ input: string, page: number }, Paged<VideoDB>>("/api/video/search/:input/:page", ({input, page}) => `api/video/search/${input}/${page}`),
     SearchMember: new ApiGet<{ input: string, page: number }, Paged<MemberDB>>("/api/member/search/:input/:page", ({input, page}) => `api/member/search/${input}/${page}`),
+    SearchPlaylist: new ApiGet<{ input: string, page: number }, Paged<PlaylistDB>>("/api/playlist/search/:input/:page", ({input, page}) => `api/playlist/search/${input}/${page}`),
 
     //Proxy
     GetVideoInfo: new ApiPost<string, {}, BilibiliVideoJson>("/proxy/videoinfo/:id", id => `proxy/videoinfo/${id}`),
