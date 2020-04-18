@@ -20,7 +20,7 @@ export let client = {
 export class ApiGet<Param, Result> {
     readonly srvPattern: string;
     readonly reqPattern: (param: Param) => string;
-    constructor(srvPattern: string, reqPattern: (param: Param) => string) { //TODO construct reqPattern func from srvPattern
+    constructor(srvPattern: string, reqPattern: (param: Param) => string) { //TODO construct reqPattern func from srvPattern, auto server-side param extraction
         this.srvPattern = srvPattern;
         this.reqPattern = reqPattern;
     }
@@ -42,7 +42,7 @@ export class ApiPost<Param, Payload, Result> {
         this.reqPattern = reqPattern;
     }
 
-    serve(param: (req: Request) => Param, callback: (req: Request, body: Payload) => Result) {
+    serve(param: (req: Request) => Param, callback: (param: Param, body: Payload) => Promise<Result>) {
         server.servePost(this, param, callback);
     }
     fetch(param: Param, payload: Payload): Promise<Result> {
@@ -67,7 +67,7 @@ export let RawApis = {
     SearchMember: new ApiGet<{ input: string, page: number }, Paged<MemberDB>>("/api/member/search/:input/:page", ({input, page}) => `api/member/search/${input}/${page}`),
 
     //Proxy
-    GetVideoInfo: new ApiGet<string, BilibiliVideoJson>("/proxy/videoinfo/:id", id => `proxy/videoinfo/${id}`),
+    GetVideoInfo: new ApiPost<string, {}, BilibiliVideoJson>("/proxy/videoinfo/:id", id => `proxy/videoinfo/${id}`),
 
     //Download
     AddDownload: new ApiGet<number, boolean>("/download/add/:aid", aid => `download/add/${aid}`),

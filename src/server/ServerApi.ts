@@ -18,11 +18,10 @@ export function initServerApi(app: Application, downloader: Downloader) {
         });
     }
 
-    function serveApiPost<Param, Payload, Result>(api: ApiPost<Param, Payload, Result>, param: (req: Request) => Param, callback: (param: Param, body: Payload) => Result) {
+    function serveApiPost<Param, Payload, Result>(api: ApiPost<Param, Payload, Result>, param: (req: Request) => Param, callback: (param: Param, body: Payload) => Promise<Result>) {
         app.post(api.srvPattern, function (req: Request, res: Response) {
             let p = param(req);
-            let r = callback(p, req.body);
-            res.send(stringify(r));
+            callback(p, req.body).then(r => res.send(stringify(r)));
         });
     }
 

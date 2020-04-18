@@ -1,8 +1,9 @@
-import {Application, Request, Response} from "express";
+import {Application} from "express";
 import {Storage} from "./storage/Storage";
 import {Downloader} from "./download/Downloader";
 import {httpsget} from "./network";
 import {initServerApi, ServerApis} from "./ServerApi";
+import {BilibiliVideoJson} from "../common/types";
 
 const express = require('express');
 const cors = require('cors');
@@ -20,22 +21,6 @@ app.use('/', express.static('static')); //provide web pages
 app.use('/repo/', express.static('repo')); //provide video content
 app.use('/dist/', express.static('dist')); //provide web pages
 
-//proxy
-app.get('/proxy/videoinfo/:id', function (req: Request, res: Response) {
-    let id = req.params["id"];
-    let query = "";
-    if (id.toLowerCase().startsWith("av")) {
-        query = `aid=${id.substring(2)}`;
-    }
-    if (id.toLowerCase().startsWith("bv")) {
-        query = `bvid=${id}`;
-    }
-    console.log("query", query);
-    httpsget(`https://api.bilibili.com/x/web-interface/view?${query}`).then(value => {
-        res.send(value);
-    });
-});
-
 Storage.createInstance().then(storage => {
     let downloader = new Downloader(video => {
         storage.importVideo(video);
@@ -43,58 +28,71 @@ Storage.createInstance().then(storage => {
 
     initServerApi(app, downloader);
 
-    app.get('/test', function (req: Request, res: Response) { //TODO test
-        // storage.addPlaylist();
-        res.send(stringify(storage.getPlaylistVideos(1)));
-    });
+    // app.get('/test', function (req: Request, res: Response) { //TODO test
+    //     // storage.addPlaylist();
+    //     res.send(stringify(storage.getPlaylistVideos(1)));
+    // });
 
+    //proxy
+    ServerApis.GetVideoInfo.serve(req => req.params["id"], (id, body) => new Promise<BilibiliVideoJson>(resolve => {
+        let query = "";
+        if (id.toLowerCase().startsWith("av")) {
+            query = `aid=${id.substring(2)}`;
+        }
+        if (id.toLowerCase().startsWith("bv")) {
+            query = `bvid=${id}`;
+        }
+        console.log("query", query);
+        httpsget(`https://api.bilibili.com/x/web-interface/view?${query}`).then(value => {
+            resolve(JSON.parse(value) as BilibiliVideoJson);
+        });
+    }));
 
     //download
-    app.get('/download/add/:aid', function (req: Request, res: Response) {
-        downloader.enqueue(parseInt(req.params["aid"]));
-        res.send(stringify("true")); //TODO return result
+    ServerApis.AddDownload.serve(req => parseInt(req.params["aid"]), aid => {
+        downloader.enqueue(aid);
+        return true;
     });
-    app.get('/download/retry/:aid', function (req: Request, res: Response) {
-        downloader.remove(parseInt(req.params["aid"]));
-        downloader.enqueue(parseInt(req.params["aid"]));
-        res.send(stringify("true")); //TODO return result
+    ServerApis.RetryDownload.serve(req => parseInt(req.params["aid"]), aid => {
+        downloader.remove(aid);
+        downloader.enqueue(aid);
+        return true;
     });
-    app.get('/download/remove/:aid', function (req: Request, res: Response) {
-        downloader.remove(parseInt(req.params["aid"]));
-        res.send(stringify("true")); //TODO return result
+    ServerApis.RemoveDownload.serve(req => parseInt(req.params["aid"]), aid => {
+        downloader.remove(aid);
+        return true;
     });
-    app.get('/download/status', function (req: Request, res: Response) {
-        res.send(stringify(downloader.status_mini()));
-    });
-    app.post('/download/cookie', (req: Request, res: Response) => {
-        if (req.body && req.body.cookie) {
-            downloader.setCookie(req.body.cookie);
-            res.send(stringify("good"));
-        } else {
-            res.send(stringify("bad"));
-        }
-    });
-    app.post('/download/danmaku/update', function (req: Request, res: Response) {
-        if (req.body && req.body.part) {
-            downloader.updateDanmaku(req.body.part).then(value => {
-                res.send(stringify("good"));
-            }).catch(reason => {
-                res.send(stringify(reason));
-            });
-        } else {
-            res.send(stringify("bad"));
-        }
-    });
+    ServerApis.StatusDownload.serve(_req => ({}), _param => downloader.status_mini());
+
+    ServerApis.UpdateCookie.serve(
+        _req => ({}),
+        (param, body) => new Promise<string>(resolve => {
+            if (body && body.cookie) {
+                downloader.setCookie(body.cookie);
+                resolve("good");
+            } else {
+                resolve("bad");
+            }
+        }),
+    );
+
+    ServerApis.UpdateDanmaku.serve(
+        _req => ({}),
+        (param, body) => new Promise<string>(resolve => {
+            if (body.part) {
+                downloader.updateDanmaku(body.part).then(value => {
+                    resolve("good");
+                }).catch(reason => {
+                    resolve(reason);
+                });
+            } else {
+                resolve("bad");
+            }
+        }),
+    );
+
 
     const pagesize = 12; //TODO different page sizes for different types?
-    const defaultpage = {pageindex: 1, pagesize: pagesize};
-    const blacklist = ['meta', '$loki'];
-
-    function stringify(obj: any) {
-        return JSON.stringify(obj, function replacer(key, value) {
-            return blacklist.indexOf(key) === -1 ? value : undefined;
-        });
-    }
 
     //video
     ServerApis.GetVideo.serve(
@@ -115,20 +113,24 @@ Storage.createInstance().then(storage => {
     );
 
     //member
-    app.get('/api/member/mid/:mid', function (req: Request, res: Response) {
-        res.send(stringify(storage.member(parseInt(req.params["mid"]))));
-    });
-    app.get('/api/member/all/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.all_members({pageindex: parseInt(req.params["page"]), pagesize})));
-    });
+    ServerApis.GetMember.serve(
+        req => parseInt(req.params["mid"]),
+        mid => storage.member(mid),
+    );
+    ServerApis.ListMember.serve(
+        req => parseInt(req.params["page"]),
+        page => storage.all_members({pageindex: page, pagesize}),
+    );
 
     //search
-    app.get('/api/video/search/:input/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.search_video_by_title(req.params["input"], {pageindex: parseInt(req.params["page"]), pagesize})));
-    });
-    app.get('/api/member/search/:input/:page', function (req: Request, res: Response) {
-        res.send(stringify(storage.search_member_by_name(req.params["input"], {pageindex: parseInt(req.params["page"]), pagesize})));
-    });
+    ServerApis.SearchVideo.serve(
+        req => ({input: req.params["page"], page: parseInt(req.params["page"])}),
+        ({input, page}) => storage.search_video_by_title(input, {pageindex: page, pagesize}),
+    );
+    ServerApis.SearchMember.serve(
+        req => ({input: req.params["page"], page: parseInt(req.params["page"])}),
+        ({input, page}) => storage.search_member_by_name(input, {pageindex: page, pagesize}),
+    );
 });
 
 app.listen(8081);

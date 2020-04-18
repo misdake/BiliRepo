@@ -128,7 +128,7 @@ export class PageElement extends LitElement {
         this.inputVideo = null;
         if(!input.toLowerCase().startsWith("av") && !input.toLowerCase().startsWith("bv")) return;
 
-        ClientApis.GetVideoInfo.fetch(input).then(videoJson => {
+        ClientApis.GetVideoInfo.fetch(input, {}).then(videoJson => {
             let v = videoJson.data;
             if (!v) return;
             this.inputVideo = {
