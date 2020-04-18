@@ -50,37 +50,37 @@ Storage.createInstance().then(storage => {
     //download
     app.get('/download/add/:aid', function (req: Request, res: Response) {
         downloader.enqueue(parseInt(req.params["aid"]));
-        res.send("true"); //TODO return result
+        res.send(stringify("true")); //TODO return result
     });
     app.get('/download/retry/:aid', function (req: Request, res: Response) {
         downloader.remove(parseInt(req.params["aid"]));
         downloader.enqueue(parseInt(req.params["aid"]));
-        res.send("true"); //TODO return result
+        res.send(stringify("true")); //TODO return result
     });
     app.get('/download/remove/:aid', function (req: Request, res: Response) {
         downloader.remove(parseInt(req.params["aid"]));
-        res.send("true"); //TODO return result
+        res.send(stringify("true")); //TODO return result
     });
     app.get('/download/status', function (req: Request, res: Response) {
-        res.send(downloader.status_mini());
+        res.send(stringify(downloader.status_mini()));
     });
     app.post('/download/cookie', (req: Request, res: Response) => {
         if (req.body && req.body.cookie) {
             downloader.setCookie(req.body.cookie);
-            res.send("good");
+            res.send(stringify("good"));
         } else {
-            res.send("bad");
+            res.send(stringify("bad"));
         }
     });
     app.post('/download/danmaku/update', function (req: Request, res: Response) {
         if (req.body && req.body.part) {
             downloader.updateDanmaku(req.body.part).then(value => {
-                res.send("good");
+                res.send(stringify("good"));
             }).catch(reason => {
-                res.send(reason);
+                res.send(stringify(reason));
             });
         } else {
-            res.send("bad");
+            res.send(stringify("bad"));
         }
     });
 

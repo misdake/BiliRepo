@@ -1,6 +1,5 @@
 import {css, customElement, html, LitElement, property} from "lit-element";
 import {VideoStatus} from "../../common/DownloadStatus";
-import {apipost} from "../common/network";
 import "../elements/InputElement";
 import "./VideoStatusElement";
 import "./VideoListElement";
@@ -171,13 +170,13 @@ export class PageElement extends LitElement {
     private updateCookie() {
         navigator.clipboard.readText().then(value => {
             if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
-                apipost("download/cookie", {cookie: value}, (content) => {
+                ClientApis.UpdateCookie.run({}, {cookie: value}).then(content => {
                     if (content === "good") {
                         this.message = "";
-                        alert("cookie updated!")
+                        alert("cookie updated!");
                     } else {
                         this.message = content;
-                        alert("cookie update failed!\nresponse: " + content)
+                        alert("cookie update failed!\nresponse: " + content);
                     }
                 });
             } else {

@@ -1,4 +1,4 @@
-import {MemberDB, VideoDB, VideoParts} from "../../server/storage/dbTypes";
+import {MemberDB, PartDB, VideoDB, VideoParts} from "../../server/storage/dbTypes";
 import {Paged} from "../page";
 import {BilibiliVideoJson} from "../types";
 import {DownloadStatus} from "../DownloadStatus";
@@ -61,4 +61,7 @@ export let RawApis = {
     RetryDownload: new ApiGet<number, boolean>("/download/retry/:aid", aid => `download/retry/${aid}`),
     RemoveDownload: new ApiGet<number, boolean>("/download/remove/:aid", aid => `download/remove/${aid}`),
     StatusDownload: new ApiGet<{}, DownloadStatus>("/download/status", () => `download/status`),
+
+    UpdateCookie: new ApiPost<{}, { cookie: string }, string>("/download/cookie", () => `download/cookie`),
+    UpdateDanmaku: new ApiPost<{}, { part: PartDB }, string>("/download/danmaku/update", () => `download/danmaku/update`),
 };

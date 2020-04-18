@@ -1,5 +1,32 @@
 import {ApiGet, ApiPost, RawApis, runner} from "../../../common/api/Api";
-import {apiget, apipost} from "../network";
+
+export function httpget(url: string, callback: (content: string) => void) {
+    let request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+            callback(request.responseText);
+        }
+    };
+    request.open("GET", url, true);
+    request.send();
+}
+export function httppost(url: string, body: any, callback: (content: string) => void) {
+    let request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+            callback(request.responseText);
+        }
+    };
+    request.open("POST", url, true);
+    request.setRequestHeader('content-type', 'application/json');
+    request.send(JSON.stringify(body));
+}
+export function apiget(url: string, callback: (content: string) => void) {
+    httpget(serverConfig.apiRoot + url, callback);
+}
+export function apipost(url: string, body: any, callback: (content: string) => void) {
+    httppost(serverConfig.apiRoot + url, body, callback);
+}
 
 function runApiGet<Param, Result>(api: ApiGet<Param, Result>, param: Param): Promise<Result> {
     return new Promise<Result>(resolve => {
