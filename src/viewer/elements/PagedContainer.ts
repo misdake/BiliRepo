@@ -17,6 +17,7 @@ export class PagedContainer<T> extends LitElement {
     autoLoad: boolean = true;
 
     protected listRenderer: (list: Paged<T>) => TemplateResult;
+    protected rightRenderer: () => TemplateResult;
 
     constructor() {
         super();
@@ -72,10 +73,13 @@ export class PagedContainer<T> extends LitElement {
             }
         }
         let list = this.listRenderer(this.response);
+        let rightHeader = this.rightRenderer ? this.rightRenderer() : html``;
 
         return html`
             <div>
-                <div class="header"><span class="header_text">共${this.response.total}项</span>${pages}</div>
+                <div class="header">
+                    <span class="header_text">共${this.response.total}项</span>${pages}<span>${rightHeader}</span>
+                </div>
                 ${list}
             </div>
         `;

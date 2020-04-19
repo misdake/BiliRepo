@@ -31,6 +31,7 @@ module.exports = env =>{
         entry: {
             index: './src/viewer/index/index.ts',
             member: './src/viewer/index/member.ts',
+            playlist: './src/viewer/index/playlist.ts',
             watch: './src/viewer/watch/watch.ts',
             download: './src/viewer/download/download.ts',
         },
