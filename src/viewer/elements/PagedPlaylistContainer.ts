@@ -1,6 +1,6 @@
 import {customElement, html, LitElement, property} from "lit-element";
 import {PlaylistDB} from "../../server/storage/dbTypes";
-import "./PlaylistElement";
+import "./PlaylistDetailElement";
 import "./InputElement";
 import {PagedContainer} from "./PagedContainer";
 import {repeat} from "lit-html/directives/repeat";
@@ -19,7 +19,7 @@ export class PlaylistListElement extends LitElement {
     render() {
         return html`
             <ul style="padding: 0; margin: 0 -10px;">
-                ${repeat(this.playlists, (playlist: PlaylistDB) => html`<playlist-element style="float: left; width: 300px; margin: 10px;" .playlist=${playlist}></playlist-element>`)}
+                ${repeat(this.playlists, (playlist: PlaylistDB) => html`<playlistdetail-element style="float: left;" .playlist=${playlist}></playlistdetail-element>`)}
             </ul>
         `;
     }
@@ -32,6 +32,7 @@ export class PagedPlaylistContainer extends PagedContainer<PlaylistDB> {
     clickNewPlaylist(input: string) {
         ClientApis.AddPlaylist.fetch({}, {title: input.trim(), aids: []}).then(playlist => {
             window.open(`playlist.html?pid=${playlist.pid}`, "_blank");
+            window.location.reload();
         });
     }
 

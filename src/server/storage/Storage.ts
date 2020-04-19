@@ -154,7 +154,7 @@ export class Storage {
     }
     public addPlaylist(title: string, withAids: number[] = []) {
         let p = new PlaylistDB();
-        p.pid = this.lastPid++;
+        p.pid = ++this.lastPid;
         p.title = title;
         p.videosAid = withAids;
         this.table_playlist.insert(p);
@@ -198,11 +198,7 @@ export class Storage {
         Object.assign(pv, playlist);
         if (playlist.videosAid) {
             let array: VideoDB[] = this.table_video.find({aid: {'$in': playlist.videosAid}});
-            let map: Map<number, VideoDB> = new Map<number, VideoDB>();
-            for (let video of array) {
-                map.set(video.aid, video);
-            }
-            pv.videos = playlist.videosAid.map(aid => map.get(aid));
+            pv.videos = array.sort((a, b) => a.ctime - b.ctime);
         } else {
             pv.videos = [];
         }
@@ -212,6 +208,7 @@ export class Storage {
         let pids = this.video_playlist.get(aid);
         if (pids) {
             let playlists = pids ? this.table_playlist.find({pid: {'$in': Array.from(pids.values())}}) : [];
+            playlists.sort((a, b) => b.pid - a.pid);
             return playlists;
         } else {
             return [];

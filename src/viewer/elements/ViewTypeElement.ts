@@ -50,11 +50,11 @@ export class ViewTypeElement extends LitElement {
         let types: TemplateResult[] = [];
         viewTypes.forEach((value, key) => {
             let classes = key === this.selectedType ? " selectedtype" : "";
-            types.push(html`<span class="viewtype${classes}"><a href="index.html?type=${value.type}" @click=${(e: Event) => {
+            types.push(html`<a href="index.html?type=${value.type}" @click=${(e: Event) => {
                 this.onClick(value.type);
                 e.preventDefault();
                 return true;
-            }}>${value.title}</a></span>`)
+            }}><span class="viewtype${classes}">${value.title}</span></a>`)
         });
 
         return html`

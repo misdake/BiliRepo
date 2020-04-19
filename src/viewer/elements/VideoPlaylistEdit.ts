@@ -50,6 +50,12 @@ export class VideoPlaylistEditElement extends LitElement {
             this.selectedAdd = undefined;
         }
     }
+    private jumpFromPlaylist() {
+        let playlist = this.selectedRemove;
+        if (playlist) {
+            window.open(`playlist.html?pid=${playlist.pid}`, "_blank");
+        }
+    }
     private removeFromPlaylist() {
         let playlist = this.selectedRemove;
         if (playlist) {
@@ -86,6 +92,7 @@ export class VideoPlaylistEditElement extends LitElement {
                         <option>${playlist.title}</option>
                     `)}
                 </select>
+                <button @click=${() => this.jumpFromPlaylist()}>跳转</button>
                 <button @click=${() => this.removeFromPlaylist()}>删除</button>
             </span>
             <span style="border: 1px gray solid; padding: 2px; margin: 2px;">
