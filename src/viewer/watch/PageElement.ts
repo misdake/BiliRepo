@@ -5,6 +5,7 @@ import "../elements/GuideElement";
 import "./PlayerElement";
 import "../elements/MemberElement";
 import "../elements/VideoDescElement";
+import "../elements/VideoPlaylistEdit";
 import "./PlaylistElement";
 import {PartDB, VideoParts} from "../../server/storage/dbTypes";
 
@@ -112,6 +113,9 @@ export class PageElement extends LitElement {
                 </div>
                 <div id="info">
                     <videodesc-element .video=${this.currentVideo} .part=${this.currentPart}></videodesc-element>
+                </div>
+                <div id="playlistedit">
+                    <videoplaylistedit-element .video=${this.currentVideo}></videoplaylistedit-element>
                 </div>
             </div>
         `;

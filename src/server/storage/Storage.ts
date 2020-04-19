@@ -161,7 +161,7 @@ export class Storage {
         this.registerVideoPlaylist(p);
         return p;
     }
-    public updatePlaylist(pid: number, title: string | null, aids: number[] | null) {
+    public updatePlaylist(pid: number, title: string | null, aids: number[] | null) { //TODO replace aids array to {add,remove}
         let playlist = this.table_playlist.get(pid);
         if (playlist) {
             if (title) {
@@ -181,7 +181,9 @@ export class Storage {
         if (playlist) {
             this.table_playlist.delete(playlist);
             this.unregisterVideoPlaylist(playlist);
+            return true;
         }
+        return false;
     }
     public listPlaylist(page: PageQuery) {
         return this.table_playlist.all_paged(page.pageindex, page.pagesize, "pid", true);
@@ -205,6 +207,15 @@ export class Storage {
             pv.videos = [];
         }
         return pv;
+    }
+    public getVideoPlaylists(aid: number) {
+        let pids = this.video_playlist.get(aid);
+        if (pids) {
+            let playlists = pids ? this.table_playlist.find({pid: {'$in': Array.from(pids.values())}}) : [];
+            return playlists;
+        } else {
+            return [];
+        }
     }
 
     //search

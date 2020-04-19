@@ -137,6 +137,10 @@ Storage.createInstance().then(storage => {
             resolve(updated);
         }),
     );
+    ServerApis.RemovePlaylist.serve(
+        req => parseInt(req.params["pid"]),
+        (pid) => storage.removePlaylist(pid),
+    );
     ServerApis.GetPlaylist.serve(
         req => parseInt(req.params["pid"]),
         pid => storage.getPlaylist(pid)
@@ -144,6 +148,10 @@ Storage.createInstance().then(storage => {
     ServerApis.GetPlaylistVideos.serve(
         req => parseInt(req.params["pid"]),
         pid => storage.getPlaylistVideos(pid)
+    );
+    ServerApis.GetVideoPlaylists.serve(
+        req => parseInt(req.params["aid"]),
+        aid => storage.getVideoPlaylists(aid)
     );
     ServerApis.ListPlaylist.serve(
         req => parseInt(req.params["page"]),
