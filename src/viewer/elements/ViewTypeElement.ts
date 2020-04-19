@@ -30,8 +30,9 @@ export class ViewTypeElement extends LitElement {
         
         .download {
             border-width: 1px;
-            border-color: rgba(135, 206, 235, 0);
-            color: blue;
+            border-color: rgb(0, 0, 128);
+            color: rgb(0, 0, 128);
+            margin-right: 0;
         }
         
         .selectedtype {
@@ -60,7 +61,7 @@ export class ViewTypeElement extends LitElement {
         return html`
             <div style="text-align: right;">
                 ${types}
-                <span class="download" @click=${() => window.open("download.html")}>下载</span>
+                <a href="download.html"><span class="viewtype download">下载</span></a>
             </div>
         `;
     }

@@ -9,7 +9,7 @@ export class PlaylistDetailElement extends LitElement {
 
     static styles = css`
         .playlist {
-            width: 620px;
+            width: 630px;
             padding: 10px;
         }
         .playlist:hover {

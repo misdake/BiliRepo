@@ -38,8 +38,8 @@ const pageTemplate = (playlist: PlaylistVideos) => html`
         </style>
         <div class="header">
             <span class="header_text">共${playlist.videos.length}项</span>
-            <input-element .input=${""} .buttonText=${"更新名称"} .checkInput="${(input: string) => renamePlaylist(playlist, input)}" .showClearButton=${false}></input-element>
-            <button style="float: right;" @click=${() => removePlaylist(playlist)}>删除列表</button>
+            <button style="margin-left: 10px; float: right;" @click=${() => removePlaylist(playlist)}>删除列表</button>
+            <input-element style="float: right;" .input=${""} .buttonText=${"更新名称"} .checkInput="${(input: string) => renamePlaylist(playlist, input)}" .showClearButton=${false}></input-element>
         </div>
         <videolist-element .videos=${playlist.videos}></videolist-element>
     </div>

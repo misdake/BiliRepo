@@ -39,7 +39,7 @@ export class PagedPlaylistContainer extends PagedContainer<PlaylistDB> {
     constructor() {
         super();
         super.rightRenderer = () => html`
-            <input-element .input=${""} .buttonText=${"新建列表"} .checkInput="${(input: string) => this.clickNewPlaylist(input)}" .showClearButton=${false}></input-element>
+            <input-element style="float: right;" .input=${""} .buttonText=${"新建列表"} .checkInput="${(input: string) => this.clickNewPlaylist(input)}" .showClearButton=${false}></input-element>
         `;
         super.listRenderer = list => html`<playlistlist-element .playlists=${list.result}></playlistlist-element>`;
     }
