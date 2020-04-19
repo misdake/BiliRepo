@@ -1,13 +1,25 @@
 import {html, render} from 'lit-html';
 import "../elements/PlaylistElement";
-import {PlaylistVideos} from "../../server/storage/dbTypes";
+import {PlaylistDB, PlaylistVideos} from "../../server/storage/dbTypes";
 import "../elements/PagedVideoContainer";
 import "../elements/GuideElement";
+import "../elements/InputElement";
 import {ClientApis} from "../common/api/ClientApi";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
 let pid = parseInt(url.searchParams.get("pid")) || 0;
+
+function renamePlaylist(playlist: PlaylistDB, newName: string) {
+    ClientApis.UpdatePlaylist.fetch(pid, {title: newName.trim(), aids: undefined}).then(playlist => {
+        window.location.reload();
+    });
+}
+function removePlaylist(playlist: PlaylistDB) {
+    ClientApis.RemovePlaylist.fetch(playlist.pid).then(playlist => {
+        window.location.assign("index.html?type=3");
+    });
+}
 
 const pageTemplate = (playlist: PlaylistVideos) => html`
     <div style="height: 100%; width: 1280px; max-width: 100%; margin: 0 auto;">
@@ -20,12 +32,15 @@ const pageTemplate = (playlist: PlaylistVideos) => html`
                 margin: 10px 0;
                 user-select: none;
             }
-            
             .header_text {
                 margin-right: 20px;
             }
         </style>
-        <div class="header"><span class="header_text">共${playlist.videos.length}项</span></div>
+        <div class="header">
+            <span class="header_text">共${playlist.videos.length}项</span>
+            <input-element .input=${""} .buttonText=${"更新名称"} .checkInput="${(input: string) => renamePlaylist(playlist, input)}" .showClearButton=${false}></input-element>
+            <button style="float: right;" @click=${() => removePlaylist(playlist)}>删除列表</button>
+        </div>
         <videolist-element .videos=${playlist.videos}></videolist-element>
     </div>
 `;

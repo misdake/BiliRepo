@@ -10,23 +10,16 @@ export class PlaylistElement extends LitElement {
     static styles = css`
         .playlist {
             margin: 0;
-            width: 236px;
-            height: 64px;
-            overflow: hidden;
         }
-        img {
-            float: left;
-            width: 64px;
-            height: 64px;
-            object-fit: cover;
+        a {
+            text-decoration: none;
         }
     `;
 
     render() {
-        // <img src="${this.playlist.face}" crossOrigin = "Anonymous" alt="face"/>
         return this.playlist ? html`
             <div class="playlist"><a href="/playlist.html?pid=${this.playlist.pid}">
-                <div>${this.playlist.title}</div>
+                <h1>${this.playlist.title}</h1>
             </a></div>
         ` : html``;
     }
