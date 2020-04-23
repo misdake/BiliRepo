@@ -79,7 +79,7 @@ export class VideoLabelElement extends LitElement {
             </li>`;
         let part = !this.part ? html`` : html`
             <li class="${partClass}" @click=${() => this.onitemclick()}>
-                <span>${this.part.index}</span>
+                <span>${this.part.index}: ${this.part.title}</span>
             </li>`;
 
         return html`
