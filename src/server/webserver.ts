@@ -133,7 +133,7 @@ Storage.createInstance().then(storage => {
     ServerApis.UpdatePlaylist.serve(
         req => parseInt(req.params["pid"]),
         (param, body) => new Promise(resolve => {
-            let updated = storage.updatePlaylist(param, body.title, body.aids);
+            let updated = storage.updatePlaylist(param, body.title, body.add, body.remove);
             resolve(updated);
         }),
     );

@@ -60,7 +60,7 @@ export class VideoPlaylistEditElement extends LitElement {
         let playlist = this.selectedRemove;
         if (playlist) {
             playlist.videosAid = playlist.videosAid.filter(aid => aid !== this.video.aid);
-            ClientApis.UpdatePlaylist.fetch(playlist.pid, {title: undefined, aids: playlist.videosAid}).then(_playlist => {
+            ClientApis.UpdatePlaylist.fetch(playlist.pid, {title: undefined, remove: [this.video.aid]}).then(_playlist => {
                 this.videoPlaylists = this.videoPlaylists.filter(p => p.pid !== playlist.pid);
                 this.selectedRemove = undefined;
                 this.elementRemove.selectedIndex = 0;
@@ -72,7 +72,7 @@ export class VideoPlaylistEditElement extends LitElement {
         if (playlist) {
             playlist.videosAid = playlist.videosAid.filter(aid => aid !== this.video.aid);
             playlist.videosAid.push(this.video.aid);
-            ClientApis.UpdatePlaylist.fetch(playlist.pid, {title: undefined, aids: playlist.videosAid}).then(_playlist => {
+            ClientApis.UpdatePlaylist.fetch(playlist.pid, {title: undefined, add: [this.video.aid]}).then(_playlist => {
                 let newArray = this.videoPlaylists.filter(p => p.pid !== playlist.pid);
                 newArray.push(playlist);
                 this.videoPlaylists = newArray;

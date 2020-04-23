@@ -161,15 +161,20 @@ export class Storage {
         this.registerVideoPlaylist(p);
         return p;
     }
-    public updatePlaylist(pid: number, title: string | null, aids: number[] | null) { //TODO replace aids array to {add,remove}
+    public updatePlaylist(pid: number, title: string | null, add: number[] | null, remove: number[] | null) {
         let playlist = this.table_playlist.get(pid);
         if (playlist) {
             if (title) {
                 playlist.title = title;
             }
-            if (aids) {
+            if (add || remove) {
                 this.unregisterVideoPlaylist(playlist);
-                playlist.videosAid = aids;
+                //modify
+                if (remove) playlist.videosAid = playlist.videosAid.filter(i => remove.indexOf(i) >= 0);
+                if (add) playlist.videosAid.push(...add);
+                //reorder
+                let array: VideoDB[] = this.table_video.find({aid: {'$in': playlist.videosAid}});
+                playlist.videosAid = array.sort((a, b) => a.ctime - b.ctime).map(i => i.aid);
                 this.registerVideoPlaylist(playlist);
             }
             this.table_playlist.update(playlist);

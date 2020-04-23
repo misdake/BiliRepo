@@ -11,7 +11,7 @@ let url = new URL(url_string);
 let pid = parseInt(url.searchParams.get("pid")) || 0;
 
 function renamePlaylist(playlist: PlaylistDB, newName: string) {
-    ClientApis.UpdatePlaylist.fetch(pid, {title: newName.trim(), aids: undefined}).then(playlist => {
+    ClientApis.UpdatePlaylist.fetch(pid, {title: newName.trim()}).then(playlist => {
         window.location.reload();
     });
 }
