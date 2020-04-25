@@ -40,3 +40,7 @@ export class PlaylistDB {
 export class PlaylistVideos extends PlaylistDB {
     videos: VideoDB[];
 }
+
+export class PlaylistVideoParts extends PlaylistDB {
+    videoParts: VideoParts[];
+}

@@ -37,6 +37,8 @@ export class PageElement extends LitElement {
         this.currentVideo = video;
         document.title = this.currentVideo.title;
 
+        //TODO update url
+
         this.currentPart = null;
         for (let page of this.currentVideo.parts) {
             if (page == part) {

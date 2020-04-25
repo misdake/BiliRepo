@@ -1,27 +1,53 @@
 import {html, render} from 'lit-html';
 import "./PageElement";
 import {Playlist, PlaylistItem} from "./Playlist";
-import {PartDB} from "../../server/storage/dbTypes";
 import {ClientApis} from "../common/api/ClientApi";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
-let aid = parseInt(url.searchParams.get("aid")) || 68836859;
+
+//input params
+let pid = parseInt(url.searchParams.get("pid"));
+let aid = parseInt(url.searchParams.get("aid"));
 let part = parseInt(url.searchParams.get("p")) || 1;
 
-ClientApis.GetVideoParts.fetch(aid).then(video => {
-    document.title = video.title;
+//start loading
+let playlist = new Playlist();
+let currentIndex = 0;
+let loadPromise: Promise<Playlist>;
 
-    let index = null;
-    for (let [i, page] of video.parts.entries()) {
-        if (page.index == part) {
-            index = i;
-            break;
+if (!isNaN(pid)) {
+    loadPromise = new Promise<Playlist>(resolve => {
+        ClientApis.GetPlaylistVideoParts.fetch(pid).then(res => {
+            playlist.items = [];
+            for (let vp of res.videoParts) {
+                for (let p of vp.parts) {
+                    playlist.items.push(new PlaylistItem(vp, p));
+                }
+            }
+            resolve();
+        });
+    });
+} else if (aid || !isNaN(aid)) {
+    loadPromise = new Promise<Playlist>(resolve => {
+        ClientApis.GetVideoParts.fetch(aid).then(res => {
+            playlist.items = [];
+            for (let p of res.parts) {
+                playlist.items.push(new PlaylistItem(res, p));
+            }
+            resolve();
+        });
+    });
+}
+
+loadPromise.then(() => {
+    console.log(playlist);
+    for (let i = 0; i < playlist.items.length; i++) {
+        let item = playlist.items[i];
+        if (aid === item.video.aid && part == item.part.index) {
+            currentIndex = i;
         }
     }
 
-    let playlist = new Playlist();
-    playlist.items = video.parts.map((page: PartDB) => new PlaylistItem(video, page));
-
-    render(html`<page-element .playlist=${playlist} .playindex=${index}></page-element>`, document.body);
+    render(html`<page-element .playlist=${playlist} .playindex=${currentIndex}></page-element>`, document.body);
 });

@@ -1,4 +1,4 @@
-import {MemberDB, PartDB, PlaylistDB, PlaylistVideos, VideoDB, VideoParts} from "./dbTypes";
+import {MemberDB, PartDB, PlaylistDB, PlaylistVideoParts, PlaylistVideos, VideoDB, VideoParts} from "./dbTypes";
 import {Table} from "./Table";
 import {PageQuery} from "../../common/page";
 import {BilibiliVideo, BilibiliVideoJson} from "../../common/types";
@@ -206,6 +206,44 @@ export class Storage {
             pv.videos = array.sort((a, b) => a.ctime - b.ctime);
         } else {
             pv.videos = [];
+        }
+        return pv;
+    }
+    public getPlaylistVideoParts(pid: number) {
+        let playlist = this.table_playlist.get(pid);
+        if (!playlist) return undefined;
+
+        let pv = new PlaylistVideoParts();
+        Object.assign(pv, playlist);
+        if (playlist.videosAid) {
+            let videos: VideoDB[] = this.table_video.find({aid: {'$in': playlist.videosAid}});
+            let parts: PartDB[] = this.table_part.find({aid: {'$in': playlist.videosAid}});
+            let members: MemberDB[] = this.table_member.find({mid: {'$in': videos.map(v => v.mid)}});
+
+            let videoMap: Map<number, VideoParts> = new Map<number, VideoParts>();
+            let memberMap: Map<number, MemberDB> = new Map<number, MemberDB>();
+
+            for (let member of members) {
+                memberMap.set(member.mid, member);
+            }
+            for (let video of videos) {
+                let videoParts = new VideoParts();
+                Object.assign(videoParts, video);
+                videoParts.member = memberMap.get(video.mid);
+                videoParts.parts = [];
+                videoMap.set(video.aid, videoParts);
+            }
+            for (let part of parts) {
+                let video = videoMap.get(part.aid);
+                video.parts.push(part);
+            }
+            for (let video of videoMap.values()) {
+                video.parts.sort((a, b) => a.index - b.index);
+            }
+
+            pv.videoParts = Array.from(videoMap.values()).sort((a, b) => a.ctime - b.ctime);
+        } else {
+            pv.videoParts = [];
         }
         return pv;
     }

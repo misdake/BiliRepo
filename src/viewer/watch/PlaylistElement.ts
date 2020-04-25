@@ -16,7 +16,7 @@ export class PlaylistElement extends LitElement {
         ul {
             padding: 0;
             margin: 0;
-            width: 340px;
+            width: 320px;
             max-width: 100%;
         }
     `;

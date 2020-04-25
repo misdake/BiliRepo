@@ -151,6 +151,10 @@ Storage.createInstance().then(storage => {
         req => parseInt(req.params["pid"]),
         pid => storage.getPlaylistVideos(pid)
     );
+    ServerApis.GetPlaylistVideoParts.serve(
+        req => parseInt(req.params["pid"]),
+        pid => storage.getPlaylistVideoParts(pid)
+    );
     ServerApis.GetVideoPlaylists.serve(
         req => parseInt(req.params["aid"]),
         aid => storage.getVideoPlaylists(aid)

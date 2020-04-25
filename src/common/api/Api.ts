@@ -1,4 +1,4 @@
-import {MemberDB, PartDB, PlaylistDB, PlaylistVideos, VideoDB, VideoParts} from "../../server/storage/dbTypes";
+import {MemberDB, PartDB, PlaylistDB, PlaylistVideoParts, PlaylistVideos, VideoDB, VideoParts} from "../../server/storage/dbTypes";
 import {Paged} from "../page";
 import {BilibiliVideoJson} from "../types";
 import {DownloadStatus} from "../DownloadStatus";
@@ -69,6 +69,7 @@ export let RawApis = {
     ListPlaylist: new ApiGet<number, Paged<PlaylistDB>>("/api/playlist/list/:page", page => `api/playlist/list/${page}`),
     GetPlaylist: new ApiGet<number, PlaylistDB>("/api/playlist/pid/:pid", pid => `api/playlist/pid/${pid}`),
     GetPlaylistVideos: new ApiGet<number, PlaylistVideos>("/api/playlist/withvideos/:pid", pid => `api/playlist/withvideos/${pid}`),
+    GetPlaylistVideoParts: new ApiGet<number, PlaylistVideoParts>("/api/playlist/withvideoparts/:pid", pid => `api/playlist/withvideoparts/${pid}`),
     GetVideoPlaylists: new ApiGet<number, PlaylistDB[]>("/api/playlist/byvideo/:aid", aid => `api/playlist/byvideo/${aid}`),
 
     //Search

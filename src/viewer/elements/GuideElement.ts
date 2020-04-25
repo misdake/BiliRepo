@@ -6,7 +6,7 @@ export class GuideElement extends LitElement {
     static styles = css`
         a {
             text-decoration: none;
-            padding: 0 5px;
+            padding: 0;
             color: blue;
         }
     `;
