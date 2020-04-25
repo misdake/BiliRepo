@@ -27,7 +27,7 @@ export class MemberDB {
     name: string;
     face: string;
 
-    lastAid: number;
+    lastCtime: number;
 }
 
 export class PlaylistDB {

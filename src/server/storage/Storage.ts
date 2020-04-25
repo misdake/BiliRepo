@@ -61,13 +61,13 @@ export class Storage {
         this.table_video.insertOrUpdate(v);
 
         let m2 = this.table_member.get(bilibiliVideo.owner.mid);
-        if (!m2 || m2.lastAid < bilibiliVideo.aid) {
+        if (!m2 || m2.lastCtime < bilibiliVideo.ctime) {
             let m: MemberDB = {
                 mid: bilibiliVideo.owner.mid,
 
                 name: bilibiliVideo.owner.name,
                 face: bilibiliVideo.owner.face,
-                lastAid: bilibiliVideo.aid,
+                lastCtime: bilibiliVideo.ctime,
             };
             this.table_member.insertOrUpdate(m);
         }
@@ -161,7 +161,7 @@ export class Storage {
         this.registerVideoPlaylist(p);
         return p;
     }
-    public updatePlaylist(pid: number, title: string | null, add: number[] | null, remove: number[] | null) {
+    public updatePlaylist(pid: number, title: string | null, add: number[] | undefined, remove: number[] | undefined) {
         let playlist = this.table_playlist.get(pid);
         if (playlist) {
             if (title) {
