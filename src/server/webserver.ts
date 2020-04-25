@@ -92,7 +92,9 @@ Storage.createInstance().then(storage => {
     );
 
 
-    const pagesize = 12; //TODO different page sizes for different types?
+    const videoPagesize = 12;
+    const memberPagesize = 24;
+    const playlistPagesize = 8;
 
     //video
     ServerApis.GetVideo.serve(
@@ -105,11 +107,11 @@ Storage.createInstance().then(storage => {
     );
     ServerApis.ListVideo.serve(
         req => parseInt(req.params["page"]),
-        page => storage.recent_videos({pageindex: page, pagesize})
+        page => storage.recent_videos({pageindex: page, pagesize: videoPagesize})
     );
     ServerApis.ListVideoByMember.serve(
         req => ({mid: parseInt(req.params["mid"]), page: parseInt(req.params["page"])}),
-        ({mid, page}) => storage.mid_videos(mid, {pageindex: page, pagesize}),
+        ({mid, page}) => storage.mid_videos(mid, {pageindex: page, pagesize: videoPagesize}),
     );
 
     //member
@@ -119,7 +121,7 @@ Storage.createInstance().then(storage => {
     );
     ServerApis.ListMember.serve(
         req => parseInt(req.params["page"]),
-        page => storage.all_members({pageindex: page, pagesize}),
+        page => storage.all_members({pageindex: page, pagesize: memberPagesize}),
     );
 
     //playlist
@@ -155,21 +157,21 @@ Storage.createInstance().then(storage => {
     );
     ServerApis.ListPlaylist.serve(
         req => parseInt(req.params["page"]),
-        page => storage.listPlaylist({pageindex: page, pagesize})
+        page => storage.listPlaylist({pageindex: page, pagesize: playlistPagesize})
     );
 
     //search
     ServerApis.SearchVideo.serve(
         req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
-        ({input, page}) => storage.search_video_by_title(input, {pageindex: page, pagesize}),
+        ({input, page}) => storage.search_video_by_title(input, {pageindex: page, pagesize: videoPagesize}),
     );
     ServerApis.SearchMember.serve(
         req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
-        ({input, page}) => storage.search_member_by_name(input, {pageindex: page, pagesize}),
+        ({input, page}) => storage.search_member_by_name(input, {pageindex: page, pagesize: memberPagesize}),
     );
     ServerApis.SearchPlaylist.serve(
         req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
-        ({input, page}) => storage.search_playlist_by_title(input, {pageindex: page, pagesize}),
+        ({input, page}) => storage.search_playlist_by_title(input, {pageindex: page, pagesize: playlistPagesize}),
     );
 });
 
