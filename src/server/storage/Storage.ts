@@ -170,7 +170,7 @@ export class Storage {
             if (add || remove) {
                 this.unregisterVideoPlaylist(playlist);
                 //modify
-                if (remove) playlist.videosAid = playlist.videosAid.filter(i => remove.indexOf(i) >= 0);
+                if (remove) playlist.videosAid = playlist.videosAid.filter(i => remove.indexOf(i) < 0);
                 if (add) playlist.videosAid.push(...add);
                 //reorder
                 let array: VideoDB[] = this.table_video.find({aid: {'$in': playlist.videosAid}});
