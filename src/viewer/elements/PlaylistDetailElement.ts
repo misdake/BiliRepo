@@ -22,6 +22,7 @@ export class PlaylistDetailElement extends LitElement {
         }
         a {
             text-decoration: none;
+            color: blue;
         }
         .thumblink {
             width: 144px;
@@ -44,7 +45,7 @@ export class PlaylistDetailElement extends LitElement {
         if (this.playlist) {
             let aidList = (this.playlist.videosAid || []).slice(0, PlaylistDetailElement.THUMB_COUNT);
             for (let aid of aidList) {
-                videos.push(html`<a class="thumblink" href=${`watch.html?aid=${aid}`}><img class="thumb" src="${serverConfig.repoRoot}repo/${aid}/thumb.jpg" alt="thumb"/></a>`);
+                videos.push(html`<a class="thumblink" href=${`watch.html?pid=${this.playlist.pid}&aid=${aid}`}><img class="thumb" src="${serverConfig.repoRoot}repo/${aid}/thumb.jpg" alt="thumb"/></a>`);
             }
             while (videos.length < PlaylistDetailElement.THUMB_COUNT) {
                 videos.push(html`<a class="thumblink"><img class="thumb placeholder" src="${serverConfig.repoRoot}image/image404.jpeg" alt="thumb"/></a>`);
@@ -52,10 +53,14 @@ export class PlaylistDetailElement extends LitElement {
         }
 
         return this.playlist ? html`
-            <div class="playlist"><a href="/playlist.html?pid=${this.playlist.pid}">
-                    <div style="width: 100%; font-size: 30px; padding: 0 0 10px 0;">${this.playlist.title}</div>
-                    <div class="videolist">${videos}</div>
-            </a></div>
+            <div class="playlist">
+                <div style="width: 100%; font-size: 30px; padding: 0 0 10px 0;">
+                    <a href="/watch.html?pid=${this.playlist.pid}">${this.playlist.title}</a>
+                    <span style="display: inline-block; width: 20px;"></span>
+                    <a href="/playlist.html?pid=${this.playlist.pid}" style="font-size: 20px;">详情</a>
+                </div>
+                <div class="videolist">${videos}</div>
+            </div>
         ` : html``;
     }
 

@@ -1,4 +1,4 @@
-import {customElement, html, LitElement, property} from "lit-element";
+import {customElement, html, LitElement, property, PropertyValues} from "lit-element";
 import {PlaylistDB, VideoDB} from "../../server/storage/dbTypes";
 import {ClientApis} from "../common/api/ClientApi";
 import {repeat} from "lit-html/directives/repeat";
@@ -13,12 +13,19 @@ export class VideoPlaylistEditElement extends LitElement {
     @property()
     allPlaylists: PlaylistDB[] = [];
 
-    protected firstUpdated(_changedProperties: Map<PropertyKey, unknown>): void {
+    protected updated(changedProperties: PropertyValues): void {
+        super.updated(changedProperties);
+        if (changedProperties.has("video")) {
+            this.load();
+        }
+    }
+
+    private load() {
         ClientApis.GetVideoPlaylists.fetch(this.video.aid).then(playlists => {
             this.videoPlaylists = playlists;
         });
         ClientApis.ListPlaylist.fetch(1).then(paged => { //TODO page?
-            this.allPlaylists = paged.result; //TODO hide videoPlaylists options?
+            this.allPlaylists = paged.result;
         });
     }
 

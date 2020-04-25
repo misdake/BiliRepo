@@ -16,7 +16,7 @@ let part = parseInt(url.searchParams.get("p")) || 1;
 
 //start loading
 let playlist = new Playlist();
-let currentIndex = 0;
+let currentIndex: number = undefined;
 let loadPromise: Promise<Playlist>;
 
 if (pidstr) {
@@ -28,6 +28,7 @@ if (pidstr) {
                     playlist.items.push(new PlaylistItem(vp, p));
                 }
             }
+            //TODO what if playlist is not found?
             resolve();
         });
     });
@@ -38,6 +39,7 @@ if (pidstr) {
             for (let p of res.parts) {
                 playlist.items.push(new PlaylistItem(res, p));
             }
+            //TODO what if video is not found?
             resolve();
         });
     });
@@ -45,12 +47,22 @@ if (pidstr) {
 
 loadPromise.then(() => {
     console.log(playlist);
-    for (let i = 0; i < playlist.items.length; i++) {
-        let item = playlist.items[i];
-        if (aid === item.video.aid && part == item.part.index) {
-            currentIndex = i;
+
+    if (aid) {
+        for (let i = 0; i < playlist.items.length; i++) {
+            let item = playlist.items[i];
+            if (aid === item.video.aid && part == item.part.index) {
+                currentIndex = i;
+            }
+        }
+
+        if (currentIndex === undefined) {
+            //TODO what if currentIndex is not found?
+            window.location.replace("index.html");
         }
     }
+
+    currentIndex |= 0;
 
     let onBeginPart = (video: VideoParts, part: PartDB) => {
         let url = location.pathname;
