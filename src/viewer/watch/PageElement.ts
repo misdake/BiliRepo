@@ -20,6 +20,9 @@ export class PageElement extends LitElement {
     @property()
     playindex: number;
 
+    @property()
+    onBeginPart: (video: VideoParts, part: PartDB) => void;
+
     constructor() {
         super();
         this.playlist = null;
@@ -37,7 +40,8 @@ export class PageElement extends LitElement {
         this.currentVideo = video;
         document.title = this.currentVideo.title;
 
-        //TODO update url
+        //update url
+        if (this.onBeginPart) this.onBeginPart(video, part);
 
         this.currentPart = null;
         for (let page of this.currentVideo.parts) {

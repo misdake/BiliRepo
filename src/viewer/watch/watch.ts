@@ -2,13 +2,16 @@ import {html, render} from 'lit-html';
 import "./PageElement";
 import {Playlist, PlaylistItem} from "./Playlist";
 import {ClientApis} from "../common/api/ClientApi";
+import {PartDB, VideoParts} from "../../server/storage/dbTypes";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
 
 //input params
-let pid = parseInt(url.searchParams.get("pid"));
-let aid = parseInt(url.searchParams.get("aid"));
+let pidstr = url.searchParams.get("pid");
+let pid = parseInt(pidstr);
+let aidstr = url.searchParams.get("aid");
+let aid = parseInt(aidstr);
 let part = parseInt(url.searchParams.get("p")) || 1;
 
 //start loading
@@ -16,7 +19,7 @@ let playlist = new Playlist();
 let currentIndex = 0;
 let loadPromise: Promise<Playlist>;
 
-if (!isNaN(pid)) {
+if (pidstr) {
     loadPromise = new Promise<Playlist>(resolve => {
         ClientApis.GetPlaylistVideoParts.fetch(pid).then(res => {
             playlist.items = [];
@@ -28,7 +31,7 @@ if (!isNaN(pid)) {
             resolve();
         });
     });
-} else if (aid || !isNaN(aid)) {
+} else if (aidstr) {
     loadPromise = new Promise<Playlist>(resolve => {
         ClientApis.GetVideoParts.fetch(aid).then(res => {
             playlist.items = [];
@@ -49,5 +52,14 @@ loadPromise.then(() => {
         }
     }
 
-    render(html`<page-element .playlist=${playlist} .playindex=${currentIndex}></page-element>`, document.body);
+    let onBeginPart = (video: VideoParts, part: PartDB) => {
+        let url = location.pathname;
+        let params: { key: string, value: number }[] = [];
+        if (pid) params.push({key: "pid", value: pid});
+        params.push({key: "aid", value: video.aid});
+        params.push({key: "p", value: part.index});
+        history.replaceState(null, "", `${url}?${params.map(i => `${i.key}=${i.value}`).join("&")}`);
+    };
+
+    render(html`<page-element .onBeginPart=${onBeginPart} .playlist=${playlist} .playindex=${currentIndex}></page-element>`, document.body);
 });
