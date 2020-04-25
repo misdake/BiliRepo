@@ -96,6 +96,9 @@ export class VideoBlockElement extends LitElement {
     @property()
     video: VideoDB;
 
+    @property()
+    params: { key: string, value: number }[];
+
     static styles = css`
         .videoItem {
             display: inline;
@@ -128,9 +131,10 @@ export class VideoBlockElement extends LitElement {
     `;
 
     render() {
+        let param = this.params ? "&" + this.params.map(i => `${i.key}=${i.value}`).join("&") : "";
         return html`
             <li class="videoItem">
-                <a href=${'watch.html?aid=' + this.video.aid}>
+                <a href=${'watch.html?aid=' + this.video.aid + param}>
                     <div class="thumbContainer">
                         <img class="thumb" src="${serverConfig.repoRoot}repo/${this.video.aid}/thumb.jpg" alt="thumb"/>
                     </div>

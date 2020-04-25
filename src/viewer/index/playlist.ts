@@ -41,7 +41,7 @@ const pageTemplate = (playlist: PlaylistVideos) => html`
             <button style="margin-left: 10px; float: right;" @click=${() => removePlaylist(playlist)}>删除列表</button>
             <input-element style="float: right;" .input=${""} .buttonText=${"更新名称"} .checkInput="${(input: string) => renamePlaylist(playlist, input)}" .showClearButton=${false}></input-element>
         </div>
-        <videolist-element .videos=${playlist.videos}></videolist-element>
+        <videolist-element .videos=${playlist.videos} .params=${[{key: "pid", value: pid}]}></videolist-element>
     </div>
 `;
 

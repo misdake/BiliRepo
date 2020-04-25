@@ -10,6 +10,9 @@ export class VideoListElement extends LitElement {
     @property()
     videos: VideoDB[];
 
+    @property()
+    params: { key: string, value: number }[];
+
     createRenderRoot() {
         return this;
     }
@@ -17,7 +20,7 @@ export class VideoListElement extends LitElement {
     render() {
         return html`
             <ul style="padding: 0; margin: 0 -10px;">
-                ${repeat(this.videos, (video: VideoDB) => html`<videoblock-element .video=${video}></videoblock-element>`)}
+                ${repeat(this.videos, (video: VideoDB) => html`<videoblock-element .video=${video} .params=${this.params}></videoblock-element>`)}
             </ul>
         `;
     }
@@ -27,9 +30,12 @@ export class VideoListElement extends LitElement {
 @customElement('pagedvideo-container')
 export class PagedVideoContainer extends PagedContainer<VideoDB> {
 
+    @property()
+    params: { key: string, value: number }[];
+
     constructor() {
         super();
-        super.listRenderer = list => html`<videolist-element .videos=${list.result}></videolist-element>`;
+        super.listRenderer = list => html`<videolist-element .videos=${list.result} .params=${this.params}></videolist-element>`;
     }
 
 }
