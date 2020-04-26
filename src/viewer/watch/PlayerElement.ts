@@ -8,7 +8,7 @@ export class PlayerElement extends LitElement {
     private player: Player = null;
     private loadPlayer() {
         if (!this.player) {
-            this.player = new Player(this.shadowRoot.getElementById('dplayer'));
+            this.player = new Player(this.shadowRoot.getElementById('dplayer'), this.onEnded);
         }
     }
 
@@ -28,6 +28,8 @@ export class PlayerElement extends LitElement {
     video: VideoParts;
     @property()
     part: PartDB;
+    @property()
+    onEnded: () => void;
 
 
     constructor() {

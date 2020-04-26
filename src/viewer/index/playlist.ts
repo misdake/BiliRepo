@@ -16,9 +16,11 @@ function renamePlaylist(playlist: PlaylistDB, newName: string) {
     });
 }
 function removePlaylist(playlist: PlaylistDB) {
-    ClientApis.RemovePlaylist.fetch(playlist.pid).then(playlist => {
-        window.location.assign("index.html?type=3");
-    });
+    if (confirm(`确认删除列表 ${playlist.title} ?`)) {
+        ClientApis.RemovePlaylist.fetch(playlist.pid).then(playlist => {
+            window.location.assign("index.html?type=3");
+        });
+    }
 }
 
 const pageTemplate = (playlist: PlaylistVideos) => html`
@@ -39,7 +41,7 @@ const pageTemplate = (playlist: PlaylistVideos) => html`
         <div class="header">
             <span class="header_text">共${playlist.videos.length}项</span>
             <button style="margin-left: 10px; float: right;" @click=${() => removePlaylist(playlist)}>删除列表</button>
-            <input-element style="float: right;" .input=${""} .buttonText=${"更新名称"} .checkInput="${(input: string) => renamePlaylist(playlist, input)}" .showClearButton=${false}></input-element>
+            <input-element style="float: right;" .placeholder=${"新名称"} .input=${""} .buttonText=${"更新名称"} .checkInput="${(input: string) => renamePlaylist(playlist, input)}" .showClearButton=${false}></input-element>
         </div>
         <videolist-element .videos=${playlist.videos} .params=${[{key: "pid", value: pid}]}></videolist-element>
     </div>

@@ -53,6 +53,13 @@ export class PageElement extends LitElement {
         this.performUpdate();
     }
 
+    private onPartEnded() {
+        //TODO add auto-play checkbox
+        if (this.playindex < this.playlist.items.length - 1) {
+            this.updatePlayIndex(this.playindex + 1);
+        }
+    }
+
     protected firstUpdated(_changedProperties: Map<PropertyKey, unknown>): void {
         if (this.playlist && this.playindex >= 0 && this.playindex < this.playlist.items.length) {
             this.updatePlayIndex(this.playindex);
@@ -113,7 +120,7 @@ export class PageElement extends LitElement {
                     <div style="clear: both;"></div>
                 </div>
                 <div id="player">
-                    <player-element .video=${this.currentVideo} .part=${this.currentPart}></player-element>
+                    <player-element .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part=${this.currentPart}></player-element>
                     <playlist-element .onitemclick=${(index: number) => this.updatePlayIndex(index)} .playlist=${this.playlist} .playindex=${this.playindex}></playlist-element>
                     <div style="clear: both;"></div>
                 </div>

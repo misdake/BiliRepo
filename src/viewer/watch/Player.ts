@@ -46,8 +46,9 @@ export class Player {
     private aid: number;
     private part: number;
     private container: HTMLElement;
+    private onEnded: () => void;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, onEnded: () => void) {
         this.container = container;
         console.log("new Player()");
         this.apiBackend = {
@@ -60,6 +61,8 @@ export class Player {
             send: (options) => {
             }
         };
+
+        this.onEnded = onEnded;
     }
 
     loadVideoPart(aid: number, part: number) {
@@ -81,6 +84,11 @@ export class Player {
         this.dp.danmaku.options.height = 50;
         // @ts-ignore
         this.dp.danmaku.options.speed = 10;
+
+        // @ts-ignore
+        this.dp.on("ended", () => {
+            if (this.onEnded) this.onEnded();
+        });
 
         if (!document.hidden) {
             this.dp.play();

@@ -4,6 +4,8 @@ import {customElement, html, LitElement, property} from "lit-element";
 export class InputElement extends LitElement {
 
     @property()
+    placeholder: string;
+    @property()
     buttonText: string;
     @property()
     input: string;
@@ -41,6 +43,7 @@ export class InputElement extends LitElement {
 
         return html`
             <input style="width: 200px;" .value="${this.input}"
+                .placeholder="${this.placeholder || ""}"
                 @input="${(e: Event) => this.onInput((<HTMLInputElement>e.target).value)}" 
                 @keyup="${(e: KeyboardEvent) => this.onKeyUp(e)}" />
             <button @click=${() => this.trigger()}>${this.buttonText}</button>
