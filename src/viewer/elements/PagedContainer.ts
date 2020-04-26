@@ -37,6 +37,11 @@ export class PagedContainer<T> extends LitElement {
     }
 
     loadPage(pageindex: number) {
+        if (this.response) {
+            this.response.pageindex = pageindex;
+            this.response.result = [];
+            this.performUpdate();
+        }
         this.request(pageindex).then(result => {
             this.response = result;
             if (this.afterLoad) this.afterLoad(pageindex);
