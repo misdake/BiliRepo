@@ -12,14 +12,9 @@ export class PlaylistElement extends LitElement {
     @property()
     onitemclick: (playindex: number) => void;
 
-    static styles = css`
-        ul {
-            padding: 0;
-            margin: 0;
-            width: 320px;
-            max-width: 100%;
-        }
-    `;
+    createRenderRoot() {
+        return this;
+    }
 
     render() {
         if (!this.playlist) return html``;
@@ -50,7 +45,7 @@ export class PlaylistElement extends LitElement {
         }
 
         return html`
-            <ul>
+            <ul style="padding: 0; margin: 0; width: 320px; max-width: 100%; height: 510px;">
                 ${lines}
             </ul>
         `;

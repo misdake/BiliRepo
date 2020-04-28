@@ -1,6 +1,5 @@
-import {css, customElement, html, LitElement, property} from "lit-element";
+import {customElement, html, LitElement, property} from "lit-element";
 import {PartDB, VideoDB} from "../../server/storage/dbTypes";
-import {ClientApis} from "../common/api/ClientApi";
 
 @customElement('videodesc-element')
 export class VideoDescElement extends LitElement {
@@ -10,21 +9,8 @@ export class VideoDescElement extends LitElement {
     @property()
     part: PartDB;
 
-    static styles = css`
-        span {
-          color: green;
-        }
-    `;
-
-    updateDanmaku() {
-        ClientApis.UpdateDanmaku.fetch({}, {part: this.part}).then(content => {
-            if (content === "good") {
-                alert("danmaku updated!");
-                window.location.reload();
-            } else {
-                alert("danmaku update failed!\nresponse: " + content);
-            }
-        });
+    createRenderRoot() {
+        return this;
     }
 
     render() {
@@ -36,7 +22,6 @@ export class VideoDescElement extends LitElement {
         return html`
             <div>
                 <h5 style="white-space:pre">${desc}</h5>
-                <h5><a href="#" @click=${() => this.updateDanmaku()}>更新弹幕</a></h5>
             </div>
         `;
     }

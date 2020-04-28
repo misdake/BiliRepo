@@ -91,8 +91,8 @@ export class VideoPlaylistEditElement extends LitElement {
 
     render() {
         return html`
-            <span>播放列表</span>
-            <span style="border: 1px gray solid; padding: 2px; margin: 2px;">
+            <div>播放列表</div>
+            <div style="margin: 5px;">
                 <select @change=${(e: Event) => this.selectRemove(e)}>
                     <option>(在${this.videoPlaylists.length}个列表中)</option>
                     ${repeat(this.videoPlaylists, (playlist: PlaylistDB) => html`
@@ -101,8 +101,8 @@ export class VideoPlaylistEditElement extends LitElement {
                 </select>
                 <button @click=${() => this.jumpFromPlaylist()}>跳转</button>
                 <button @click=${() => this.removeFromPlaylist()}>删除</button>
-            </span>
-            <span style="border: 1px gray solid; padding: 2px; margin: 2px;">
+            </div>
+            <div style="margin: 5px;">
                 <select @change=${(e: Event) => this.selectAdd(e)}>
                     <option>(共${this.allPlaylists.length}个列表)</option>
                     ${repeat(this.allPlaylists, (playlist: PlaylistDB) => html`
@@ -110,7 +110,7 @@ export class VideoPlaylistEditElement extends LitElement {
                     `)}
                 </select>
                 <button @click=${() => this.addToPlaylist()}>添加</button>
-            </span>
+            </div>
         `;
     }
 

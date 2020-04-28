@@ -5,8 +5,7 @@ import "../elements/GuideElement";
 import "./PlayerElement";
 import "../elements/MemberElement";
 import "../elements/VideoDescElement";
-import "../elements/VideoPlaylistEdit";
-import "./PlaylistElement";
+import "./ControlPanelElement";
 import {PartDB, VideoParts} from "../../server/storage/dbTypes";
 
 @customElement('page-element')
@@ -91,22 +90,14 @@ export class PageElement extends LitElement {
             position: relative;
             margin: 10px 0;
         }
-        player-element {
-            // width: 960px;
-            // height: 540px;
-        }
-        playlist-element {
+        
+        controlpanel-element {
             position: absolute;
             left: 960px;
             top: 0px;
             height: 540px;
+            right: 0;
             overflow-y: hidden;
-        }
-        playlist-element:hover {
-            overflow-y: auto;
-        }
-        
-        #info {
         }
     `;
 
@@ -121,14 +112,11 @@ export class PageElement extends LitElement {
                 </div>
                 <div id="player">
                     <player-element .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part=${this.currentPart}></player-element>
-                    <playlist-element .onitemclick=${(index: number) => this.updatePlayIndex(index)} .playlist=${this.playlist} .playindex=${this.playindex}></playlist-element>
+                    <controlpanel-element .pageelement=${this}></controlpanel-element>
                     <div style="clear: both;"></div>
                 </div>
                 <div id="info">
                     <videodesc-element .video=${this.currentVideo} .part=${this.currentPart}></videodesc-element>
-                </div>
-                <div id="playlistedit">
-                    <videoplaylistedit-element .video=${this.currentVideo}></videoplaylistedit-element>
                 </div>
             </div>
         `;
