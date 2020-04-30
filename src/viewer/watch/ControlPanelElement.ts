@@ -3,19 +3,24 @@ import {PageElement} from "./PageElement";
 import "./PlaylistElement";
 import "../elements/VideoPlaylistEdit";
 import {ClientApis} from "../common/api/ClientApi";
+import {Playlist} from "./Playlist";
 
 @customElement('controlpanel-element')
 export class ControlPanelElement extends LitElement {
 
     @property()
     pageelement: PageElement;
+    @property()
+    playlist: Playlist;
+    @property()
+    playindex: number;
 
     @property()
     currentTab: number = 0;
 
     private tabs: { title: string, content: () => TemplateResult }[] = [
         {title: "播放列表", content: () => html`
-            <playlist-element .onitemclick=${(index: number) => this.pageelement.updatePlayIndex(index)} .playlist=${this.pageelement.playlist} .playindex=${this.pageelement.playindex}></playlist-element>
+            <playlist-element .onitemclick=${(index: number) => this.pageelement.updatePlayIndex(index)} .playlist=${this.playlist} .playindex=${this.playindex}></playlist-element>
         `},
         {title: "编辑", content: () => html`
             <div style="padding: 5px;">
@@ -63,6 +68,7 @@ export class ControlPanelElement extends LitElement {
             color: blue;
             background: rgb(224, 224, 224);
             text-align: center;
+            user-select: none;
         }
         .tab-selected {
             background: rgb(135, 206, 235);
