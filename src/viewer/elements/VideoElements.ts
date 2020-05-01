@@ -26,6 +26,7 @@ export class VideoLabelElement extends LitElement {
             height: 90px;
             position: relative;
             overflow: hidden;
+            cursor: default;
         }
         .videoItemSelected {
             background: #e5f5fb;
@@ -53,6 +54,10 @@ export class VideoLabelElement extends LitElement {
             display: inline;
         }
         
+        span {
+            cursor: default;
+        }
+        
         .part {
             display: inline;
             float: left;
@@ -61,6 +66,7 @@ export class VideoLabelElement extends LitElement {
             width: 280px;
             position: relative;
             overflow: hidden;
+            cursor: default;
         }
         .partSelected {
             background: #e5f5fb;
