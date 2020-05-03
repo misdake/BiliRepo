@@ -26,9 +26,21 @@ export class ControlPanelElement extends LitElement {
             <div style="padding: 5px;">
                 <videoplaylistedit-element .video=${this.pageelement.currentVideo}></videoplaylistedit-element>
                 <h5><a href="#" @click=${() => this.updateDanmaku()}>更新弹幕</a></h5>
+                <button @click=${() => this.addTimestamp(this.pageelement.time_second, "abc")}>加时间戳</button>
             </div>
         `},
     ];
+
+    //TODO seperate tab for timestamp editing
+
+    private addTimestamp(time_second: number, name: string) {
+        console.log(~~time_second);
+        let aid = this.pageelement.currentVideo.aid;
+        let part = this.pageelement.currentPart.index;
+        ClientApis.AddTimestamp.fetch({}, {aid: aid, part: part, time_second: time_second, name: name}).then(content => {
+            //TODO change highlight dynamically
+        });
+    }
 
     private updateDanmaku() {
         ClientApis.UpdateDanmaku.fetch({}, {part: this.pageelement.currentPart}).then(content => {

@@ -16,15 +16,15 @@
     <link rel="stylesheet" href="lib/DPlayer.min.css">
 
     <script>
-        function createPlayer(container, apiBackend, video) {
+        function createPlayer(container, apiBackend, video, highlight) {
             return new DPlayer({
                 container: container,
                 screenshot: false,
                 video: video,
-                // video: {url: `repo/${aid}/p${part}.flv`},
                 hotkey: true,
                 danmaku: {id: '', api: ''},
                 apiBackend: apiBackend,
+                highlight: highlight,
             });
         }
     </script>

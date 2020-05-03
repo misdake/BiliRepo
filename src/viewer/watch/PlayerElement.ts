@@ -1,6 +1,6 @@
 import {css, customElement, html, LitElement, property, PropertyValues} from "lit-element";
 import {Player} from "./Player";
-import {PartDB, VideoParts} from "../../server/storage/dbTypes";
+import {PartTimestamps, VideoParts} from "../../server/storage/dbTypes";
 
 @customElement('player-element')
 export class PlayerElement extends LitElement {
@@ -8,13 +8,13 @@ export class PlayerElement extends LitElement {
     private player: Player = null;
     private loadPlayer() {
         if (!this.player) {
-            this.player = new Player(this.shadowRoot.getElementById('dplayer'), this.onEnded);
+            this.player = new Player(this.shadowRoot.getElementById('dplayer'), this.onTimeUpdate, this.onEnded);
         }
     }
 
     private loadVideo() {
         if (this.video && this.part && this.player) {
-            this.player.loadVideoPart(this.video.aid, this.part.index);
+            this.player.loadVideoPart(this.video.aid, this.part.index, this.part.timestamps);
         }
     }
 
@@ -27,7 +27,9 @@ export class PlayerElement extends LitElement {
     @property()
     video: VideoParts;
     @property()
-    part: PartDB;
+    part: PartTimestamps;
+    @property()
+    onTimeUpdate: (time_second: number) => void;
     @property()
     onEnded: () => void;
 

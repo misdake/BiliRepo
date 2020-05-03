@@ -1,4 +1,4 @@
-import {MemberDB, PartDB, PlaylistDB, PlaylistVideoParts, PlaylistVideos, VideoDB, VideoParts} from "../../server/storage/dbTypes";
+import {MemberDB, PartDB, PlaylistDB, PlaylistVideoParts, PlaylistVideos, Timestamp, VideoDB, VideoParts} from "../../server/storage/dbTypes";
 import {Paged} from "../page";
 import {BilibiliVideoJson} from "../types";
 import {DownloadStatus} from "../DownloadStatus";
@@ -71,6 +71,10 @@ export let RawApis = {
     GetPlaylistVideos: new ApiGet<number, PlaylistVideos>("/api/playlist/withvideos/:pid", pid => `api/playlist/withvideos/${pid}`),
     GetPlaylistVideoParts: new ApiGet<number, PlaylistVideoParts>("/api/playlist/withvideoparts/:pid", pid => `api/playlist/withvideoparts/${pid}`),
     GetVideoPlaylists: new ApiGet<number, PlaylistDB[]>("/api/playlist/byvideo/:aid", aid => `api/playlist/byvideo/${aid}`),
+
+    //Timestamp
+    AddTimestamp: new ApiPost<{}, { aid: number, part: number, time_second: number, name: string }, Timestamp>("/api/timestamp/add", ({}) => `api/timestamp/add`),
+    RemoveTimestamp: new ApiGet<number, boolean>("/api/timestamp/remove/:tid", tid => `api/timestamp/remove/${tid}`),
 
     //Search
     SearchVideo: new ApiGet<{ input: string, page: number }, Paged<VideoDB>>("/api/video/search/:input/:page", ({input, page}) => `api/video/search/${input}/${page}`),

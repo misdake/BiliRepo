@@ -164,6 +164,18 @@ Storage.createInstance().then(storage => {
         page => storage.listPlaylist({pageindex: page, pagesize: playlistPagesize})
     );
 
+    ServerApis.AddTimestamp.serve(
+        _req => ({}),
+        (param, body) => new Promise(resolve => {
+            let created = storage.addTimestamp(body.aid, body.part, body.time_second, body.name);
+            resolve(created);
+        }),
+    );
+    ServerApis.RemoveTimestamp.serve(
+        req => parseInt(req.params["tid"]),
+        (tid) => storage.removeTimestamp(tid),
+    );
+
     //search
     ServerApis.SearchVideo.serve(
         req => ({input: req.params["input"], page: parseInt(req.params["page"])}),

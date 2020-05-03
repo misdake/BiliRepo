@@ -46,8 +46,6 @@ if (pidstr) {
 }
 
 loadPromise.then(() => {
-    console.log(playlist);
-
     if (aid) {
         for (let i = 0; i < playlist.items.length; i++) {
             let item = playlist.items[i];

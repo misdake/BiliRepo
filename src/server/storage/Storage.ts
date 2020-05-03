@@ -116,7 +116,7 @@ export class Storage {
             pts.push(partT);
         }
         for (let timestamp of timestamps) {
-            pts[timestamp.part].timestamps.push(timestamp);
+            pts[timestamp.part - 1].timestamps.push(timestamp);
         }
         return {
             aid: v.aid,
@@ -258,7 +258,7 @@ export class Storage {
             }
             for (let timestamp of timestamps) {
                 let vp = videoMap.get(timestamp.aid);
-                let pt = vp ? vp.parts[timestamp.part] : undefined;
+                let pt = vp ? vp.parts[timestamp.part - 1] : undefined;
                 if (pt) {
                     pt.timestamps.push(timestamp);
                 }
@@ -305,6 +305,7 @@ export class Storage {
         if (timestamp) {
             this.table_timestamp.delete(timestamp);
         }
+        return !!timestamp;
     }
     public getVideoTimestamps(aid: number) {
         return this.table_timestamp.find({aid}, "part");
