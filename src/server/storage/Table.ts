@@ -18,6 +18,10 @@ export class Table<T extends Object, K extends keyof T> {
         this.collection = collection;
     }
 
+    maxKey() {
+        return this.collection.max("" + this.key);
+    }
+
     insert(t: T) {
         this.collection.insert(t);
     }

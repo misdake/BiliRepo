@@ -1,4 +1,4 @@
-import {MemberDB, PartDB, PlaylistDB, PlaylistVideoParts, PlaylistVideos, VideoDB, VideoParts} from "./dbTypes";
+import {MemberDB, PartDB, PartTimestamps, PlaylistDB, PlaylistVideoParts, PlaylistVideos, Timestamp, VideoDB, VideoParts} from "./dbTypes";
 import {Table} from "./Table";
 import {PageQuery} from "../../common/page";
 import {BilibiliVideo, BilibiliVideoJson} from "../../common/types";
@@ -12,6 +12,7 @@ export class Storage {
     private table_part: Table<PartDB, "cid">;
     private table_member: Table<MemberDB, "mid">;
     private table_playlist: Table<PlaylistDB, "pid">;
+    private table_timestamp: Table<Timestamp, "tid">;
 
     private static instance: Promise<Storage> = null;
     static async createInstance(): Promise<Storage> {
@@ -89,6 +90,7 @@ export class Storage {
         this.table_part = new Table<PartDB, "cid">(db, "part", "cid", ["aid"]);
         this.table_member = new Table<MemberDB, "mid">(db, "member", "mid");
         this.table_playlist = new Table<PlaylistDB, "pid">(db, "playlist", "pid");
+        this.table_timestamp = new Table<Timestamp, "tid">(db, "timestamp", "tid");
 
         if (!db.getCollection("initialized")) {
             db.addCollection("initialized");
@@ -96,6 +98,7 @@ export class Storage {
         }
 
         this.loadPlaylistMap();
+        this.loadTimestamp();
     }
 
     public video(aid: number) {
@@ -103,6 +106,18 @@ export class Storage {
     }
     public videoparts(aid: number): VideoParts {
         let v = this.table_video.get(aid);
+        let parts = this.table_part.find({aid: aid}, "index");
+        let timestamps = this.getVideoTimestamps(aid);
+        let pts: PartTimestamps[] = [];
+        for (let part of parts) {
+            let partT = new PartTimestamps();
+            Object.assign(partT, part);
+            partT.timestamps = [];
+            pts.push(partT);
+        }
+        for (let timestamp of timestamps) {
+            pts[timestamp.part].timestamps.push(timestamp);
+        }
         return {
             aid: v.aid,
             title: v.title,
@@ -110,8 +125,8 @@ export class Storage {
             desc: v.desc,
             ctime: v.ctime,
             member: this.table_member.get(v.mid),
-            parts: this.table_part.find({aid: aid}, "index")
-        }
+            parts: pts,
+        };
     }
     public recent_videos(page: PageQuery) {
         return this.table_video.all_paged(page.pageindex, page.pagesize, "ctime", true);
@@ -128,7 +143,7 @@ export class Storage {
     }
 
     //playlist
-    private lastPid = 0;
+    private lastPid = 1;
     private video_playlist: Map<number, Set<number>> = new Map<number, Set<number>>();
     private loadPlaylistMap() {
         for (let playlist of this.table_playlist.all()) {
@@ -219,6 +234,7 @@ export class Storage {
             let videos: VideoDB[] = this.table_video.find({aid: {'$in': playlist.videosAid}});
             let parts: PartDB[] = this.table_part.find({aid: {'$in': playlist.videosAid}});
             let members: MemberDB[] = this.table_member.find({mid: {'$in': videos.map(v => v.mid)}});
+            let timestamps: Timestamp[] = this.table_timestamp.find({aid: {'$in': playlist.videosAid}});
 
             let videoMap: Map<number, VideoParts> = new Map<number, VideoParts>();
             let memberMap: Map<number, MemberDB> = new Map<number, MemberDB>();
@@ -235,7 +251,17 @@ export class Storage {
             }
             for (let part of parts) {
                 let video = videoMap.get(part.aid);
-                video.parts.push(part);
+                let partT = new PartTimestamps();
+                Object.assign(partT, part);
+                partT.timestamps = [];
+                video.parts.push(partT);
+            }
+            for (let timestamp of timestamps) {
+                let vp = videoMap.get(timestamp.aid);
+                let pt = vp ? vp.parts[timestamp.part] : undefined;
+                if (pt) {
+                    pt.timestamps.push(timestamp);
+                }
             }
             for (let video of videoMap.values()) {
                 video.parts.sort((a, b) => a.index - b.index);
@@ -256,6 +282,35 @@ export class Storage {
         } else {
             return [];
         }
+    }
+
+    //timestamp
+    private lastTid = 0;
+    private loadTimestamp() {
+        let maxKey = this.table_timestamp.maxKey();
+        this.lastTid = maxKey > 0 ? maxKey : 0;
+    }
+    public addTimestamp(aid: number, part: number, time_second: number, name: string) {
+        let t = new Timestamp();
+        t.tid = ++this.lastTid;
+        t.aid = aid;
+        t.part = part;
+        t.time_second = time_second;
+        t.name = name;
+        this.table_timestamp.insert(t);
+        return t;
+    }
+    public removeTimestamp(tid: number) {
+        let timestamp = this.table_timestamp.get(tid);
+        if (timestamp) {
+            this.table_timestamp.delete(timestamp);
+        }
+    }
+    public getVideoTimestamps(aid: number) {
+        return this.table_timestamp.find({aid}, "part");
+    }
+    public getPartTimestamps(aid: number, part: number) {
+        return this.table_timestamp.find({aid, part}, "time_second");
     }
 
     //search

@@ -16,8 +16,12 @@ export class PartDB {
     title: string;
 }
 
+export class PartTimestamps extends PartDB {
+    timestamps: Timestamp[];
+}
+
 export class VideoParts extends VideoDB {
-    parts: PartDB[];
+    parts: PartTimestamps[];
     member: MemberDB;
 }
 
@@ -43,4 +47,13 @@ export class PlaylistVideos extends PlaylistDB {
 
 export class PlaylistVideoParts extends PlaylistDB {
     videoParts: VideoParts[];
+}
+
+export class Timestamp {
+    tid: number;
+
+    aid: number;
+    part: number;
+    time_second: number;
+    name: string;
 }
