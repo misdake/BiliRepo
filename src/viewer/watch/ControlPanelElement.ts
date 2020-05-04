@@ -1,9 +1,11 @@
 import {css, customElement, html, LitElement, property, TemplateResult} from "lit-element";
 import {PageElement} from "./PageElement";
 import "./PlaylistElement";
+import "./TimestampEditElement";
 import "../elements/VideoPlaylistEdit";
 import {ClientApis} from "../common/api/ClientApi";
 import {Playlist} from "./Playlist";
+import {Timestamp} from "../../server/storage/dbTypes";
 
 @customElement('controlpanel-element')
 export class ControlPanelElement extends LitElement {
@@ -22,24 +24,34 @@ export class ControlPanelElement extends LitElement {
         {title: "播放列表", content: () => html`
             <playlist-element .onitemclick=${(index: number) => this.pageelement.updatePlayIndex(index)} .playlist=${this.playlist} .playindex=${this.playindex}></playlist-element>
         `},
+        {title: "时间点", content: () => html`
+            <div style="padding: 5px;">
+                <timestampedit-element
+                    .part=${this.pageelement.currentPart}
+                    .getCurrTime=${() => this.getCurrTime()}
+                    .seek=${(second: number) => this.seek(second)}
+                    .refresh=${(timestamps: Timestamp[]) => this.refreshTimestamps(timestamps)}
+                ></timestampedit-element>
+            </div>
+        `},
         {title: "编辑", content: () => html`
             <div style="padding: 5px;">
                 <videoplaylistedit-element .video=${this.pageelement.currentVideo}></videoplaylistedit-element>
                 <h5><a href="#" @click=${() => this.updateDanmaku()}>更新弹幕</a></h5>
-                <button @click=${() => this.addTimestamp(this.pageelement.time_second, "abc")}>加时间戳</button>
             </div>
         `},
     ];
 
-    //TODO seperate tab for timestamp editing
-
-    private addTimestamp(time_second: number, name: string) {
-        console.log(~~time_second);
-        let aid = this.pageelement.currentVideo.aid;
-        let part = this.pageelement.currentPart.index;
-        ClientApis.AddTimestamp.fetch({}, {aid: aid, part: part, time_second: time_second, name: name}).then(content => {
-            //TODO change highlight dynamically
-        });
+    private getCurrTime() {
+        return this.pageelement.player ? this.pageelement.player.currentTime() : 0;
+    }
+    private seek(time_second: number) {
+        if (this.pageelement.player) this.pageelement.player.seek(time_second);
+    }
+    private refreshTimestamps(timestamps: Timestamp[]) {
+        if (!this.pageelement.player) return;
+        let player = this.pageelement.player;
+        player.refreshHighlight(timestamps);
     }
 
     private updateDanmaku() {

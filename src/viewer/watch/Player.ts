@@ -47,10 +47,9 @@ export class Player {
     private aid: number;
     private part: number;
     private container: HTMLElement;
-    private onTimeUpdate: (time_second: number) => void;
     private onEnded: () => void;
 
-    constructor(container: HTMLElement, onTimeUpdate: (time_second: number) => void, onEnded: () => void) {
+    constructor(container: HTMLElement, onEnded: () => void) {
         this.container = container;
         this.apiBackend = {
             read: (options) => {
@@ -63,7 +62,6 @@ export class Player {
             }
         };
 
-        this.onTimeUpdate = onTimeUpdate;
         this.onEnded = onEnded;
     }
 
@@ -96,18 +94,34 @@ export class Player {
         this.dp.on("ended", () => {
             if (this.onEnded) this.onEnded();
         });
-        // @ts-ignore
-        this.dp.on("timeupdate", () => {
-            if (this.onTimeUpdate) this.onTimeUpdate(this.dp.video.currentTime);
-        });
 
         if (!document.hidden) {
             this.dp.play();
         }
     }
 
-    move(second: number) {
-        if (this.dp) this.dp.seek(second);
+    currentTime() {
+        return this.dp.video.currentTime;
+    }
+
+    seek(second: number) {
+        if (this.dp) {
+            this.dp.seek(second);
+            this.dp.play();
+        }
+    }
+
+    refreshHighlight(timestamps: Timestamp[]) {
+        let highlight = timestamps.map(timestamp => ({
+            text: timestamp.name,
+            time: timestamp.time_second,
+        }));
+        // @ts-ignore
+        this.dp.options.highlight = highlight;
+        // @ts-ignore
+        let t: NodeList = this.dp.container.querySelectorAll(".dplayer-highlight");
+        t.forEach((node) => node.parentNode.removeChild(node));
+        this.dp.events.trigger("durationchange");
     }
 
 }

@@ -7,13 +7,14 @@ import "../elements/MemberElement";
 import "../elements/VideoDescElement";
 import "./ControlPanelElement";
 import {PartDB, PartTimestamps, VideoParts} from "../../server/storage/dbTypes";
+import {Player} from "./Player";
 
 @customElement('page-element')
 export class PageElement extends LitElement {
 
     currentVideo: VideoParts;
     currentPart: PartTimestamps;
-    time_second: number;
+    player: Player;
 
     @property()
     playlist: Playlist;
@@ -53,8 +54,8 @@ export class PageElement extends LitElement {
         this.performUpdate();
     }
 
-    private onTimeUpdate(time_second: number) {
-        this.time_second = time_second;
+    private onPlayerLoad(player:Player) {
+        this.player = player;
     }
 
     private onPartEnded() {
@@ -116,7 +117,7 @@ export class PageElement extends LitElement {
                     <div style="clear: both;"></div>
                 </div>
                 <div id="player">
-                    <player-element .onTimeUpdate=${(time_second: number) => this.onTimeUpdate(time_second)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part=${this.currentPart}></player-element>
+                    <player-element .onLoad=${(player:Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part=${this.currentPart}></player-element>
                     <controlpanel-element .pageelement=${this} .playlist=${this.playlist} .playindex=${this.playindex}></controlpanel-element>
                     <div style="clear: both;"></div>
                 </div>

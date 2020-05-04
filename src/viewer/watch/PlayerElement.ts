@@ -8,8 +8,9 @@ export class PlayerElement extends LitElement {
     private player: Player = null;
     private loadPlayer() {
         if (!this.player) {
-            this.player = new Player(this.shadowRoot.getElementById('dplayer'), this.onTimeUpdate, this.onEnded);
+            this.player = new Player(this.shadowRoot.getElementById('dplayer'), this.onEnded);
         }
+        if (this.onLoad) this.onLoad(this.player);
     }
 
     private loadVideo() {
@@ -29,7 +30,7 @@ export class PlayerElement extends LitElement {
     @property()
     part: PartTimestamps;
     @property()
-    onTimeUpdate: (time_second: number) => void;
+    onLoad: (player: Player) => void;
     @property()
     onEnded: () => void;
 
