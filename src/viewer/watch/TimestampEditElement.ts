@@ -48,17 +48,22 @@ export class TimestampEditElement extends LitElement {
         if (!this.part) return html``;
 
         let timestamps = this.part.timestamps;
+        timestamps.sort((a, b) => a.time_second - b.time_second);
 
         let lines = [];
 
         for (let timestamp of timestamps) {
             lines.push(html`
-                <li><span @click=${() => this.seek(timestamp.time_second)}>${timestamp.name}</span><button @click=${() => this.removeTimestamp(timestamp.tid)}>删除</button></li>
+                <li style="margin: 5px 0;"><a style="padding: 0 5px; text-decoration: none;" href="#" @click=${(e:Event) => {
+                    this.seek(timestamp.time_second);
+                    e.preventDefault();
+                    return true;
+                }}>${timestamp.name}</a><button @click=${() => this.removeTimestamp(timestamp.tid)}>删除</button></li>
             `);
         }
 
         return html`
-            <input-element .placeholder=${""} .input=${""} .buttonText=${"新增"} .checkInput="${(input: string) => this.addTimestamp(input)}" .showClearButton=${false}></input-element>
+            <input-element .placeholder=${"新增时间点名称"} .input=${""} .buttonText=${"新增"} .checkInput="${(input: string) => this.addTimestamp(input)}" .showClearButton=${false}></input-element>
             <ul style="padding: 0; margin: 0; max-width: 100%;">
                 ${lines}
             </ul>
