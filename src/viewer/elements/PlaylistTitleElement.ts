@@ -1,8 +1,8 @@
 import {css, customElement, html, LitElement, property} from "lit-element";
 import {PlaylistDB} from "../../server/storage/dbTypes";
 
-@customElement('playlist-element')
-export class PlaylistElement extends LitElement {
+@customElement('playlisttitle-element')
+export class PlaylistTitleElement extends LitElement {
 
     @property()
     playlist: PlaylistDB;

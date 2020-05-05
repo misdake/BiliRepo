@@ -118,7 +118,7 @@ export class PageElement extends LitElement {
                 </div>
                 <div id="player">
                     <player-element .onLoad=${(player:Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part=${this.currentPart}></player-element>
-                    <controlpanel-element .pageelement=${this} .playlist=${this.playlist} .playindex=${this.playindex}></controlpanel-element>
+                    <controlpanel-element .currentTab=${this.playlist.items.length > 1 ? 0 : 1} .pageelement=${this} .playlist=${this.playlist} .playindex=${this.playindex}></controlpanel-element>
                     <div style="clear: both;"></div>
                 </div>
                 <div id="info">

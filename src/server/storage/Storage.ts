@@ -86,11 +86,12 @@ export class Storage {
     }
 
     private constructor(db: Loki) {
+        //TODO 把名字放到indices里？
         this.table_video = new Table<VideoDB, "aid">(db, "video", "aid", ["mid", "ctime"]);
         this.table_part = new Table<PartDB, "cid">(db, "part", "cid", ["aid"]);
         this.table_member = new Table<MemberDB, "mid">(db, "member", "mid");
         this.table_playlist = new Table<PlaylistDB, "pid">(db, "playlist", "pid");
-        this.table_timestamp = new Table<Timestamp, "tid">(db, "timestamp", "tid");
+        this.table_timestamp = new Table<Timestamp, "tid">(db, "timestamp", "tid", ["aid", "part"]);
 
         if (!db.getCollection("initialized")) {
             db.addCollection("initialized");

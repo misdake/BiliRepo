@@ -1,5 +1,5 @@
 import {html, render} from 'lit-html';
-import "../elements/PlaylistElement";
+import "../elements/PlaylistTitleElement";
 import {PlaylistDB, PlaylistVideos} from "../../server/storage/dbTypes";
 import "../elements/PagedVideoContainer";
 import "../elements/GuideElement";
@@ -27,7 +27,7 @@ const pageTemplate = (playlist: PlaylistVideos) => html`
     <div style="height: 100%; width: 1280px; max-width: 100%; margin: 0 auto;">
         <div style="margin: 20px 0; position: relative;">
             <div style="position: absolute; right: 0;"><guide-element></guide-element></div>
-            <playlist-element .playlist=${playlist}></playlist-element>
+            <playlisttitle-element .playlist=${playlist}></playlisttitle-element>
         </div>
         <style>
             .header {
