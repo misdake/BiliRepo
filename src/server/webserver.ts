@@ -164,6 +164,10 @@ Storage.createInstance().then(storage => {
         page => storage.listPlaylist({pageindex: page, pagesize: playlistPagesize})
     );
 
+    ServerApis.ListTimestamp.serve(
+        req => parseInt(req.params["page"]),
+        page => storage.listTimestamp({pageindex: page, pagesize: playlistPagesize})
+    );
     ServerApis.AddTimestamp.serve(
         _req => ({}),
         (param, body) => new Promise(resolve => {
@@ -188,6 +192,10 @@ Storage.createInstance().then(storage => {
     ServerApis.SearchPlaylist.serve(
         req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
         ({input, page}) => storage.search_playlist_by_title(input, {pageindex: page, pagesize: playlistPagesize}),
+    );
+    ServerApis.SearchTimestamp.serve(
+        req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
+        ({input, page}) => storage.search_timestamp_by_name(input, {pageindex: page, pagesize: playlistPagesize}),
     );
 });
 

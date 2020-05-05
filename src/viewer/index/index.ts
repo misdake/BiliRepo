@@ -2,6 +2,7 @@ import {html, render} from 'lit-html';
 import "../elements/PagedVideoContainer";
 import "../elements/PagedMemberContainer";
 import "../elements/PagedPlaylistContainer";
+import "../elements/PagedTimestampContainer";
 import "../elements/ViewTypeElement";
 import "../elements/InputElement";
 import {ViewType, ViewTypeContent, viewTypes} from "./indexViewType";

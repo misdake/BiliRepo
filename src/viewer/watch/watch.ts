@@ -14,6 +14,8 @@ let aidstr = url.searchParams.get("aid");
 let aid = parseInt(aidstr);
 let part = parseInt(url.searchParams.get("p")) || 1;
 
+//TODO timestamp as param?
+
 //start loading
 let playlist = new Playlist();
 let currentIndex: number = undefined;

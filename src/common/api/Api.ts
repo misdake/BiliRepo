@@ -73,6 +73,7 @@ export let RawApis = {
     GetVideoPlaylists: new ApiGet<number, PlaylistDB[]>("/api/playlist/byvideo/:aid", aid => `api/playlist/byvideo/${aid}`),
 
     //Timestamp
+    ListTimestamp: new ApiGet<number, Paged<Timestamp>>("/api/timestamp/list/:page", page => `api/timestamp/list/${page}`),
     AddTimestamp: new ApiPost<{}, { aid: number, part: number, time_second: number, name: string }, Timestamp>("/api/timestamp/add", ({}) => `api/timestamp/add`),
     RemoveTimestamp: new ApiGet<number, boolean>("/api/timestamp/remove/:tid", tid => `api/timestamp/remove/${tid}`),
 
@@ -80,6 +81,7 @@ export let RawApis = {
     SearchVideo: new ApiGet<{ input: string, page: number }, Paged<VideoDB>>("/api/video/search/:input/:page", ({input, page}) => `api/video/search/${input}/${page}`),
     SearchMember: new ApiGet<{ input: string, page: number }, Paged<MemberDB>>("/api/member/search/:input/:page", ({input, page}) => `api/member/search/${input}/${page}`),
     SearchPlaylist: new ApiGet<{ input: string, page: number }, Paged<PlaylistDB>>("/api/playlist/search/:input/:page", ({input, page}) => `api/playlist/search/${input}/${page}`),
+    SearchTimestamp: new ApiGet<{ input: string, page: number }, Paged<Timestamp>>("/api/timestamp/search/:input/:page", ({input, page}) => `api/timestamp/search/${input}/${page}`),
 
     //Proxy
     GetVideoInfo: new ApiPost<string, {}, BilibiliVideoJson>("/proxy/videoinfo/:id", id => `proxy/videoinfo/${id}`),

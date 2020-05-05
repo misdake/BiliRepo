@@ -314,6 +314,9 @@ export class Storage {
     public getPartTimestamps(aid: number, part: number) {
         return this.table_timestamp.find({aid, part}, "time_second");
     }
+    public listTimestamp(page: PageQuery) {
+        return this.table_timestamp.all_paged(page.pageindex, page.pagesize, "tid", true);
+    }
 
     //search
     public search_video_by_title(input: string, page: PageQuery) {
@@ -324,6 +327,9 @@ export class Storage {
     }
     public search_playlist_by_title(input: string, page: PageQuery) {
         return this.table_playlist.find_paged({title: {'$contains': input}}, page.pageindex, page.pagesize, "pid", true);
+    }
+    public search_timestamp_by_name(input: string, page: PageQuery) {
+        return this.table_timestamp.find_paged({name: {'$contains': input}}, page.pageindex, page.pagesize, "tid", true);
     }
 
 }

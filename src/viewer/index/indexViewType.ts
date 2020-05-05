@@ -1,5 +1,5 @@
 import {Paged} from "../../common/page";
-import {MemberDB, PlaylistDB, VideoDB} from "../../server/storage/dbTypes";
+import {MemberDB, PlaylistDB, Timestamp, VideoDB} from "../../server/storage/dbTypes";
 import {html, TemplateResult} from "lit-html";
 import {PagedContainer} from "../elements/PagedContainer";
 import {ApiGet} from "../../common/api/Api";
@@ -113,7 +113,23 @@ const viewType_playlist: ViewTypeContent<PlaylistDB, ViewType.playlist> = new Vi
     }
 );
 
+const viewType_timestamp: ViewTypeContent<Timestamp, ViewType.timestamp> = new ViewTypeContent<Timestamp, ViewType.timestamp>(
+    ViewType.timestamp, "时间点", ClientApis.ListTimestamp, ClientApis.SearchTimestamp,
+    (loadPage, request, onContainerLoaded, afterLoad) => {
+        return html`
+            <pagedtimestamp-container
+                .autoLoad=${false}
+                .request=${request} 
+                .onElementLoaded=${onContainerLoaded} 
+                .firstLoadPage=${loadPage} 
+                .afterLoad=${afterLoad}
+            ></pagedtimestamp-container>
+        `;
+    }
+);
+
 export const viewTypes = new Map<ViewType, ViewTypeContent<any, any>>();
 viewTypes.set(ViewType.video, viewType_video);
 viewTypes.set(ViewType.member, viewType_member);
 viewTypes.set(ViewType.playlist, viewType_playlist);
+viewTypes.set(ViewType.timestamp, viewType_timestamp);
