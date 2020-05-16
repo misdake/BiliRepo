@@ -105,6 +105,9 @@ export class Storage {
     public video(aid: number) {
         return this.table_video.get(aid)
     }
+    public videoRandom() {
+        return this.table_video.random();
+    }
     public videoparts(aid: number): VideoParts {
         let v = this.table_video.get(aid);
         let parts = this.table_part.find({aid: aid}, "index");

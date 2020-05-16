@@ -60,6 +60,18 @@ export class Table<T extends Object, K extends keyof T> {
         }
     }
 
+    random(): T {
+        let r = this.collection.chain();
+        let total = r.count();
+        if (total > 0) {
+            let index = Math.floor(Math.random() * total);
+            let result = r.offset(index).limit(1).data();
+            return result[0];
+        } else {
+            return undefined;
+        }
+    }
+
     find(query: LokiQuery<T & LokiObj>, sort?: keyof T, desc: boolean = false) {
         let chain = this.collection.chain().find(query);
         if (sort) chain = chain.simplesort(sort, {desc: desc});

@@ -101,6 +101,10 @@ Storage.createInstance().then(storage => {
         req => parseInt(req.params["aid"]),
         aid => storage.video(aid)
     );
+    ServerApis.GetVideoRandom.serve(
+        req => ({}),
+        ({}) => storage.videoRandom()
+    );
     ServerApis.GetVideoParts.serve(
         req => parseInt(req.params["aid"]),
         aid => storage.videoparts(aid)

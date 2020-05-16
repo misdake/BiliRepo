@@ -54,6 +54,7 @@ export class ApiPost<Param, Payload, Result> {
 export let RawApis = {
     //Video
     GetVideo: new ApiGet<number, VideoDB>("/api/video/aid/:aid", aid => `api/video/aid/${aid}`),
+    GetVideoRandom: new ApiGet<{}, VideoDB>("/api/video/random", ({}) => `api/video/random`),
     GetVideoParts: new ApiGet<number, VideoParts>("/api/video/withparts/:aid", aid => `api/video/withparts/${aid}`),
     ListVideo: new ApiGet<number, Paged<VideoDB>>("/api/video/list/:page", page => `api/video/list/${page}`), //TODO just call it list instread of recent
     ListVideoByMember: new ApiGet<{ mid: number, page: number }, Paged<VideoDB>>("/api/video/member/:mid/:page", ({mid, page}) => `api/video/member/${mid}/${page}`),
