@@ -1,5 +1,6 @@
 import {customElement, html, LitElement, property} from "lit-element";
 import {PartDB, VideoDB} from "../../server/storage/dbTypes";
+import {repeat} from "lit-html/directives/repeat";
 
 @customElement('videodesc-element')
 export class VideoDescElement extends LitElement {
@@ -14,14 +15,14 @@ export class VideoDescElement extends LitElement {
     }
 
     render() {
-        let desc = "";
+        let desc : string[] = [];
         if (this.video && this.part) {
-            desc = this.video.desc;
+            desc = this.video.desc.split("\n");
         }
 
         return html`
             <div>
-                <h5 style="white-space:pre">${desc}</h5>
+                ${repeat(desc, (line: string) => html`<p>${line}</p>`)}
             </div>
         `;
     }

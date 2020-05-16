@@ -4,7 +4,7 @@ import "./VideoTitleElement";
 import "../elements/GuideElement";
 import "./PlayerElement";
 import "../elements/MemberElement";
-import "../elements/VideoDescElement";
+import "./VideoDescElement";
 import "./ControlPanelElement";
 import {PartDB, PartTimestamps, VideoParts} from "../../server/storage/dbTypes";
 import {Player} from "./Player";
