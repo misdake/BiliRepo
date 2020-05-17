@@ -42,14 +42,39 @@ export class Bilibili {
 
     static async downloadDanmaku(aid: number, cid: number, page: number, isUpdate: boolean = false) {
         let folder = isUpdate ? `${aid}` : `${aid}_download`;
+
+        //read existing danmaku
+        let list: Danmaku[] = [];
+        let map = new Map<string, Danmaku>();
+        if (fs.existsSync(`repo/${folder}/p${page}.xml`)) {
+            let array = this.readDanmaku(folder, page);
+            list = array;
+            for (let d of array) {
+                map.set(d.time + d.text, d);
+            }
+        }
+
         await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/p${page}.xml`);
+        let array = this.readDanmaku(folder, page);
+
+        for (let d of array) {
+            if (!map.has(d.time + d.text)) {
+                list.push(d);
+            }
+        }
+
+        let content = {
+            code: 0,
+            data: list,
+        };
+
+        fs.writeFileSync(`repo/${folder}/p${page}.json`, JSON.stringify(content));
+    }
+
+    private static readDanmaku(folder: string, page: number) {
         let content = fs.readFileSync(`repo/${folder}/p${page}.xml`, 'utf8');
 
         let array: Danmaku[] = [];
-        let r = {
-            code: 0,
-            data: array,
-        };
         parser.parseString(content, function (err: Error, result: any) {
             let all = result.i.d;
             if (!all) return;
@@ -73,11 +98,10 @@ export class Bilibili {
                     text: text
                 };
 
-                r.data.push(d);
+                array.push(d);
             }
         });
-
-        fs.writeFileSync(`repo/${folder}/p${page}.json`, JSON.stringify(r));
+        return array;
     }
 
     static async downloadVideo(aid: number, page = 1, onoutput?: (lines: string[]) => void, onbind?: (proc: ChildProcess) => void) {

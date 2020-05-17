@@ -30,10 +30,10 @@ export class Storage {
     }
 
     private initialize() {
-        this.importAll();
+        this.importAllVideos();
     }
 
-    private importAll() {
+    private importAllVideos() {
         console.log("import all videos!");
         let folders = fs.readdirSync('repo');
         folders = folders.sort();
@@ -45,7 +45,10 @@ export class Storage {
                 this.importVideo(video);
             }
         }
-
+    }
+    public reimportAllVideos() {
+        this.table_video.deleteAll("confirm deleteAll");
+        this.importAllVideos();
     }
 
     public importVideo(bilibiliVideo: BilibiliVideo) {
