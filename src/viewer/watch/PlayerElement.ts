@@ -4,11 +4,12 @@ import {PartTimestamps, VideoParts} from "../../server/storage/dbTypes";
 
 @customElement('player-element')
 export class PlayerElement extends LitElement {
+    private danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
 
     private player: Player = null;
     private loadPlayer() {
         if (!this.player) {
-            this.player = new Player(this.shadowRoot.getElementById('dplayer'), this.onEnded);
+            this.player = new Player(this.shadowRoot.getElementById('dplayer'), this.onEnded, this.danmakuSetting);
         }
         if (this.onLoad) this.onLoad(this.player);
     }
@@ -20,12 +21,6 @@ export class PlayerElement extends LitElement {
     }
 
     @property()
-    danmakuFontSize: number;
-    @property()
-    danmakuMoveTime: number;
-
-
-    @property()
     video: VideoParts;
     @property()
     part: PartTimestamps;
@@ -34,11 +29,13 @@ export class PlayerElement extends LitElement {
     @property()
     onEnded: () => void;
 
-
     constructor() {
         super();
-        this.danmakuFontSize = 32;
-        this.danmakuMoveTime = 10; //TODO 根据屏幕宽度改变
+        this.danmakuSetting = { //TODO 改为可动态设置的，在resize的时候变化
+            fontSize: 32,
+            lineHeight: 40,
+            speed: 10,
+        }
     }
 
     update(_changedProperties: PropertyValues) {
@@ -55,14 +52,14 @@ export class PlayerElement extends LitElement {
             <style>
                 .dplayer-danmaku .dplayer-danmaku-right.dplayer-danmaku-move {
                     will-change: transform;
-                    -webkit-animation: danmaku ${this.danmakuMoveTime}s linear;
-                    animation: danmaku ${this.danmakuMoveTime}s linear;
+                    -webkit-animation: danmaku ${this.danmakuSetting.speed}s linear;
+                    animation: danmaku ${this.danmakuSetting.speed}s linear;
                     -webkit-animation-play-state: paused;
                     animation-play-state: paused
                 }
             
                 .dplayer-danmaku-item {
-                    font-size: ${this.danmakuFontSize}px !important;
+                    font-size: ${this.danmakuSetting.fontSize}px !important;
                 }
             </style>
             <div id="dplayer"></div>

@@ -48,9 +48,11 @@ export class Player {
     private part: number;
     private container: HTMLElement;
     private onEnded: () => void;
+    private danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
 
-    constructor(container: HTMLElement, onEnded: () => void) {
+    constructor(container: HTMLElement, onEnded: () => void, danmakuSetting: {fontSize:number, lineHeight:number, speed: number}) {
         this.container = container;
+        this.danmakuSetting = danmakuSetting;
         this.apiBackend = {
             read: (options) => {
                 if (!(this.aid && this.part)) return;
@@ -86,9 +88,7 @@ export class Player {
         // @ts-ignore
         this.dp = window.createPlayer(this.container, this.apiBackend, {url: `${serverConfig.repoRoot}repo/${aid}/p${part}.flv`}, highlight);
         // @ts-ignore
-        this.dp.danmaku.options.height = 50;
-        // @ts-ignore
-        this.dp.danmaku.options.speed = 10;
+        this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
 
         // @ts-ignore
         this.dp.on("ended", () => {
