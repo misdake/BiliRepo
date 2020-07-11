@@ -44,7 +44,7 @@ export class TimestampBlockElement extends LitElement {
     render() {
         return html`
             <li class="timestampItem">
-                <a href=${`watch.html?aid=${this.timestamp.aid}&p=${this.timestamp.part}`}>
+                <a href=${`watch.html?aid=${this.timestamp.aid}&p=${this.timestamp.part}&t=${~~this.timestamp.time_second}`}>
                     <div class="thumbContainer">
                         <img class="thumb" src="${serverConfig.repoRoot}repo/${this.timestamp.aid}/thumb.jpg" alt="thumb"/>
                     </div>

@@ -3,6 +3,7 @@ import "./PageElement";
 import {Playlist, PlaylistItem} from "./Playlist";
 import {ClientApis} from "../common/api/ClientApi";
 import {PartDB, VideoParts} from "../../server/storage/dbTypes";
+import {PageElement} from "./PageElement";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
@@ -14,7 +15,8 @@ let aidstr = url.searchParams.get("aid");
 let aid = parseInt(aidstr);
 let part = parseInt(url.searchParams.get("p")) || 1;
 
-//TODO timestamp as param?
+let tstr = url.searchParams.get("t");
+let t = parseInt(tstr);
 
 //start loading
 let playlist = new Playlist();
@@ -64,6 +66,13 @@ loadPromise.then(() => {
 
     currentIndex |= 0;
 
+    let onPlayerLoaded = (pageelement: PageElement) => {
+        if (t) { //jump to timestamp
+            pageelement.player.setTimeOnCanplay(t);
+            t = undefined;
+        }
+    };
+
     let onBeginPart = (video: VideoParts, part: PartDB) => {
         let url = location.pathname;
         let params: { key: string, value: number }[] = [];
@@ -73,5 +82,5 @@ loadPromise.then(() => {
         history.replaceState(null, "", `${url}?${params.map(i => `${i.key}=${i.value}`).join("&")}`);
     };
 
-    render(html`<page-element .onBeginPart=${onBeginPart} .playlist=${playlist} .playindex=${currentIndex}></page-element>`, document.body);
+    render(html`<page-element .onBeginPart=${onBeginPart} .onPlayerLoaded=${onPlayerLoaded} .playlist=${playlist} .playindex=${currentIndex}></page-element>`, document.body);
 });

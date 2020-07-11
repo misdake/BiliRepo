@@ -91,6 +91,13 @@ export class Player {
         this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
 
         // @ts-ignore
+        this.dp.on("canplay", () => {
+            if (this.timeOnCanplay) {
+                this.seek(this.timeOnCanplay);
+                this.timeOnCanplay = undefined;
+            }
+        });
+        // @ts-ignore
         this.dp.on("ended", () => {
             if (this.onEnded) this.onEnded();
         });
@@ -98,6 +105,11 @@ export class Player {
         if (!document.hidden) {
             this.dp.play();
         }
+    }
+
+    timeOnCanplay: number = undefined;
+    setTimeOnCanplay(t: number) {
+        this.timeOnCanplay = t;
     }
 
     currentTime() {

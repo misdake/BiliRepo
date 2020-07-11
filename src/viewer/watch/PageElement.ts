@@ -22,6 +22,8 @@ export class PageElement extends LitElement {
     playindex: number;
 
     @property()
+    onPlayerLoaded: (pageelement: PageElement) => void;
+    @property()
     onBeginPart: (video: VideoParts, part: PartDB) => void;
 
     constructor() {
@@ -56,6 +58,7 @@ export class PageElement extends LitElement {
 
     private onPlayerLoad(player:Player) {
         this.player = player;
+        if (this.onPlayerLoaded) this.onPlayerLoaded(this);
     }
 
     private onPartEnded() {
