@@ -37,7 +37,7 @@ export class ControlPanelElement extends LitElement {
         {title: "编辑", content: () => html`
             <div style="padding: 5px;">
                 <videoplaylistedit-element .video=${this.pageelement.currentVideo}></videoplaylistedit-element>
-                <h5><a href="#" @click=${() => this.updateDanmaku()}>更新弹幕</a></h5>
+                <h5><button @click=${() => this.updateDanmaku()}>更新弹幕</button></h5>
             </div>
         `},
     ];
@@ -57,8 +57,8 @@ export class ControlPanelElement extends LitElement {
     private updateDanmaku() {
         ClientApis.UpdateDanmaku.fetch({}, {part: this.pageelement.currentPart}).then(content => {
             if (content === "good") {
-                alert("danmaku updated!");
-                window.location.reload();
+                // alert("danmaku updated!");
+                window.location.replace(`${window.location.href}&t=${~~this.pageelement.player.currentTime()}`);
             } else {
                 alert("danmaku update failed!\nresponse: " + content);
             }
