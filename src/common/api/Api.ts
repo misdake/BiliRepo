@@ -1,6 +1,6 @@
 import {MemberDB, PartDB, PlaylistDB, PlaylistVideoParts, PlaylistVideos, Timestamp, VideoDB, VideoParts} from "../../server/storage/dbTypes";
 import {Paged} from "../page";
-import {BilibiliVideoJson} from "../types";
+import {BilibiliVideoJson, BilibiliVideoListJson} from "../types";
 import {DownloadStatus} from "../DownloadStatus";
 import {Request} from "express";
 
@@ -86,6 +86,7 @@ export let RawApis = {
 
     //Proxy
     GetVideoInfo: new ApiPost<string, {}, BilibiliVideoJson>("/proxy/videoinfo/:id", id => `proxy/videoinfo/${id}`),
+    GetCoinVideos: new ApiPost<number, {}, BilibiliVideoListJson>("/proxy/coinvideos/:mid", mid => `proxy/coinvideos/${mid}`),
 
     //Download
     AddDownload: new ApiGet<number, boolean>("/download/add/:aid", aid => `download/add/${aid}`),

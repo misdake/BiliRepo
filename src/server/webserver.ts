@@ -3,7 +3,7 @@ import {Storage} from "./storage/Storage";
 import {Downloader} from "./download/Downloader";
 import {httpsget} from "./network";
 import {initServerApi, ServerApis} from "./ServerApi";
-import {BilibiliVideoJson} from "../common/types";
+import {BilibiliVideoJson, BilibiliVideoListJson} from "../common/types";
 
 const express = require('express');
 const cors = require('cors');
@@ -45,6 +45,11 @@ Storage.createInstance().then(storage => {
         console.log("query", query);
         httpsget(`https://api.bilibili.com/x/web-interface/view?${query}`).then(value => {
             resolve(JSON.parse(value) as BilibiliVideoJson);
+        });
+    }));
+    ServerApis.GetCoinVideos.serve(req => parseInt(req.params["mid"]), (mid) => new Promise<BilibiliVideoListJson>(resolve => {
+        httpsget(`https://api.bilibili.com/x/space/coin/video?vmid=${mid}`).then(value => {
+            resolve(JSON.parse(value) as BilibiliVideoListJson);
         });
     }));
 

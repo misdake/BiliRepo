@@ -1,5 +1,8 @@
 export interface BilibiliVideoJson {
-    data: BilibiliVideo
+    data: BilibiliVideo;
+}
+export interface BilibiliVideoListJson {
+    data: BilibiliVideo[];
 }
 
 export interface BilibiliVideo {

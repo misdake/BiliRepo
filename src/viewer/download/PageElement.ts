@@ -72,6 +72,8 @@ export class PageElement extends LitElement {
         }
     `;
 
+    private coinVideos: { title: string; value: string }[];
+
     constructor() {
         super();
         this.inputVideo = null;
@@ -81,7 +83,18 @@ export class PageElement extends LitElement {
         this.done = [];
         this.failed = [];
 
+        this.loadCoinVideos();
+
         this.loop();
+    }
+
+    private loadCoinVideos() {
+        ClientApis.GetCoinVideos.fetch(110213, {}).then(value => {
+            let hints = value.data.map(item => ({value: `av${item.aid}`, title: item.title}));
+            hints.length = Math.min(hints.length, 5);
+            this.coinVideos = hints;
+            this.performUpdate();
+        });
     }
 
     private loadStatus() {
@@ -126,7 +139,7 @@ export class PageElement extends LitElement {
 
     private checkInput(input: string) {
         this.inputVideo = null;
-        if(!input.toLowerCase().startsWith("av") && !input.toLowerCase().startsWith("bv")) return;
+        if (!input.toLowerCase().startsWith("av") && !input.toLowerCase().startsWith("bv")) return;
 
         ClientApis.GetVideoInfo.fetch(input, {}).then(videoJson => {
             let v = videoJson.data;
@@ -189,7 +202,7 @@ export class PageElement extends LitElement {
         return html`
             <div id="page">
                 <div id="left_panel">
-                    <input-element .placeholder=${"aid 或 bvid"} .input=${""} .buttonText=${"查看"} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
+                    <input-element .placeholder=${"aid 或 bvid"} .input=${""} .hints=${this.coinVideos} .buttonText=${"查看"} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
                     <ul><videostatus-element .video=${this.inputVideo} .iconShow=${true} .icon=${"添加"} .onIconClick=${() => this.enqueue()}></videostatus-element></ul>
                     <div class="text">下载队列: 共${this.queue.length}个</div>
                     <div id="queue_container"><videolist-element .videos=${this.queue} .icon=${"删除"} .onIconClick=${(video: VideoStatus) => this.removeVideo(video)}></videolist-element></div>
