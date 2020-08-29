@@ -12,8 +12,11 @@ import {Player} from "./Player";
 @customElement('page-element')
 export class PageElement extends LitElement {
 
+    @property() //property for auto update
     currentVideo: VideoParts;
+    @property() //property for auto update
     currentPart: PartTimestamps;
+
     player: Player;
 
     @property()
@@ -53,7 +56,6 @@ export class PageElement extends LitElement {
                 break;
             }
         }
-        this.performUpdate();
     }
 
     private onPlayerLoad(player:Player) {

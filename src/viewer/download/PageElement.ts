@@ -72,7 +72,8 @@ export class PageElement extends LitElement {
         }
     `;
 
-    private coinVideos: { title: string; value: string }[];
+    @property() //property for auto update
+    coinVideos: { title: string; value: string }[];
 
     constructor() {
         super();
@@ -93,7 +94,6 @@ export class PageElement extends LitElement {
             let hints = value.data.map(item => ({value: `av${item.aid}`, title: item.title}));
             hints.length = Math.min(hints.length, 5);
             this.coinVideos = hints;
-            this.performUpdate();
         });
     }
 

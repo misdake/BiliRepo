@@ -22,7 +22,7 @@ export class TimestampEditElement extends LitElement {
 
     private refreshTimestamps() {
         if (this.refresh) this.refresh(this.part.timestamps);
-        this.performUpdate();
+        this.requestUpdate();
     }
 
     private addTimestamp(input: string) {
