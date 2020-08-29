@@ -35,6 +35,18 @@ module.exports = env =>{
             watch: './src/viewer/watch/watch.ts',
             download: './src/viewer/download/download.ts',
         },
+        optimization: {
+            splitChunks: {
+                cacheGroups: {
+                    common: {
+                        name: 'common',
+                        chunks: 'initial',
+                        priority: 2,
+                        minChunks: 2,
+                    },
+                },
+            },
+        },
         devtool: devtool,
         mode: mode,
         module: {
