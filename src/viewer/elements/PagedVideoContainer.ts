@@ -1,6 +1,6 @@
 import {customElement, html, LitElement, property} from "lit-element";
 import {VideoDB} from "../../server/storage/dbTypes";
-import "./VideoElements";
+import "./VideoBlockElement";
 import {PagedContainer} from "./PagedContainer";
 import {repeat} from "lit-html/directives/repeat";
 import {ClientApis} from "../common/api/ClientApi";

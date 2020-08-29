@@ -1,4 +1,4 @@
-import {css, customElement, html, LitElement, property} from "lit-element";
+import {css, customElement, html, LitElement, property, PropertyValues} from "lit-element";
 import {PartDB, VideoDB} from "../../server/storage/dbTypes";
 
 @customElement('videolabel-element')
@@ -73,6 +73,26 @@ export class VideoLabelElement extends LitElement {
         }
     `;
 
+
+    protected updated(_changedProperties: PropertyValues) {
+        if (this.partSelected || (this.videoSelected && !this.part)) { //
+            //自己是当前播放的内容，需要滚动到指定位置
+            let children = this.shadowRoot.children;
+            if (!children) return;
+
+            //拿到列表的屏幕范围和自己的屏幕范围
+            let rect = children[0].getClientRects()[0];
+            let parentRect = this.parentElement.getClientRects()[0];
+
+            if (rect.top - parentRect.bottom > 0) { //自己的顶部>列表的底部 => 太靠下了
+                this.parentElement.scrollBy(0, rect.bottom - parentRect.bottom); //滚动使得底边重合
+            }
+            if (parentRect.top - rect.bottom > 0) { //自己的底部<列表的顶部 => 太靠上了
+                this.parentElement.scrollBy(0, rect.top - parentRect.top); //滚动使得顶边重合
+            }
+        }
+    }
+
     render() {
         let videoClass = this.videoSelected ? "videoItem videoItemSelected" : "videoItem";
         let partClass = this.partSelected ? "part partSelected" : "part";
@@ -91,62 +111,6 @@ export class VideoLabelElement extends LitElement {
         return html`
             ${video}
             ${part}
-        `;
-    }
-
-}
-
-@customElement('videoblock-element')
-export class VideoBlockElement extends LitElement {
-
-    @property()
-    video: VideoDB;
-
-    @property()
-    params: { key: string, value: number }[];
-
-    static styles = css`
-        .videoItem {
-            display: inline;
-            float: left;
-            margin: 10px;
-            width: 305px;
-            height: 228px;
-            overflow: hidden;
-        }
-        
-        a {
-            text-decoration: none;
-        }
-        
-        .thumbContainer {
-            width: 305px;
-            height: 180px;
-            position: relative;
-            margin-bottom: 3px;
-        }
-        
-        .thumb {
-            display: block;
-            object-fit: cover;
-            max-width: 305px;
-            max-height: 180px;
-            width: 100%;
-            height: 100%;
-        }
-    `;
-
-    render() {
-        let param = this.params ? "&" + this.params.map(i => `${i.key}=${i.value}`).join("&") : "";
-        return html`
-            <li class="videoItem">
-                <a href=${'watch.html?aid=' + this.video.aid + param}>
-                    <div class="thumbContainer">
-                        <img class="thumb" src="${serverConfig.repoRoot}repo/${this.video.aid}/thumb.jpg" alt="thumb"/>
-                    </div>
-                    <span>${this.video.title}</span>
-                </a>
-            </li>
         `;
     }
 

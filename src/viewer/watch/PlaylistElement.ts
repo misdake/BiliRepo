@@ -1,5 +1,5 @@
 import {css, customElement, html, LitElement, property} from "lit-element";
-import "../elements/VideoElements";
+import "./VideoLabelElement";
 import {Playlist} from "./Playlist";
 
 @customElement('playlist-element')
