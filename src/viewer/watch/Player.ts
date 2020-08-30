@@ -50,7 +50,9 @@ export class Player {
     private onEnded: () => void;
     private danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
 
-    constructor(container: HTMLElement, onEnded: () => void, danmakuSetting: {fontSize:number, lineHeight:number, speed: number}) {
+    onResize: (w: number, h: number) => void;
+
+    constructor(container: HTMLElement, onEnded: () => void, danmakuSetting: { fontSize: number, lineHeight: number, speed: number }) {
         this.container = container;
         this.danmakuSetting = danmakuSetting;
         this.apiBackend = {
@@ -90,24 +92,48 @@ export class Player {
         // @ts-ignore
         this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
 
-        // @ts-ignore
         this.dp.on("canplay", () => {
             if (this.timeOnCanplay) {
                 this.seek(this.timeOnCanplay);
                 this.timeOnCanplay = undefined;
             }
         });
-        // @ts-ignore
         this.dp.on("ended", () => {
             if (this.onEnded) this.onEnded();
         });
+        this.dp.on("resize", () => {
+            setTimeout(() => this.triggerResize());
+        });
+
+        this.triggerResize();
 
         if (!document.hidden) {
             this.dp.play();
         }
     }
 
+    triggerResize() {
+        let w = this.dp.video.clientWidth;
+        let h = this.dp.video.clientHeight;
+        if (this.onResize) {
+            this.onResize(w, h);
+            // @ts-ignore
+            if (this.dp.danmaku.options.height !== this.danmakuSetting.lineHeight) {
+                // @ts-ignore
+                this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
+                // @ts-ignore
+                if (this.dp.danmaku.showing) {
+                    //TODO 这里强行清空内容，清掉未更新top的弹幕。最好是手动修改现有弹幕的top而不清空
+                    //TODO 从右向左的弹幕：this.dp.danmaku.danTunnel.right[i][0].style.top，应当的top是`${i * lineHeight}px`，那个0改为遍历
+                    this.dp.danmaku.hide();
+                    this.dp.danmaku.show();
+                }
+            }
+        }
+    }
+
     timeOnCanplay: number = undefined;
+
     setTimeOnCanplay(t: number) {
         this.timeOnCanplay = t;
     }

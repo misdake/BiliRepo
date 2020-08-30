@@ -4,12 +4,12 @@ import {PartTimestamps, VideoParts} from "../../server/storage/dbTypes";
 
 @customElement('player-element')
 export class PlayerElement extends LitElement {
-    private danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
 
     private player: Player = null;
     private loadPlayer() {
         if (!this.player) {
             this.player = new Player(this.shadowRoot.getElementById('dplayer'), this.onEnded, this.danmakuSetting);
+            this.player.onResize = (w, h) => this.onResize(w, h);
         }
         if (this.onLoad) this.onLoad(this.player);
     }
@@ -28,14 +28,25 @@ export class PlayerElement extends LitElement {
     onLoad: (player: Player) => void;
     @property()
     onEnded: () => void;
+    @property()
+    danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
 
     constructor() {
         super();
-        this.danmakuSetting = { //TODO 改为可动态设置的，在resize的时候变化
+        this.danmakuSetting = {
             fontSize: 32,
-            lineHeight: 40,
+            lineHeight: 30,
             speed: 10,
-        }
+        };
+    }
+
+    onResize(w: number, h: number) {
+        let font = h / 30;
+        this.danmakuSetting.fontSize = font;
+        this.danmakuSetting.lineHeight = font * 1.25;
+        this.danmakuSetting.speed = w / 100;
+        this.requestUpdate();
+        console.log("resize!", w, h, this.danmakuSetting);
     }
 
     update(_changedProperties: PropertyValues) {
