@@ -124,9 +124,47 @@ export class Bilibili {
             proc.on('close', (code: number) => {
                 //TODO save out/err output to file if error occured
                 console.log(`child process exited with code ${code}`);
-                resolve(code);
+
+                if (fs.existsSync(`repo/${aid}_download/p${page}.mp4`)) {
+                    resolve(code);
+                } else if (fs.existsSync(`repo/${aid}_download/p${page}.flv`)) {
+                    console.log('下载文件为mp4，需转换为flv');
+                    //如果是flv就转换成mp4，成功后删除源文件，如果失败就返回失败 ffmpeg.exe -i p1.flv -acodec copy -vcodec copy p1.mp4
+                    this.convertFlvToMp4(aid, page).then(() => {
+                        if (fs.existsSync(`repo/${aid}_download/p${page}.mp4`)) {
+                            fs.unlinkSync(`repo/${aid}_download/p${page}.flv`);
+                            resolve(code);
+                        } else {
+                            console.log('未找到文件');
+                            resolve(-1);
+                        }
+                    });
+                } else {
+                    console.log('未找到文件');
+                    resolve(-1);
+                }
             });
 
+        });
+    }
+
+    static async convertFlvToMp4(aid: number, page: number) {
+        return new Promise((resolve, reject) => {
+            let params = ['-i', `repo/${aid}_download/p${page}.flv`, '-acodec', 'copy', '-vcodec', 'copy', `repo/${aid}_download/p${page}.mp4`];
+            console.log("run: ffmpeg " + params.join(' '));
+            const proc = spawn('downloader/ffmpeg', params);
+
+            proc.stdout.on('data', (data: any) => {
+                console.log(`stdout: ${data}`);
+            });
+            proc.stderr.on('data', (data: any) => {
+                console.log(`stderr: ${data}`);
+            });
+
+            proc.on('close', (code: number) => {
+                console.log(`child process exited with code ${code}`);
+                resolve(code);
+            });
         });
     }
 }

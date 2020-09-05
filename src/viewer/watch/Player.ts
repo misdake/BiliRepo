@@ -88,7 +88,7 @@ export class Player {
         }));
 
         // @ts-ignore
-        this.dp = window.createPlayer(this.container, this.apiBackend, {url: `${serverConfig.repoRoot}repo/${aid}/p${part}.flv`}, highlight);
+        this.dp = window.createPlayer(this.container, this.apiBackend, {url: `${serverConfig.repoRoot}repo/${aid}/p${part}.mp4`}, highlight);
         // @ts-ignore
         this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
 
