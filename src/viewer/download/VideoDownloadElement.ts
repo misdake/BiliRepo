@@ -112,7 +112,7 @@ export class VideoDownloadElement extends LitElement {
                             <span class="part_title">${part.title}</span>
                             <span class="part_percent" >
                                 ${part.progress}%
-                                <span class="part_size">${part.curr || "?"} / ${part.total || "?"}</span>
+                                <span class="part_size">${part.quality} ${part.curr || "?"} / ${part.total || "?"}</span>
                             </span>
                             <progress class="part_progress" max="100" value="${part.progress}"></progress>
                         </div>

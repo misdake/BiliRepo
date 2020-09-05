@@ -123,8 +123,6 @@ export class Player {
                 this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
                 // @ts-ignore
                 if (this.dp.danmaku.showing) {
-                    //TODO 这里强行清空内容，清掉未更新top的弹幕。最好是手动修改现有弹幕的top而不清空
-                    //TODO 从右向左的弹幕：this.dp.danmaku.danTunnel.right[i][0].style.top，应当的top是`${i * lineHeight}px`，那个0改为遍历
                     this.dp.danmaku.hide();
                     this.dp.danmaku.show();
                 }
