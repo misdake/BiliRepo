@@ -2,43 +2,6 @@ import DPlayer, {DPlayerAPIBackend} from "dplayer";
 import {httpget} from "../common/api/ClientApi";
 import {Timestamp} from "../../server/storage/dbTypes";
 
-// if dplayer switchs videos when flvjs is fetching data, dplayer will not stop flvjs, causing errors and infinite loading.
-// this seems to be fixed in later versions (currently 1.25).
-
-// here is the 99% fix:
-// hijack createPlayer to save the player object.
-// when unloading video, call relevant functions to unload flvjs player correctly.
-// this is a 99% fix. infinite loading still occurs after extreme actions.
-
-let currentPlayer: any = null;
-{
-    // @ts-ignore
-    let saved = flvjs.createPlayer;
-    // @ts-ignore
-    flvjs.createPlayer = function (options: any) {
-        // @ts-ignore
-        currentPlayer = saved(options);
-        // @ts-ignore
-        return currentPlayer;
-    };
-}
-
-function unloadPlayer() {
-    if (!currentPlayer) return;
-    currentPlayer.pause();
-    // @ts-ignore
-    currentPlayer.unload();
-    // @ts-ignore
-    currentPlayer.detachMediaElement();
-    // @ts-ignore
-    currentPlayer.destroy();
-    // @ts-ignore
-    currentPlayer = null;
-}
-
-// ↑
-// fix end
-
 export class Player {
 
     private dp: DPlayer;
@@ -77,7 +40,6 @@ export class Player {
 
         if (this.dp) {
             this.dp.pause();
-            unloadPlayer(); //unload flvjs player
             this.dp.destroy();
             this.dp = null;
         }
