@@ -23,7 +23,7 @@ export class VideoLabelElement extends LitElement {
             float: left;
             padding: 10px;
             width: 300px;
-            height: 90px;
+            height: 100px;
             position: relative;
             overflow: hidden;
             cursor: default;
@@ -34,14 +34,14 @@ export class VideoLabelElement extends LitElement {
         
         .thumbContainer {
             width: 160px;
-            height: 90px;
+            height: 100px;
             position: relative;
         }
         
         .thumb {
             object-fit: cover;
             max-width: 160px;
-            max-height: 90px;
+            max-height: 100px;
             width: 100%;
             height: 100%;
         }

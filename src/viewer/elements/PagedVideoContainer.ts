@@ -20,7 +20,7 @@ export class VideoListElement extends LitElement {
 
     render() {
         return html`
-            <ul style="padding: 0; margin: 0 -10px;">
+            <ul style="padding: 0; margin: 0 -16px;">
                 ${repeat(this.videos, (video: VideoDB) => html`<videoblock-element .video=${video} .params=${this.params}></videoblock-element>`)}
             </ul>
         `;

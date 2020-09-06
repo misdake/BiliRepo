@@ -68,7 +68,7 @@ export class TimestampListElement extends LitElement {
 
     render() {
         return html`
-            <ul style="padding: 0; margin: 0 -10px;">
+            <ul style="padding: 0; margin: 0 -16px;">
                 ${repeat(this.timestamps, (timestamp: Timestamp) => html`<timestampblock-element style="float: left;" .timestamp=${timestamp}></timestampblock-element>`)}
             </ul>
         `;
