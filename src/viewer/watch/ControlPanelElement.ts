@@ -6,6 +6,7 @@ import "../elements/VideoPlaylistEdit";
 import {ClientApis} from "../common/api/ClientApi";
 import {Playlist} from "./Playlist";
 import {Timestamp} from "../../server/storage/dbTypes";
+import {Danmaku} from "../../server/download/Bilibili";
 
 @customElement('controlpanel-element')
 export class ControlPanelElement extends LitElement {
@@ -19,6 +20,9 @@ export class ControlPanelElement extends LitElement {
 
     @property()
     currentTab: number = 0;
+
+    @property()
+    danmakuList: Danmaku[];
 
     private tabs: { title: string, content: () => TemplateResult }[] = [
         {title: "播放列表", content: () => html`
@@ -37,6 +41,7 @@ export class ControlPanelElement extends LitElement {
         {title: "编辑", content: () => html`
             <div style="padding: 5px;">
                 <videoplaylistedit-element .video=${this.pageelement.currentVideo}></videoplaylistedit-element>
+                <h5>弹幕${this.danmakuList.length}条</h5>
                 <h5><button @click=${() => this.updateDanmaku()}>更新弹幕</button></h5>
             </div>
         `},

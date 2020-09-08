@@ -8,6 +8,7 @@ import "./VideoDescElement";
 import "./ControlPanelElement";
 import {PartDB, PartTimestamps, VideoParts} from "../../server/storage/dbTypes";
 import {Player} from "./Player";
+import {Danmaku} from "../../server/download/Bilibili";
 
 @customElement('page-element')
 export class PageElement extends LitElement {
@@ -16,6 +17,8 @@ export class PageElement extends LitElement {
     currentVideo: VideoParts;
     @property() //property for auto update
     currentPart: PartTimestamps;
+    @property()
+    danmakuList: Danmaku[];
 
     player: Player;
 
@@ -39,6 +42,7 @@ export class PageElement extends LitElement {
         this.playindex = index;
         let playlistItem = this.playlist.items[this.playindex];
         console.log("play index ", index);
+        this.danmakuList = [];
         this.updateCurrentVideoPart(playlistItem.video, playlistItem.part);
     }
 
@@ -61,10 +65,12 @@ export class PageElement extends LitElement {
     private onPlayerLoad(player:Player) {
         this.player = player;
         if (this.onPlayerLoaded) this.onPlayerLoaded(this);
+        this.player.onDanmakuLoaded = danmakuList => {
+            this.danmakuList = danmakuList;
+        };
     }
 
     private onPartEnded() {
-        //TODO add auto-play checkbox
         if (this.playindex < this.playlist.items.length - 1) {
             this.updatePlayIndex(this.playindex + 1);
         }
@@ -122,8 +128,8 @@ export class PageElement extends LitElement {
                     <div style="clear: both;"></div>
                 </div>
                 <div id="player">
-                    <player-element .onLoad=${(player:Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part=${this.currentPart}></player-element>
-                    <controlpanel-element .currentTab=${this.playlist.items.length > 1 ? 0 : 1} .pageelement=${this} .playlist=${this.playlist} .playindex=${this.playindex}></controlpanel-element>
+                    <player-element .onLoad=${(player: Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part=${this.currentPart}></player-element>
+                    <controlpanel-element .danmakuList=${this.danmakuList} .currentTab=0 .pageelement=${this} .playlist=${this.playlist} .playindex=${this.playindex}></controlpanel-element>
                     <div style="clear: both;"></div>
                 </div>
                 <div id="info">

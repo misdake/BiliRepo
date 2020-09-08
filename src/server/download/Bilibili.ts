@@ -7,7 +7,7 @@ const parser = require("xml2js");
 
 const spawn = require('child_process').spawn;
 
-class Danmaku {
+export class Danmaku {
     time: number;
     type: number;
     color: string;

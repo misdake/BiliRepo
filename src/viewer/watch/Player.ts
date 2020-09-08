@@ -1,6 +1,7 @@
 import DPlayer, {DPlayerAPIBackend} from "dplayer";
 import {httpget} from "../common/api/ClientApi";
 import {Timestamp} from "../../server/storage/dbTypes";
+import {Danmaku} from "../../server/download/Bilibili";
 
 export class Player {
 
@@ -15,6 +16,9 @@ export class Player {
 
     onResize: (w: number, h: number) => void;
 
+    danmakuList: Danmaku[];
+    onDanmakuLoaded: (danmakuList: Danmaku[]) => void;
+
     constructor(container: HTMLElement, onEnded: () => void, danmakuSetting: { fontSize: number, lineHeight: number, speed: number }) {
         this.container = container;
         this.danmakuSetting = danmakuSetting;
@@ -22,7 +26,10 @@ export class Player {
             read: (options) => {
                 if (!(this.aid && this.part)) return;
                 httpget(`${serverConfig.repoRoot}repo/${this.aid}/p${this.part}.json`, content => {
-                    options.success(JSON.parse(content).data);
+                    let result = JSON.parse(content).data;
+                    options.success(result);
+                    this.danmakuList = result;
+                    if (this.onDanmakuLoaded) this.onDanmakuLoaded(this.danmakuList);
                 });
             },
             send: (options) => {
