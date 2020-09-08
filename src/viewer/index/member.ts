@@ -21,7 +21,10 @@ function request(page: number) {
 const pageTemplate = (member: MemberDB) => html`
     <div style="height: 100%; width: 1280px; max-width: 100%; margin: 0 auto;">
         <div style="margin: 20px 0; position: relative;">
-            <div style="position: absolute; right: 0;"><guide-element></guide-element></div>
+            <div style="position: absolute; right: 0;">
+                <guide-element></guide-element>
+                <a style="text-decoration: none; padding: 0; color: blue;" target="_blank" rel="noopener noreferrer" href="https://space.bilibili.com/${mid}">B站链接</a>
+            </div>
             <member-element .member=${member}></member-element>
         </div>
         <pagedvideo-container .request=${request}></pagedvideo-container>

@@ -25,7 +25,7 @@ export class ControlPanelElement extends LitElement {
     danmakuList: Danmaku[];
 
     private tabs: { title: string, content: () => TemplateResult }[] = [
-        {title: "播放列表", content: () => html`
+        {title: "当前播放", content: () => html`
             <playlist-element .onitemclick=${(index: number) => this.pageelement.updatePlayIndex(index)} .playlist=${this.playlist} .playindex=${this.playindex}></playlist-element>
         `},
         {title: "时间点", content: () => html`

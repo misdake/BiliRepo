@@ -94,10 +94,17 @@ export class PageElement extends LitElement {
         }
         title-element {
         }
-        guide-element {
+        #guide {
             float: right;
-            width: 54px;
+            width: 62px;
         }
+        #blink {
+            text-align: right;
+            text-decoration: none;
+            padding: 0;
+            color: blue;
+            display: block;
+        }        
         member-element {
             float: right;
             width: 256px;
@@ -122,7 +129,13 @@ export class PageElement extends LitElement {
         return html`
             <div id="page">
                 <div id="header">
-                    <guide-element></guide-element>
+                    <div id="guide">
+                        <guide-element></guide-element>
+                        ${!this.currentVideo ? html`` : html`
+                        <a id="blink" target="_blank" rel="noopener noreferrer" href="https://www.bilibili.com/video/av${this.currentVideo.aid}${this.currentPart ? `?p=${this.currentPart.index}` : ''}">B站链接</a>
+                        `}
+                    </div>
+                    
                     <member-element .member=${this.currentVideo ? this.currentVideo.member : null}></member-element>
                     <videotitle-element .video=${this.currentVideo} .part=${this.currentPart}></videotitle-element>
                     <div style="clear: both;"></div>

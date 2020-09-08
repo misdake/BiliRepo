@@ -82,6 +82,10 @@ export class PlayerElement extends LitElement {
             width: 960px;
             height: 540px;
         }
+
+        .dplayer-icon::after {
+            display: none;
+        }
     `;
 
 }
