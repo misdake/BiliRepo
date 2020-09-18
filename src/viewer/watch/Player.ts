@@ -81,6 +81,12 @@ export class Player {
         }
     }
 
+    unloadPlayer() {
+        if (this.dp) {
+            this.dp.destroy();
+        }
+    }
+
     triggerResize() {
         let w = this.dp.video.clientWidth;
         let h = this.dp.video.clientHeight;

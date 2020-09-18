@@ -96,6 +96,17 @@ Storage.createInstance().then(storage => {
         }),
     );
 
+    ServerApis.Redownload.serve(
+        req => parseInt(req.params["aid"]),
+        aid => {
+            if(downloader.redownload(aid)) {
+                return "good";
+            } else {
+                return "bad";
+            }
+        }
+    );
+
 
     const videoPagesize = 12;
     const memberPagesize = 24;

@@ -43,6 +43,7 @@ export class ControlPanelElement extends LitElement {
                 <videoplaylistedit-element .video=${this.pageelement.currentVideo}></videoplaylistedit-element>
                 <h5>弹幕${this.danmakuList.length}条</h5>
                 <h5><button @click=${() => this.updateDanmaku()}>更新弹幕</button></h5>
+                <h5><button @click=${() => this.redownload()}>重新下载视频</button></h5>
             </div>
         `},
     ];
@@ -68,6 +69,19 @@ export class ControlPanelElement extends LitElement {
                 alert("danmaku update failed!\nresponse: " + content);
             }
         });
+    }
+
+    private redownload() {
+        this.pageelement.player.unloadPlayer();
+        setTimeout(() => {
+            ClientApis.Redownload.fetch(this.pageelement.currentVideo.aid).then(content => {
+                if (content === "good") {
+                    window.location.replace(`download.html`);
+                } else {
+                    alert("redownload failed!\nresponse: " + content);
+                }
+            });
+        }, 100);
     }
 
     private clickHeader(index: number) {

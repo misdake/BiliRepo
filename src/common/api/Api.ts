@@ -95,4 +95,5 @@ export let RawApis = {
     StatusDownload: new ApiGet<{}, DownloadStatus>("/download/status", () => `download/status`),
     UpdateCookie: new ApiPost<{}, { cookie: string }, string>("/download/cookie", () => `download/cookie`),
     UpdateDanmaku: new ApiPost<{}, { part: PartDB }, string>("/download/danmaku/update", () => `download/danmaku/update`),
+    Redownload: new ApiGet<number, string>("/download/redownload/:aid", aid => `download/redownload/${aid}`),
 };

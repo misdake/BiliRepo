@@ -227,6 +227,23 @@ export class Downloader {
         return Bilibili.downloadDanmaku(part.aid, part.cid, part.index, true);
     }
 
+    redownload(aid: number) {
+        if (fs.existsSync(`repo/${aid}_download/`)) {
+            return false;
+        }
+        if (!fs.existsSync(`repo/${aid}/`)) {
+            return false;
+        }
+
+        try {
+            fs.renameSync(`repo/${aid}`, `repo/${aid}_download`);
+        } catch (e) {
+            return false;
+        }
+        this.enqueue(aid);
+        return true;
+    }
+
     setCookie(cookie: string) {
         fs.writeFileSync("downloader/cookies.txt", cookie);
         this.message = null;
