@@ -64,17 +64,14 @@ export class Storage {
         };
         this.table_video.insertOrUpdate(v);
 
-        let m2 = this.table_member.get(bilibiliVideo.owner.mid);
-        if (!m2 || m2.lastCtime < bilibiliVideo.ctime) {
-            let m: MemberDB = {
-                mid: bilibiliVideo.owner.mid,
+        let member: MemberDB = {
+            mid: bilibiliVideo.owner.mid,
 
-                name: bilibiliVideo.owner.name,
-                face: bilibiliVideo.owner.face,
-                lastCtime: bilibiliVideo.ctime,
-            };
-            this.table_member.insertOrUpdate(m);
-        }
+            name: bilibiliVideo.owner.name,
+            face: bilibiliVideo.owner.face,
+            lastCtime: bilibiliVideo.ctime,
+        };
+        this.table_member.insertOrUpdate(member);
 
         for (let part of bilibiliVideo.pages) {
             let p: PartDB = {
