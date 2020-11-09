@@ -106,16 +106,23 @@ export class Bilibili {
 
     static async downloadVideo(aid: number, page = 1, onoutput?: (lines: string[]) => void, onbind?: (proc: ChildProcess) => void) {
         return new Promise((resolve, reject) => {
-            let params = ['-c', 'downloader/cookies.txt', '-n', '16', '-O', `p${page}`, '-o', `./repo/${aid}_download`, '-p', '-start', `${page}`, '-end', `${page}`, `av${aid}`];
+            let params = ['-c', 'downloader/cookies.txt', '-n', '4', '-O', `p${page}`, '-o', `./repo/${aid}_download`, '-p', '-start', `${page}`, '-end', `${page}`, `av${aid}`];
             console.log("run: annie " + params.join(' '));
             const proc = spawn('downloader/annie', params);
 
             if (onbind) onbind(proc);
 
+            let lineCount = 0;
             proc.stdout.on('data', (data: any) => {
                 let lines = `${data}`.split(/\r?\n/);
                 if (onoutput) onoutput(lines);
-                console.log(`stdout: ${data}`);
+                for (let line of lines) {
+                    lineCount++;
+                    if (line.indexOf("/") < 0 || lineCount % 100 === 0) {
+                        console.log("stdout:", line);
+                    }
+                }
+                // console.log(`stdout: ${data}`);
             });
             proc.stderr.on('data', (data: any) => {
                 console.log(`stderr: ${data}`);

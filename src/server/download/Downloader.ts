@@ -60,7 +60,7 @@ export class PartDownloadProgress {
             for (let string of lines) {
                 let res = string.match(qualityRegex);
                 if (res) {
-                    // console.log(`画质：${res[1]}`);
+                    console.log(`画质：${res[1]}`);
                     this.quality = res[1];
                 }
             }
