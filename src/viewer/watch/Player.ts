@@ -3,6 +3,54 @@ import {httpget} from "../common/api/ClientApi";
 import {Timestamp} from "../../server/storage/dbTypes";
 import {Danmaku} from "../../server/download/Bilibili";
 
+enum DPlayerEvents {
+    abort = 'abort',
+    canplay = 'canplay',
+    canplaythrough = 'canplaythrough',
+    durationchange = 'durationchange',
+    emptied = 'emptied',
+    ended = 'ended',
+    error = 'error',
+    loadeddata = 'loadeddata',
+    loadedmetadata = 'loadedmetadata',
+    loadstart = 'loadstart',
+    mozaudioavailable = 'mozaudioavailable',
+    pause = 'pause',
+    play = 'play',
+    playing = 'playing',
+    progress = 'progress',
+    ratechange = 'ratechange',
+    seeked = 'seeked',
+    seeking = 'seeking',
+    stalled = 'stalled',
+    suspend = 'suspend',
+    timeupdate = 'timeupdate',
+    volumechange = 'volumechange',
+    waiting = 'waiting',
+    screenshot = 'screenshot',
+    thumbnails_show = 'thumbnails_show',
+    thumbnails_hide = 'thumbnails_hide',
+    danmaku_show = 'danmaku_show',
+    danmaku_hide = 'danmaku_hide',
+    danmaku_clear = 'danmaku_clear',
+    danmaku_loaded = 'danmaku_loaded',
+    danmaku_send = 'danmaku_send',
+    danmaku_opacity = 'danmaku_opacity',
+    contextmenu_show = 'contextmenu_show',
+    contextmenu_hide = 'contextmenu_hide',
+    notice_show = 'notice_show',
+    notice_hide = 'notice_hide',
+    quality_start = 'quality_start',
+    quality_end = 'quality_end',
+    destroy = 'destroy',
+    resize = 'resize',
+    fullscreen = 'fullscreen',
+    fullscreen_cancel = 'fullscreen_cancel',
+    subtitle_show = 'subtitle_show',
+    subtitle_hide = 'subtitle_hide',
+    subtitle_change = 'subtitle_change'
+}
+
 export class Player {
 
     private dp: DPlayer;
@@ -61,16 +109,16 @@ export class Player {
         // @ts-ignore
         this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
 
-        this.dp.on("canplay", () => {
+        this.dp.on(DPlayerEvents.canplay, () => {
             if (this.timeOnCanplay) {
                 this.seek(this.timeOnCanplay);
                 this.timeOnCanplay = undefined;
             }
         });
-        this.dp.on("ended", () => {
+        this.dp.on(DPlayerEvents.ended, () => {
             if (this.onEnded) this.onEnded();
         });
-        this.dp.on("resize", () => {
+        this.dp.on(DPlayerEvents.resize, () => {
             setTimeout(() => this.triggerResize());
         });
 
