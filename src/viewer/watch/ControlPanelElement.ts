@@ -121,9 +121,11 @@ export class ControlPanelElement extends LitElement {
             height: 510px;
         }
         ul {
+            overflow-x: hidden;
             overflow-y: hidden;
         }
         ul:hover {
+            overflow-x: hidden;
             overflow-y: auto;
         }
     `;
