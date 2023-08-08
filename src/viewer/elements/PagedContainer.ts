@@ -17,7 +17,7 @@ export class PagedContainer<T> extends LitElement {
     autoLoad: boolean = true;
 
     protected listRenderer: (list: Paged<T>) => TemplateResult;
-    protected rightRenderer: () => TemplateResult;
+    protected rightRenderer: (list: Paged<T>) => TemplateResult;
 
     constructor() {
         super();
@@ -78,7 +78,7 @@ export class PagedContainer<T> extends LitElement {
             }
         }
         let list = this.listRenderer(this.response);
-        let rightHeader = this.rightRenderer ? this.rightRenderer() : html``;
+        let rightHeader = this.rightRenderer ? this.rightRenderer(this.response) : html``;
 
         return html`
             <div>
