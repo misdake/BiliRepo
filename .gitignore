@@ -1,6 +1,7 @@
 /node_modules
 /.idea
 /downloader/annie*
+/downloader/lux*
 /downloader/ffmpeg*
 /downloader/cookies.txt
 /downloader/status.txt

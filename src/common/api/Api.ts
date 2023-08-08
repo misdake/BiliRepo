@@ -67,6 +67,7 @@ export let RawApis = {
     AddPlaylist: new ApiPost<{}, { title: string, aids: number[] }, PlaylistDB>("/api/playlist/add", ({}) => `api/playlist/add`),
     UpdatePlaylist: new ApiPost<number, { title: string, add?: number[], remove?: number[] }, PlaylistDB>("/api/playlist/update/:pid", pid => `api/playlist/update/${pid}`),
     RemovePlaylist: new ApiGet<number, boolean>("/api/playlist/remove/:pid", pid => `api/playlist/remove/${pid}`),
+    //TODO ListAllPlaylist?
     ListPlaylist: new ApiGet<number, Paged<PlaylistDB>>("/api/playlist/list/:page", page => `api/playlist/list/${page}`),
     GetPlaylist: new ApiGet<number, PlaylistDB>("/api/playlist/pid/:pid", pid => `api/playlist/pid/${pid}`),
     GetPlaylistVideos: new ApiGet<number, PlaylistVideos>("/api/playlist/withvideos/:pid", pid => `api/playlist/withvideos/${pid}`),

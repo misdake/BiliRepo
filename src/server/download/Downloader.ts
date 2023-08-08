@@ -235,11 +235,23 @@ export class Downloader {
             return false;
         }
 
+        // fs.unlinkSync()
         try {
             fs.renameSync(`repo/${aid}`, `repo/${aid}_download`);
         } catch (e) {
+            console.log("cannot rename folder");
             return false;
         }
+
+        let files = fs.readdirSync(`repo/${aid}_download/`);
+        files = files.sort();
+        for (let file of files) {
+            if (file.match(/^p[0-9]+.mp4$/)) {
+                console.log(`delete repo/${aid}_download/${file}`);
+                fs.unlinkSync(`repo/${aid}_download/${file}`);
+            }
+        }
+
         this.enqueue(aid);
         return true;
     }

@@ -106,9 +106,9 @@ export class Bilibili {
 
     static async downloadVideo(aid: number, page = 1, onoutput?: (lines: string[]) => void, onbind?: (proc: ChildProcess) => void) {
         return new Promise((resolve, reject) => {
-            let params = ['-c', 'downloader/cookies.txt', '-n', '4', '-O', `p${page}`, '-o', `./repo/${aid}_download`, '-p', '-start', `${page}`, '-end', `${page}`, `av${aid}`];
-            console.log("run: annie " + params.join(' '));
-            const proc = spawn('downloader/annie', params);
+            let params = ['-c', 'downloader/cookies.txt', '-m', '-n', '4', '-O', `p${page}`, '-o', `./repo/${aid}_download`, '-p', '-start', `${page}`, '-end', `${page}`, `av${aid}`];
+            console.log("run: lux " + params.join(' '));
+            const proc = spawn('downloader/lux', params);
 
             if (onbind) onbind(proc);
 
@@ -117,9 +117,13 @@ export class Bilibili {
                 let lines = `${data}`.split(/\r?\n/);
                 if (onoutput) onoutput(lines);
                 for (let line of lines) {
-                    lineCount++;
-                    if (line.indexOf("/") < 0 || lineCount % 100 === 0) {
+                    if (line.indexOf("/") < 0) {
                         console.log("stdout:", line);
+                    } else {
+                        if (lineCount % 20 === 0) {
+                            console.log("stdout:", line);
+                        }
+                        lineCount++;
                     }
                 }
                 // console.log(`stdout: ${data}`);
@@ -128,9 +132,13 @@ export class Bilibili {
                 let lines = `${data}`.split(/\r?\n/);
                 if (onoutput) onoutput(lines);
                 for (let line of lines) {
-                    lineCount++;
-                    if (line.indexOf("/") < 0 || lineCount % 100 === 0) {
-                        console.log("stderr:", line);
+                    if (line.indexOf("/") < 0) {
+                        console.log("stderrc:", line);
+                    } else {
+                        if (lineCount % 20 === 0) {
+                            console.log("stderr:", line);
+                        }
+                        lineCount++;
                     }
                 }
                 // console.log(`stderr: ${data}`);
