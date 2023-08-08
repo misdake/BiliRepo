@@ -125,7 +125,15 @@ export class Bilibili {
                 // console.log(`stdout: ${data}`);
             });
             proc.stderr.on('data', (data: any) => {
-                console.log(`stderr: ${data}`);
+                let lines = `${data}`.split(/\r?\n/);
+                if (onoutput) onoutput(lines);
+                for (let line of lines) {
+                    lineCount++;
+                    if (line.indexOf("/") < 0 || lineCount % 100 === 0) {
+                        console.log("stderr:", line);
+                    }
+                }
+                // console.log(`stderr: ${data}`);
             });
 
             proc.on('close', (code: number) => {

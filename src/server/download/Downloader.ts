@@ -66,7 +66,7 @@ export class PartDownloadProgress {
             }
         }
         {
-            let sizeRegex = new RegExp('([0-9.]+ [KMGi]*B) \\/ ([0-9.]+ [KMGi]*B)');
+            let sizeRegex = new RegExp('([0-9.]+ [KMGi]*B) \\/ ([0-9.]+ [KMGni]*B)');
             let res = lines[lines.length - 1].match(sizeRegex);
             if (res) {
                 this.curr = res[1];

@@ -181,21 +181,20 @@ export class PageElement extends LitElement {
     }
 
     private updateCookie() {
-        navigator.clipboard.readText().then(value => {
-            if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
-                ClientApis.UpdateCookie.fetch({}, {cookie: value}).then(content => {
-                    if (content === "good") {
-                        this.message = "";
-                        alert("cookie updated!");
-                    } else {
-                        this.message = content;
-                        alert("cookie update failed!\nresponse: " + content);
-                    }
-                });
-            } else {
-                alert("copy cookie content into clipboard and retry")
-            }
-        });
+        let value = window.prompt("Netscape HTTP Cookie File", "");
+        if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
+            ClientApis.UpdateCookie.fetch({}, { cookie: value }).then(content => {
+                if (content === "good") {
+                    this.message = "";
+                    alert("cookie updated!");
+                } else {
+                    this.message = content;
+                    alert("cookie update failed!\nresponse: " + content);
+                }
+            });
+        } else {
+            alert("copy cookie content into clipboard and retry");
+        }
     }
 
     render() {
