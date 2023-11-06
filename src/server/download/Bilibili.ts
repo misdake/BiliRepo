@@ -106,7 +106,14 @@ export class Bilibili {
 
     static async downloadVideo(aid: number, page = 1, onoutput?: (lines: string[]) => void, onbind?: (proc: ChildProcess) => void) {
         return new Promise((resolve, reject) => {
-            let params = ['-c', 'downloader/cookies.txt', '-m', '-n', '4', '-O', `p${page}`, '-o', `./repo/${aid}_download`, '-p', '-start', `${page}`, '-end', `${page}`, `av${aid}`];
+            let params = ['-c', 'downloader/cookies.txt', '-m', '-n', '4', '-O', `p${page}`, '-o', `./repo/${aid}_download`];
+
+            // skips part params to avoid unexpected "collection" parts
+            if (page !== 1) {
+                params.push('-p', '-start', `${page}`, '-end', `${page}`);
+            }
+            params.push(`av${aid}`);
+
             console.log("run: lux " + params.join(' '));
             const proc = spawn('downloader/lux', params);
 
