@@ -179,6 +179,10 @@ Storage.createInstance().then(storage => {
         req => parseInt(req.params["aid"]),
         aid => storage.getVideoPlaylists(aid)
     );
+    ServerApis.ListAllPlaylists.serve(
+        _req => ({}),
+        _ => storage.listAllPlaylists()
+    );
     ServerApis.ListPlaylist.serve(
         req => parseInt(req.params["page"]),
         page => storage.listPlaylist({pageindex: page, pagesize: playlistPagesize})

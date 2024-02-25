@@ -209,6 +209,9 @@ export class Storage {
         }
         return false;
     }
+    public listAllPlaylists() {
+        return this.table_playlist.all( "pid", true);
+    }
     public listPlaylist(page: PageQuery) {
         return this.table_playlist.all_paged(page.pageindex, page.pagesize, "pid", true);
     }

@@ -24,8 +24,8 @@ export class VideoPlaylistEditElement extends LitElement {
         ClientApis.GetVideoPlaylists.fetch(this.video.aid).then(playlists => {
             this.videoPlaylists = playlists;
         });
-        ClientApis.ListPlaylist.fetch(1).then(paged => { //TODO page?
-            this.allPlaylists = paged.result;
+        ClientApis.ListAllPlaylists.fetch({}).then(all => {
+            this.allPlaylists = all;
         });
     }
 

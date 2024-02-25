@@ -37,8 +37,8 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
     protected firstUpdated(_changedProperties: Map<PropertyKey, unknown>) {
         super.firstUpdated(_changedProperties);
 
-        ClientApis.ListPlaylist.fetch(1).then(paged => { //TODO page?
-            this.allPlaylists = paged.result;
+        ClientApis.ListAllPlaylists.fetch({}).then(all => {
+            this.allPlaylists = all;
         });
     }
 
