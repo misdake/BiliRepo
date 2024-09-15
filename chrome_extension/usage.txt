@@ -1,0 +1,2 @@
+let cookie = document.querySelector("#script-cookies")?.dataset?.cookies;
+console.log(JSON.parse(cookie));

@@ -1,0 +1,15 @@
+{
+  "name": "Bilibili Cookie",
+  "manifest_version": 3,
+  "version": "1.0",
+  "description": "session data for bilibili",
+  "permissions": [
+    "cookies",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
