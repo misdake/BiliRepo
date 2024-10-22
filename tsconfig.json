@@ -12,10 +12,12 @@
         "moduleResolution": "node",
         "types": [
             "node",
+            "cors",
             "express",
             "dplayer",
             "lokijs"
-        ]
+        ],
+        "allowSyntheticDefaultImports": true
     },
     "exclude": [
         "node_modules"

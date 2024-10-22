@@ -1,9 +1,10 @@
 import {Application} from "express";
 import {Storage} from "./storage/Storage";
 import {Downloader} from "./download/Downloader";
-import {httpsget} from "./network";
-import {initServerApi, ServerApis} from "./ServerApi";
-import {BilibiliVideoJson, BilibiliVideoListJson} from "../common/types";
+import { httpsget } from './network';
+import { initServerApi, ServerApis } from './ServerApi';
+import { BilibiliVideoJson, BilibiliVideoListJson } from '../common/types';
+import { updateFanCount } from './fanCount';
 
 const express = require('express');
 const cors = require('cors');
@@ -220,6 +221,11 @@ Storage.createInstance().then(storage => {
     ServerApis.SearchTimestamp.serve(
         req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
         ({input, page}) => storage.search_timestamp_by_name(input, {pageindex: page, pagesize: playlistPagesize}),
+    );
+
+    ServerApis.UpdateFanCount.serveAsync(
+        req => ({ input: req.params['input'], page: parseInt(req.params['page']) }),
+        ({}) => updateFanCount(),
     );
 });
 

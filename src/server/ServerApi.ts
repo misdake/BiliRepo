@@ -17,6 +17,12 @@ export function initServerApi(app: Application, downloader: Downloader) {
             res.send(stringify(r));
         });
     }
+    function serveApiGetAsync<Param, Result>(api: ApiGet<Param, Result>, param: (req: Request) => Param, callback: (param: Param) => Promise<Result>) {
+        app.get(api.srvPattern, function (req: Request, res: Response) {
+            let p = param(req);
+            callback(p).then(r => res.send(stringify(r)));
+        });
+    }
 
     function serveApiPost<Param, Payload, Result>(api: ApiPost<Param, Payload, Result>, param: (req: Request) => Param, callback: (param: Param, body: Payload) => Promise<Result>) {
         app.post(api.srvPattern, function (req: Request, res: Response) {
@@ -26,6 +32,7 @@ export function initServerApi(app: Application, downloader: Downloader) {
     }
 
     server.serveGet = serveApiGet;
+    server.serveGetAsync = serveApiGetAsync;
     server.servePost = serveApiPost;
 }
 

@@ -1,12 +1,13 @@
-import {IncomingMessage} from "http";
+import { IncomingMessage } from 'http';
+import { RequestOptions } from 'https';
 
 const https = require('https');
 const fs = require('fs');
 const zlib = require('zlib');
 
-export function httpsget(url: string) {
+export function httpsget(options: RequestOptions | string) {
     return new Promise<string>((resolve, reject) => {
-        https.get(url, (response: IncomingMessage) => {
+        https.get(options, (response: IncomingMessage) => {
             let data = '';
             response.on('data', (chunk) => {
                 data += chunk;
