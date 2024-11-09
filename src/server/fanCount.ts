@@ -3,8 +3,9 @@ import * as fs from 'fs';
 
 function getDay(msUtc: number) {
     let t = msUtc;
-    const DAY_TIME = 1000 * 60 * (60 * 24 + 480);
-    let today = ~~(t / DAY_TIME);
+    let offset = 480;
+    const DAY_TIME = 1000 * 60 * 60 * 24;
+    let today = Math.round((t + 1000 * 60 * 60 * 8) / DAY_TIME);
     return today;
 }
 
@@ -20,17 +21,19 @@ interface BiliFanCount {
     // tendency_rank?: null;
 }
 interface BiliDayData {
-    date_key: number;
+    date_key: number; // seconds
     total_inc: number;
     // sub_total_inc: number;
 }
 
 export interface DayData {
-    day: number; // utc+8 day
+    day: number; // utc+8 days since 1970-1-1
     fan_count: number;
 }
 
-async function fetchData(cookie: string): Promise<BiliDayData[]> {
+type BiliDataSource = () => Promise<BiliDayData[]>;
+
+async function fetchBiliData(cookie: string): Promise<BiliDayData[]> {
     let options = {
         host: 'member.bilibili.com',
         protocol: 'https:',
@@ -38,11 +41,16 @@ async function fetchData(cookie: string): Promise<BiliDayData[]> {
         headers: { Cookie: cookie }
     };
     let content = await httpsget(options);
-    let result = readBiliData(content);
+    let result = parseBiliData(content);
     return result;
 }
+async function readBiliData(file: string): Promise<BiliDayData[]> {
+    let buffer = fs.readFileSync(file);
+    let content = buffer.toString('utf-8');
+    return Promise.resolve(parseBiliData(content));
+}
 
-function readBiliData(content: string): BiliDayData[] {
+function parseBiliData(content: string): BiliDayData[] {
     let result = JSON.parse(content) as BiliResult<BiliFanCount>;
     if (result.code !== 0) {
         debugger;
@@ -91,6 +99,11 @@ function mergeData(...sources: DayData[][]): DayData[] {
     for (let [k, v] of dict.entries()) {
         result.push({ day: k, fan_count: v });
     }
+
+    result.sort((a, b) => {
+        return a.day - b.day;
+    });
+
     return result;
 }
 
@@ -100,9 +113,8 @@ function readCookie(): string {
     return cookie;
 }
 
-export async function updateFanCount(): Promise<DayData[]> {
-    let cookie = readCookie();
-    let content = await fetchData(cookie);
+export async function updateFanCount(data_source: BiliDataSource): Promise<DayData[]> {
+    let content = await data_source();
     let curr = convert(content);
 
     let prev: DayData[] = [];
@@ -121,7 +133,25 @@ export async function updateFanCount(): Promise<DayData[]> {
 
 if (require.main === module) {
     console.log('update fan count directly');
-    (async function () {
-        await updateFanCount();
-    })();
+
+    let update_local = false;
+    process.argv.forEach(function (val, index, array) {
+        if (index > 1 && val.endsWith('.json')) {
+            update_local = true;
+            if (fs.existsSync(val)) {
+                console.log(`updating from fan count file '${val}'`);
+                (async function () {
+                    await updateFanCount(() => readBiliData(val));
+                })();
+            } else {
+                console.log(`fan count file '${val}' does not exist`);
+            }
+        }
+    });
+
+    if (!update_local) {
+        (async function () {
+            await updateFanCount(() => fetchBiliData(readCookie()));
+        })();
+    }
 }
