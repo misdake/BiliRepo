@@ -1,10 +1,10 @@
-import {Application} from "express";
-import {Storage} from "./storage/Storage";
-import {Downloader} from "./download/Downloader";
+import { Application } from 'express';
+import { Storage } from './storage/Storage';
+import { Downloader } from './download/Downloader';
 import { httpsget } from './network';
 import { initServerApi, ServerApis } from './ServerApi';
 import { BilibiliVideoJson, BilibiliVideoListJson } from '../common/types';
-import { updateFanCount } from './fanCount';
+import { updateFanCountDefault } from './fanCount';
 
 const express = require('express');
 const cors = require('cors');
@@ -35,36 +35,36 @@ Storage.createInstance().then(storage => {
     // });
 
     //proxy
-    ServerApis.GetVideoInfo.serve(req => req.params["id"], (id, body) => new Promise<BilibiliVideoJson>(resolve => {
-        let query = "";
-        if (id.toLowerCase().startsWith("av")) {
+    ServerApis.GetVideoInfo.serve(req => req.params['id'], (id, body) => new Promise<BilibiliVideoJson>(resolve => {
+        let query = '';
+        if (id.toLowerCase().startsWith('av')) {
             query = `aid=${id.substring(2)}`;
         }
-        if (id.toLowerCase().startsWith("bv")) {
+        if (id.toLowerCase().startsWith('bv')) {
             query = `bvid=${id}`;
         }
-        console.log("query", query);
+        console.log('query', query);
         httpsget(`https://api.bilibili.com/x/web-interface/view?${query}`).then(value => {
             resolve(JSON.parse(value) as BilibiliVideoJson);
         });
     }));
-    ServerApis.GetCoinVideos.serve(req => parseInt(req.params["mid"]), (mid) => new Promise<BilibiliVideoListJson>(resolve => {
+    ServerApis.GetCoinVideos.serve(req => parseInt(req.params['mid']), (mid) => new Promise<BilibiliVideoListJson>(resolve => {
         httpsget(`https://api.bilibili.com/x/space/coin/video?vmid=${mid}`).then(value => {
             resolve(JSON.parse(value) as BilibiliVideoListJson);
         });
     }));
 
     //download
-    ServerApis.AddDownload.serve(req => parseInt(req.params["aid"]), aid => {
+    ServerApis.AddDownload.serve(req => parseInt(req.params['aid']), aid => {
         downloader.enqueue(aid);
         return true;
     });
-    ServerApis.RetryDownload.serve(req => parseInt(req.params["aid"]), aid => {
+    ServerApis.RetryDownload.serve(req => parseInt(req.params['aid']), aid => {
         downloader.remove(aid);
         downloader.enqueue(aid);
         return true;
     });
-    ServerApis.RemoveDownload.serve(req => parseInt(req.params["aid"]), aid => {
+    ServerApis.RemoveDownload.serve(req => parseInt(req.params['aid']), aid => {
         downloader.remove(aid);
         return true;
     });
@@ -75,9 +75,9 @@ Storage.createInstance().then(storage => {
         (param, body) => new Promise<string>(resolve => {
             if (body && body.cookie) {
                 downloader.setCookie(body.cookie);
-                resolve("good");
+                resolve('good');
             } else {
-                resolve("bad");
+                resolve('bad');
             }
         }),
     );
@@ -87,23 +87,23 @@ Storage.createInstance().then(storage => {
         (param, body) => new Promise<string>(resolve => {
             if (body.part) {
                 downloader.updateDanmaku(body.part).then(value => {
-                    resolve("good");
+                    resolve('good');
                 }).catch(reason => {
                     resolve(reason);
                 });
             } else {
-                resolve("bad");
+                resolve('bad');
             }
         }),
     );
 
     ServerApis.Redownload.serve(
-        req => parseInt(req.params["aid"]),
+        req => parseInt(req.params['aid']),
         aid => {
-            if(downloader.redownload(aid)) {
-                return "good";
+            if (downloader.redownload(aid)) {
+                return 'good';
             } else {
-                return "bad";
+                return 'bad';
             }
         }
     );
@@ -115,7 +115,7 @@ Storage.createInstance().then(storage => {
 
     //video
     ServerApis.GetVideo.serve(
-        req => parseInt(req.params["aid"]),
+        req => parseInt(req.params['aid']),
         aid => storage.video(aid)
     );
     ServerApis.GetVideoRandom.serve(
@@ -123,26 +123,26 @@ Storage.createInstance().then(storage => {
         ({}) => storage.videoRandom()
     );
     ServerApis.GetVideoParts.serve(
-        req => parseInt(req.params["aid"]),
+        req => parseInt(req.params['aid']),
         aid => storage.videoparts(aid)
     );
     ServerApis.ListVideo.serve(
-        req => parseInt(req.params["page"]),
-        page => storage.recent_videos({pageindex: page, pagesize: videoPagesize})
+        req => parseInt(req.params['page']),
+        page => storage.recent_videos({ pageindex: page, pagesize: videoPagesize })
     );
     ServerApis.ListVideoByMember.serve(
-        req => ({mid: parseInt(req.params["mid"]), page: parseInt(req.params["page"])}),
-        ({mid, page}) => storage.mid_videos(mid, {pageindex: page, pagesize: videoPagesize}),
+        req => ({ mid: parseInt(req.params['mid']), page: parseInt(req.params['page']) }),
+        ({ mid, page }) => storage.mid_videos(mid, { pageindex: page, pagesize: videoPagesize }),
     );
 
     //member
     ServerApis.GetMember.serve(
-        req => parseInt(req.params["mid"]),
+        req => parseInt(req.params['mid']),
         mid => storage.member(mid),
     );
     ServerApis.ListMember.serve(
-        req => parseInt(req.params["page"]),
-        page => storage.all_members({pageindex: page, pagesize: memberPagesize}),
+        req => parseInt(req.params['page']),
+        page => storage.all_members({ pageindex: page, pagesize: memberPagesize }),
     );
 
     //playlist
@@ -154,30 +154,30 @@ Storage.createInstance().then(storage => {
         }),
     );
     ServerApis.UpdatePlaylist.serve(
-        req => parseInt(req.params["pid"]),
+        req => parseInt(req.params['pid']),
         (param, body) => new Promise(resolve => {
             let updated = storage.updatePlaylist(param, body.title, body.add, body.remove);
             resolve(updated);
         }),
     );
     ServerApis.RemovePlaylist.serve(
-        req => parseInt(req.params["pid"]),
+        req => parseInt(req.params['pid']),
         (pid) => storage.removePlaylist(pid),
     );
     ServerApis.GetPlaylist.serve(
-        req => parseInt(req.params["pid"]),
+        req => parseInt(req.params['pid']),
         pid => storage.getPlaylist(pid)
     );
     ServerApis.GetPlaylistVideos.serve(
-        req => parseInt(req.params["pid"]),
+        req => parseInt(req.params['pid']),
         pid => storage.getPlaylistVideos(pid)
     );
     ServerApis.GetPlaylistVideoParts.serve(
-        req => parseInt(req.params["pid"]),
+        req => parseInt(req.params['pid']),
         pid => storage.getPlaylistVideoParts(pid)
     );
     ServerApis.GetVideoPlaylists.serve(
-        req => parseInt(req.params["aid"]),
+        req => parseInt(req.params['aid']),
         aid => storage.getVideoPlaylists(aid)
     );
     ServerApis.ListAllPlaylists.serve(
@@ -185,13 +185,13 @@ Storage.createInstance().then(storage => {
         _ => storage.listAllPlaylists()
     );
     ServerApis.ListPlaylist.serve(
-        req => parseInt(req.params["page"]),
-        page => storage.listPlaylist({pageindex: page, pagesize: playlistPagesize})
+        req => parseInt(req.params['page']),
+        page => storage.listPlaylist({ pageindex: page, pagesize: playlistPagesize })
     );
 
     ServerApis.ListTimestamp.serve(
-        req => parseInt(req.params["page"]),
-        page => storage.listTimestamp({pageindex: page, pagesize: playlistPagesize})
+        req => parseInt(req.params['page']),
+        page => storage.listTimestamp({ pageindex: page, pagesize: playlistPagesize })
     );
     ServerApis.AddTimestamp.serve(
         _req => ({}),
@@ -201,31 +201,31 @@ Storage.createInstance().then(storage => {
         }),
     );
     ServerApis.RemoveTimestamp.serve(
-        req => parseInt(req.params["tid"]),
+        req => parseInt(req.params['tid']),
         (tid) => storage.removeTimestamp(tid),
     );
 
     //search
     ServerApis.SearchVideo.serve(
-        req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
-        ({input, page}) => storage.search_video_by_title(input, {pageindex: page, pagesize: videoPagesize}),
+        req => ({ input: req.params['input'], page: parseInt(req.params['page']) }),
+        ({ input, page }) => storage.search_video_by_title(input, { pageindex: page, pagesize: videoPagesize }),
     );
     ServerApis.SearchMember.serve(
-        req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
-        ({input, page}) => storage.search_member_by_name(input, {pageindex: page, pagesize: memberPagesize}),
+        req => ({ input: req.params['input'], page: parseInt(req.params['page']) }),
+        ({ input, page }) => storage.search_member_by_name(input, { pageindex: page, pagesize: memberPagesize }),
     );
     ServerApis.SearchPlaylist.serve(
-        req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
-        ({input, page}) => storage.search_playlist_by_title(input, {pageindex: page, pagesize: playlistPagesize}),
+        req => ({ input: req.params['input'], page: parseInt(req.params['page']) }),
+        ({ input, page }) => storage.search_playlist_by_title(input, { pageindex: page, pagesize: playlistPagesize }),
     );
     ServerApis.SearchTimestamp.serve(
-        req => ({input: req.params["input"], page: parseInt(req.params["page"])}),
-        ({input, page}) => storage.search_timestamp_by_name(input, {pageindex: page, pagesize: playlistPagesize}),
+        req => ({ input: req.params['input'], page: parseInt(req.params['page']) }),
+        ({ input, page }) => storage.search_timestamp_by_name(input, { pageindex: page, pagesize: playlistPagesize }),
     );
 
     ServerApis.UpdateFanCount.serveAsync(
         req => ({ input: req.params['input'], page: parseInt(req.params['page']) }),
-        ({}) => updateFanCount(),
+        ({}) => updateFanCountDefault(),
     );
 });
 

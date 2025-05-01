@@ -113,6 +113,9 @@ function readCookie(): string {
     return cookie;
 }
 
+export async function updateFanCountDefault(): Promise<DayData[]> {
+    return updateFanCount(() => fetchBiliData(readCookie()));
+}
 export async function updateFanCount(data_source: BiliDataSource): Promise<DayData[]> {
     let content = await data_source();
     let curr = convert(content);

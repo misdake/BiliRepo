@@ -10,6 +10,7 @@
         "noImplicitThis": true,
         "outDir": "./dist/",
         "moduleResolution": "node",
+        "skipLibCheck": true,
         "types": [
             "node",
             "cors",

@@ -1,21 +1,21 @@
-import {html, render} from 'lit-html';
-import "./PageElement";
-import {Playlist, PlaylistItem} from "./Playlist";
-import {ClientApis} from "../common/api/ClientApi";
-import {PartDB, VideoParts} from "../../server/storage/dbTypes";
-import {PageElement} from "./PageElement";
+import { html, render } from 'lit-html';
+import './PageElement';
+import { Playlist, PlaylistItem } from './Playlist';
+import { ClientApis } from '../common/api/ClientApi';
+import { PartDB, VideoParts } from '../../server/storage/dbTypes';
+import { PageElement } from './PageElement';
 
 let url_string = window.location.href;
 let url = new URL(url_string);
 
 //input params
-let pidstr = url.searchParams.get("pid");
+let pidstr = url.searchParams.get('pid');
 let pid = parseInt(pidstr);
-let aidstr = url.searchParams.get("aid");
+let aidstr = url.searchParams.get('aid');
 let aid = parseInt(aidstr);
-let part = parseInt(url.searchParams.get("p")) || 1;
+let part = parseInt(url.searchParams.get('p')) || 1;
 
-let tstr = url.searchParams.get("t");
+let tstr = url.searchParams.get('t');
 let t = parseInt(tstr);
 
 //start loading
@@ -33,7 +33,7 @@ if (pidstr) {
                 }
             }
             //TODO what if playlist is not found?
-            resolve();
+            resolve(null);
         });
     });
 } else if (aidstr) {
@@ -44,7 +44,7 @@ if (pidstr) {
                 playlist.items.push(new PlaylistItem(res, p));
             }
             //TODO what if video is not found?
-            resolve();
+            resolve(null);
         });
     });
 }
@@ -60,7 +60,7 @@ loadPromise.then(() => {
 
         if (currentIndex === undefined) {
             //TODO what if currentIndex is not found?
-            window.location.replace("index.html");
+            window.location.replace('index.html');
         }
     }
 
@@ -76,11 +76,12 @@ loadPromise.then(() => {
     let onBeginPart = (video: VideoParts, part: PartDB) => {
         let url = location.pathname;
         let params: { key: string, value: number }[] = [];
-        if (pid) params.push({key: "pid", value: pid});
-        params.push({key: "aid", value: video.aid});
-        params.push({key: "p", value: part.index});
-        history.replaceState(null, "", `${url}?${params.map(i => `${i.key}=${i.value}`).join("&")}`);
+        if (pid) params.push({ key: 'pid', value: pid });
+        params.push({ key: 'aid', value: video.aid });
+        params.push({ key: 'p', value: part.index });
+        history.replaceState(null, '', `${url}?${params.map(i => `${i.key}=${i.value}`).join('&')}`);
     };
 
-    render(html`<page-element .onBeginPart=${onBeginPart} .onPlayerLoaded=${onPlayerLoaded} .playlist=${playlist} .playindex=${currentIndex}></page-element>`, document.body);
+    render(html`
+        <page-element .onBeginPart=${onBeginPart} .onPlayerLoaded=${onPlayerLoaded} .playlist=${playlist} .playindex=${currentIndex}></page-element>`, document.body);
 });
