@@ -81,7 +81,8 @@ export class PagedTimestampContainer extends PagedContainer<Timestamp> {
 
     constructor() {
         super();
-        super.listRenderer = list => html`<timestamplist-element .timestamps=${list.result}></timestamplist-element>`;
+        this.listRenderer = list => html`
+            <timestamplist-element .timestamps=${list.result}></timestamplist-element>`;
     }
 
 }

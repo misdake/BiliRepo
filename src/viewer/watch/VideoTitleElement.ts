@@ -7,15 +7,15 @@ export class VideoTitleElement extends LitElement {
     @property()
     video: VideoParts;
     @property()
-    part: PartDB;
+    part_info: PartDB;
 
     render() {
         let title1 = "";
         let title2 = null;
-        if (this.video && this.part) {
+        if (this.video && this.part_info) {
             title1 = this.video.title;
-            if (this.video.parts.length > 1 && this.part && this.part.title && this.part.title.length > 0) {
-                title2 = `Part ${this.part.index}: ${this.part.title}`;
+            if (this.video.parts.length > 1 && this.part_info && this.part_info.title && this.part_info.title.length > 0) {
+                title2 = `Part ${this.part_info.index}: ${this.part_info.title}`;
             }
         }
 

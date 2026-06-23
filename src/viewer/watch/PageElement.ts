@@ -62,7 +62,7 @@ export class PageElement extends LitElement {
         }
     }
 
-    private onPlayerLoad(player:Player) {
+    private onPlayerLoad(player: Player) {
         this.player = player;
         if (this.onPlayerLoaded) this.onPlayerLoaded(this);
         this.player.onDanmakuLoaded = danmakuList => {
@@ -135,13 +135,13 @@ export class PageElement extends LitElement {
                         <a id="blink" target="_blank" rel="noopener noreferrer" href="https://www.bilibili.com/video/av${this.currentVideo.aid}${this.currentPart ? `?p=${this.currentPart.index}` : ''}">B站链接</a>
                         `}
                     </div>
-                    
+
                     <member-element .member=${this.currentVideo ? this.currentVideo.member : null}></member-element>
-                    <videotitle-element .video=${this.currentVideo} .part=${this.currentPart}></videotitle-element>
+                    <videotitle-element .video=${this.currentVideo} .part_info=${this.currentPart}></videotitle-element>
                     <div style="clear: both;"></div>
                 </div>
                 <div id="player">
-                    <player-element .onLoad=${(player: Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part=${this.currentPart}></player-element>
+                    <player-element .onLoad=${(player: Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part_timestamps=${this.currentPart}></player-element>
                     <controlpanel-element .danmakuList=${this.danmakuList} .currentTab=0 .pageelement=${this} .playlist=${this.playlist} .playindex=${this.playindex}></controlpanel-element>
                     <div style="clear: both;"></div>
                 </div>

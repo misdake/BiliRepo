@@ -15,15 +15,15 @@ export class PlayerElement extends LitElement {
     }
 
     private loadVideo() {
-        if (this.video && this.part && this.player) {
-            this.player.loadVideoPart(this.video.aid, this.part.index, this.part.timestamps);
+        if (this.video && this.part_timestamps && this.player) {
+            this.player.loadVideoPart(this.video.aid, this.part_timestamps.index, this.part_timestamps.timestamps);
         }
     }
 
     @property()
     video: VideoParts;
     @property()
-    part: PartTimestamps;
+    part_timestamps: PartTimestamps;
     @property()
     onLoad: (player: Player) => void;
     @property()
@@ -68,7 +68,7 @@ export class PlayerElement extends LitElement {
                     -webkit-animation-play-state: paused;
                     animation-play-state: paused
                 }
-            
+
                 .dplayer-danmaku-item {
                     font-size: ${this.danmakuSetting.fontSize}px !important;
                 }

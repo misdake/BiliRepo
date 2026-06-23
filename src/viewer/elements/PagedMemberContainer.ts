@@ -29,7 +29,8 @@ export class PagedMemberContainer extends PagedContainer<MemberDB> {
 
     constructor() {
         super();
-        super.listRenderer = list => html`<memberlist-element .members=${list.result}></memberlist-element>`;
+        this.listRenderer = list => html`
+            <memberlist-element .members=${list.result}></memberlist-element>`;
     }
 
 }

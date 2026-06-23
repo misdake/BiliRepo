@@ -31,7 +31,7 @@ export class ControlPanelElement extends LitElement {
         {title: "时间点", content: () => html`
             <div style="padding: 5px;">
                 <timestampedit-element
-                    .part=${this.pageelement.currentPart}
+                    .part_timestamps=${this.pageelement.currentPart}
                     .getCurrTime=${() => this.getCurrTime()}
                     .seek=${(second: number) => this.seek(second)}
                     .refresh=${(timestamps: Timestamp[]) => this.refreshTimestamps(timestamps)}

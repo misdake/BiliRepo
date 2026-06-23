@@ -84,7 +84,7 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
 
     constructor() {
         super();
-        super.rightRenderer = list => html`
+        this.rightRenderer = list => html`
             <button style="float: right;" @click=${() => this.openRandom()}>随机视频</button>
             
             <span style="float: right; margin-right: 20px;">
@@ -97,7 +97,8 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
                 <button @click=${() => this.addAllToPlaylist(list.result)}>全部添加到列表</button>
             </span>
         `;
-        super.listRenderer = list => html`<videolist-element .videos=${list.result} .params=${this.params}></videolist-element>`;
+        this.listRenderer = list => html`
+            <videolist-element .videos=${list.result} .params=${this.params}></videolist-element>`;
     }
 
 }

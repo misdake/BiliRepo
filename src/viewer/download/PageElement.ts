@@ -91,6 +91,7 @@ export class PageElement extends LitElement {
 
     private loadCoinVideos() {
         ClientApis.GetCoinVideos.fetch(110213, {}).then(value => {
+            value.data = value.data || [];
             let hints = value.data.map(item => ({value: `av${item.aid}`, title: item.title}));
             hints.length = Math.min(hints.length, 5);
             this.coinVideos = hints;

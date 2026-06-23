@@ -37,7 +37,7 @@ export class PlaylistElement extends LitElement {
                 <videolabel-element
                     .onitemclick=${() => this.onitemclick(index)}
                     .video=${video}
-                    .part=${part}
+                    .part_info=${part}
                     .videoSelected=${selectedVideo === video}
                     .partSelected=${selectedPart === part}
                 ></videolabel-element>`);

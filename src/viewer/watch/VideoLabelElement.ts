@@ -7,7 +7,7 @@ export class VideoLabelElement extends LitElement {
     @property()
     video: VideoDB;
     @property()
-    part: PartDB;
+    part_info: PartDB;
 
     @property()
     videoSelected: boolean;
@@ -75,7 +75,7 @@ export class VideoLabelElement extends LitElement {
 
 
     protected updated(_changedProperties: PropertyValues) {
-        if (this.partSelected || (this.videoSelected && !this.part)) { //
+        if (this.partSelected || (this.videoSelected && !this.part_info)) { //
             //自己是当前播放的内容，需要滚动到指定位置
             let children = this.shadowRoot.children;
             if (!children) return;
@@ -103,9 +103,9 @@ export class VideoLabelElement extends LitElement {
                 </div>
                 <span class="title">${this.video.title}</span>
             </li>`;
-        let part = !this.part ? html`` : html`
+        let part = !this.part_info ? html`` : html`
             <li class="${partClass}" @click=${() => this.onitemclick()}>
-                <span>${this.part.index}: ${this.part.title}</span>
+                <span>${this.part_info.index}: ${this.part_info.title}</span>
             </li>`;
 
         return html`

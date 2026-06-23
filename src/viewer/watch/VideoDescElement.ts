@@ -8,16 +8,16 @@ export class VideoDescElement extends LitElement {
     @property()
     video: VideoDB;
     @property()
-    part: PartDB;
+    part_info: PartDB;
 
     createRenderRoot() {
         return this;
     }
 
     render() {
-        let desc : string[] = [];
-        if (this.video && this.part) {
-            desc = this.video.desc.split("\n");
+        let desc: string[] = [];
+        if (this.video && this.part_info) {
+            desc = this.video.desc.split('\n');
         }
 
         return html`
