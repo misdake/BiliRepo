@@ -1,7 +1,7 @@
-import DPlayer, {DPlayerAPIBackend} from "dplayer";
-import {httpget} from "../common/api/ClientApi";
-import {Timestamp} from "../../server/storage/dbTypes";
-import {Danmaku} from "../../server/download/Bilibili";
+import DPlayer, { DPlayerAPIBackend } from "dplayer";
+import { httpget } from "../common/api/ClientApi";
+import { Timestamp } from "../../server/storage/dbTypes";
+import { Danmaku } from "../../server/download/Bilibili";
 
 enum DPlayerEvents {
     abort = 'abort',
@@ -106,10 +106,18 @@ export class Player {
         }));
 
         // @ts-ignore
-        const dp: DPlayer = window.createPlayer(this.container, this.apiBackend, {url: `${serverConfig.repoRoot}repo/${aid}/p${part}.mp4`}, highlight);
+        const dp: DPlayer = window.createPlayer(this.container, this.apiBackend, { url: `${serverConfig.repoRoot}repo/${aid}/p${part}.mp4` }, highlight);
         this.dp = dp;
         // @ts-ignore
         dp.danmaku.options.height = this.danmakuSetting.lineHeight;
+
+        // --- [NEW] Monkey-patch: fix empty danmaku screen after seek ---
+        // Replaces danmaku.seek() with a "simulated replay": clear →
+        // synchronously call draw() for all historical danmaku up to targetTime
+        // → use negative animation-delay to skip the already-elapsed portion,
+        // reusing draw()'s tunnel lane assignment and collision detection.
+        // Original behavior: dm.clear() only, which blanks the screen.
+        this._patchDanmakuSeek(dp);
 
         dp.on(DPlayerEvents.canplay, () => {
             if (this.timeOnCanplay) {
@@ -220,6 +228,159 @@ export class Player {
             }
         });
         this.dp.events.trigger("durationchange");
+    }
+
+    // ============================================================
+    // Monkey-patch: fix empty danmaku screen after seek
+    // ============================================================
+
+    /**
+     * [NEW] Monkey-patch: replace DPlayer's built-in danmaku.seek().
+     *
+     * **Original behavior** (danmaku.js seek):
+     *   seek() { this.clear(); }
+     *   Simply clears all on-screen danmaku, resulting in a blank screen.
+     *
+     * **New behavior** (this replacement):
+     *   clear → filter danmaku visible at targetTime → sequential draw() with
+     *   dynamic CSS correction → use negative animation-delay to jump each
+     *   danmaku to its correct on-screen position at targetTime.
+     *
+     *   This fully reuses draw()'s tunnel lane assignment and collision
+     *   detection logic (getTunnel / AABB), ensuring the result matches
+     *   normal playback as if the video had been playing to targetTime.
+     *
+     *   **All logic below is NEW** except for:
+     *   - dm.clear()              ← from original seek()
+     *   - danIndex update loop    ← from original seek()
+     *
+     * @param dp - DPlayer instance
+     */
+    private _patchDanmakuSeek(dp: DPlayer) {
+        // [NEW] Animation duration constants (must match danmaku.scss and
+        //       PlayerElement inline CSS in PlayerElement.ts)
+        const RIGHT_DURATION = this.danmakuSetting.speed;  // right type scrolling danmaku (seconds)
+        const FIXED_DURATION = 4;                          // top/bottom fixed danmaku (seconds)
+
+        /** [NEW] Return animation duration for a given danmaku type. */
+        function getDuration(type: number | string): number {
+            return (type === 0 || type === 'right') ? RIGHT_DURATION : FIXED_DURATION;
+        }
+
+        /**
+         * [NEW] Reposition all existing danmaku DOM elements so their
+         * animation-delay reflects a negative offset from each element's
+         * original time to baseTime.
+         *
+         * This ensures getBoundingClientRect() inside getTunnel() sees each
+         * element at the correct on-screen position for the baseTime moment,
+         * so lane assignment (collision detection) works correctly.
+         */
+        function repositionExisting(
+            existingEls: { el: HTMLElement; time: number }[],
+            baseTime: number
+        ) {
+            for (const rec of existingEls) {
+                const elapsed = baseTime - rec.time;
+                rec.el.style.animationDelay = `${-elapsed}s`;
+                rec.el.style.webkitAnimationDelay = `${-elapsed}s`;
+            }
+        }
+
+        // @ts-ignore — [NEW] replace danmaku.seek
+        dp.danmaku.seek = (targetTime?: number) => {
+            // @ts-ignore — dm properties are not covered by DPlayer type declarations
+            const dm = dp.danmaku as any;
+
+            // [NEW] Use current video time when targetTime is not provided
+            if (targetTime === undefined) {
+                targetTime = dm.options.time();
+            }
+
+            // ---- Step 1: clear screen (ORIGINAL seek behavior) ----
+            dm.clear();
+
+            const danList = dm.dan as any[];
+            if (!danList || !danList.length) {
+                // [NEW] No danmaku data leftover after clear, nothing more to do
+                return;
+            }
+
+            // ---- Step 2: [NEW] filter danmaku still visible at targetTime ----
+            // Lower bound: danmaku.time + animation-duration > targetTime (not yet finished)
+            // Upper bound: danmaku.time ≤ targetTime (already emitted)
+            const visibleList: any[] = [];
+            for (let i = 0; i < danList.length; i++) {
+                const item = danList[i];
+                if (item.time > targetTime!) break;           // not emitted yet
+                const dur = getDuration(item.type);
+                if (item.time + dur <= targetTime!) continue; // already disappeared by targetTime
+                visibleList.push(item);
+            }
+
+            // ---- Step 3: [NEW] sequential draw with dynamic CSS correction ----
+            // Key insight (see danmaku.js getTunnel()):
+            //   draw() uses getBoundingClientRect() on existing tunnel elements to
+            //   perform AABB collision detection and assign lanes.
+            //
+            //   Before each draw(), we must reposition all already-created elements
+            //   to the position they would have at "this danmaku's time", so that
+            //   getTunnel() sees the correct collision state.
+            //
+            //   Example: seek to 100s, visibleList = [{time: 92}, {time: 95}, {time: 98}]:
+            //     draw(92) → tunnel empty → lane 0 (elapsed=0)
+            //     reposition all to 95s → 92 is near the right edge (~3s in)
+            //     draw(95) → getTunnel sees 92 on the right → lane 1
+            //     reposition all to 98s → draw(98) ...
+            //     finally reposition all to targetTime.
+            const existingElements: { el: HTMLElement; time: number }[] = [];
+
+            for (let i = 0; i < visibleList.length; i++) {
+                const item = visibleList[i];
+
+                // ① [NEW] Reposition existing elements to this item's time
+                repositionExisting(existingElements, item.time);
+
+                // ② [NEW] Build danmaku data and call draw()
+                //    getBoundingClientRect inside draw() will see positions from step ①,
+                //    so collision detection produces correct lane assignment.
+                dm.draw([{
+                    text: item.text,
+                    color: item.color,
+                    type: (item.type === 'top' ? 1 : item.type === 'bottom' ? 2 : 0),
+                }]);
+
+                // ③ [NEW] Locate the newly created element and record it
+                const allItems = dm.container.getElementsByClassName('dplayer-danmaku-item');
+                const newEl = allItems[allItems.length - 1] as HTMLElement;
+                if (newEl) {
+                    // New element starts from the right edge (elapsed = 0)
+                    newEl.style.animationDelay = '0s';
+                    newEl.style.webkitAnimationDelay = '0s';
+
+                    existingElements.push({ el: newEl, time: item.time });
+                }
+            }
+
+            // ---- Step 4: [NEW] reposition all elements to targetTime ----
+            repositionExisting(existingElements, targetTime!);
+
+            // ---- Step 5: update danIndex (ORIGINAL seek behavior) ----
+            // This logic is copied from the original danmaku.js seek():
+            //   for (let i = 0; i < this.dan.length; i++) {
+            //       if (this.dan[i].time >= this.options.time()) {
+            //           this.danIndex = i; break;
+            //       }
+            //       this.danIndex = this.dan.length;
+            //   }
+            for (let i = 0; i < danList.length; i++) {
+                if (danList[i].time >= targetTime!) {
+                    dm.danIndex = i;
+                    break;
+                }
+                dm.danIndex = danList.length;
+            }
+        };
     }
 
 }
