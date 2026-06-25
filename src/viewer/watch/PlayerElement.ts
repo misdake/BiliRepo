@@ -1,15 +1,24 @@
-import {css, customElement, html, LitElement, property, PropertyValues} from "lit-element";
-import {Player} from "./Player";
-import {PartTimestamps, VideoParts} from "../../server/storage/dbTypes";
+import { css, customElement, html, LitElement, property, PropertyValues } from "lit-element";
+import { Player } from "./Player";
+import { PartTimestamps, VideoParts } from "../../server/storage/dbTypes";
 
 @customElement('player-element')
 export class PlayerElement extends LitElement {
 
-    private player: Player = null;
+    private player: Player | null = null;
+
     private loadPlayer() {
         if (!this.player) {
-            this.player = new Player(this.shadowRoot.getElementById('dplayer'), this.onEnded, this.danmakuSetting);
+            const container = this.shadowRoot!.getElementById('dplayer')!;
+            this.player = new Player(container, this.onEnded, this.danmakuSetting);
             this.player.onResize = (w, h) => this.onResize(w, h);
+
+            // double-click to toggle fullscreen
+            container.addEventListener('dblclick', () => {
+                if (this.player) {
+                    this.player.toggleFullScreen();
+                }
+            });
         }
         if (this.onLoad) this.onLoad(this.player);
     }
@@ -21,15 +30,15 @@ export class PlayerElement extends LitElement {
     }
 
     @property()
-    video: VideoParts;
+    video!: VideoParts;
     @property()
-    part_timestamps: PartTimestamps;
+    part_timestamps!: PartTimestamps;
     @property()
-    onLoad: (player: Player) => void;
+    onLoad!: (player: Player) => void;
     @property()
-    onEnded: () => void;
+    onEnded!: () => void;
     @property()
-    danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
+    danmakuSetting!: { fontSize: number; lineHeight: number; speed: number };
 
     constructor() {
         super();

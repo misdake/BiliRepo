@@ -53,19 +53,20 @@ enum DPlayerEvents {
 
 export class Player {
 
-    private dp: DPlayer;
+    private dp: DPlayer | null = null;
     private readonly apiBackend: DPlayerAPIBackend;
 
-    private aid: number;
-    private part: number;
+    private aid: number = 0;
+    private part: number = 0;
     private container: HTMLElement;
     private onEnded: () => void;
     private danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
+    private isFullscreen: boolean = false;
 
-    onResize: (w: number, h: number) => void;
+    onResize!: (w: number, h: number) => void;
 
-    danmakuList: Danmaku[];
-    onDanmakuLoaded: (danmakuList: Danmaku[]) => void;
+    danmakuList!: Danmaku[];
+    onDanmakuLoaded!: (danmakuList: Danmaku[]) => void;
 
     constructor(container: HTMLElement, onEnded: () => void, danmakuSetting: { fontSize: number, lineHeight: number, speed: number }) {
         this.container = container;
@@ -105,27 +106,34 @@ export class Player {
         }));
 
         // @ts-ignore
-        this.dp = window.createPlayer(this.container, this.apiBackend, {url: `${serverConfig.repoRoot}repo/${aid}/p${part}.mp4`}, highlight);
+        const dp: DPlayer = window.createPlayer(this.container, this.apiBackend, {url: `${serverConfig.repoRoot}repo/${aid}/p${part}.mp4`}, highlight);
+        this.dp = dp;
         // @ts-ignore
-        this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
+        dp.danmaku.options.height = this.danmakuSetting.lineHeight;
 
-        this.dp.on(DPlayerEvents.canplay, () => {
+        dp.on(DPlayerEvents.canplay, () => {
             if (this.timeOnCanplay) {
                 this.seek(this.timeOnCanplay);
                 this.timeOnCanplay = undefined;
             }
         });
-        this.dp.on(DPlayerEvents.ended, () => {
+        dp.on(DPlayerEvents.ended, () => {
             if (this.onEnded) this.onEnded();
         });
-        this.dp.on(DPlayerEvents.resize, () => {
+        dp.on(DPlayerEvents.resize, () => {
             setTimeout(() => this.triggerResize());
+        });
+        dp.on(DPlayerEvents.fullscreen, () => {
+            this.isFullscreen = true;
+        });
+        dp.on(DPlayerEvents.fullscreen_cancel, () => {
+            this.isFullscreen = false;
         });
 
         this.triggerResize();
 
         if (!document.hidden) {
-            this.dp.play();
+            dp.play();
         }
     }
 
@@ -136,6 +144,7 @@ export class Player {
     }
 
     triggerResize() {
+        if (!this.dp) return;
         let w = this.dp.video.clientWidth;
         let h = this.dp.video.clientHeight;
         if (this.onResize) {
@@ -145,22 +154,38 @@ export class Player {
                 // @ts-ignore
                 this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
                 // @ts-ignore
-                if (this.dp.danmaku.showing) {
-                    this.dp.danmaku.hide();
-                    this.dp.danmaku.show();
+                const tunnel = this.dp.danmaku.danTunnel;
+                const lineHeight = this.danmakuSetting.lineHeight;
+                const reposition = (list: { [index: number]: HTMLDivElement[] }, position: 'top' | 'bottom', clearTransform: boolean) => {
+                    for (const index in list) {
+                        const items = list[index];
+                        if (!items) continue;
+                        const idx = Number(index);
+                        for (const item of items) {
+                            item.style[position] = (idx * lineHeight) + 'px';
+                            if (clearTransform) {
+                                item.style.transform = '';
+                            }
+                        }
+                    }
+                };
+                if (tunnel) {
+                    reposition(tunnel.right, 'top', false);
+                    reposition(tunnel.top, 'top', true);
+                    reposition(tunnel.bottom, 'bottom', true);
                 }
             }
         }
     }
 
-    timeOnCanplay: number = undefined;
+    timeOnCanplay: number | undefined = undefined;
 
     setTimeOnCanplay(t: number) {
         this.timeOnCanplay = t;
     }
 
     currentTime() {
-        return this.dp.video.currentTime;
+        return this.dp ? this.dp.video.currentTime : 0;
     }
 
     seek(second: number) {
@@ -170,7 +195,17 @@ export class Player {
         }
     }
 
+    toggleFullScreen() {
+        if (!this.dp) return;
+        if (this.isFullscreen) {
+            this.dp.fullScreen.cancel('browser');
+        } else {
+            this.dp.fullScreen.request('browser');
+        }
+    }
+
     refreshHighlight(timestamps: Timestamp[]) {
+        if (!this.dp) return;
         let highlight = timestamps.map(timestamp => ({
             text: timestamp.name,
             time: timestamp.time_second,
@@ -179,9 +214,12 @@ export class Player {
         this.dp.options.highlight = highlight;
         // @ts-ignore
         let t: NodeList = this.dp.container.querySelectorAll(".dplayer-highlight");
-        t.forEach((node) => node.parentNode.removeChild(node));
+        t.forEach((node) => {
+            if (node.parentNode) {
+                node.parentNode.removeChild(node);
+            }
+        });
         this.dp.events.trigger("durationchange");
     }
 
 }
-
