@@ -31,15 +31,15 @@ export class ViewTypeContent<T, viewType extends ViewType> {
 
     private container: PagedContainer<T>;
     private containerRenderer: (loadPage: number,
-                                request: (pageindex: number) => Promise<Paged<T>>,
-                                onContainerLoaded: (element: PagedContainer<T>) => void,
-                                afterLoad: (pageindex: number) => void) => TemplateResult;
+        request: (pageindex: number) => Promise<Paged<T>>,
+        onContainerLoaded: (element: PagedContainer<T>) => void,
+        afterLoad: (pageindex: number) => void) => TemplateResult;
 
     constructor(type: ViewType, title: string, allApi: ApiGet<number, Paged<T>>, searchApi: ApiGet<{ input: string, page: number }, Paged<T>>,
-                containerRenderer: (loadPage: number,
-                                    request: (pageindex: number) => Promise<Paged<T>>,
-                                    onContainerLoaded: (element: PagedContainer<T>) => void,
-                                    afterLoad: (pageindex: number) => void) => TemplateResult
+        containerRenderer: (loadPage: number,
+            request: (pageindex: number) => Promise<Paged<T>>,
+            onContainerLoaded: (element: PagedContainer<T>) => void,
+            afterLoad: (pageindex: number) => void) => TemplateResult
     ) {
         this.type = type;
         this.title = title;
@@ -49,7 +49,7 @@ export class ViewTypeContent<T, viewType extends ViewType> {
         this.containerRenderer = containerRenderer;
     }
 
-    search(input: string) {
+    search(input: string, loadPage: number = 1) {
         input = input || "";
         input = input.trim();
         if (input.length) {
@@ -57,12 +57,12 @@ export class ViewTypeContent<T, viewType extends ViewType> {
         } else {
             this.container.request = this.allRequest;
         }
-        this.container.loadPage(1);
+        this.container.loadPage(loadPage);
     }
     render(loadPage: number, firstSearch: string, afterLoad: (type: ViewType, pageindex: number, input: string) => void) {
         let onContainerLoaded = (element: PagedContainer<T>) => {
             this.container = element;
-            this.search(firstSearch);
+            this.search(firstSearch, loadPage);
         };
         return this.containerRenderer(loadPage, this.allRequest, onContainerLoaded, pageindex => afterLoad(this.type, pageindex, undefined));
     }

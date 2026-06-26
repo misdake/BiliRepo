@@ -1,11 +1,11 @@
-import {html, render} from 'lit-html';
+import { html, render } from 'lit-html';
 import "../elements/PagedVideoContainer";
 import "../elements/PagedMemberContainer";
 import "../elements/PagedPlaylistContainer";
 import "../elements/PagedTimestampContainer";
 import "../elements/ViewTypeElement";
 import "../elements/InputElement";
-import {ViewType, ViewTypeContent, viewTypes} from "./indexViewType";
+import { ViewType, ViewTypeContent, viewTypes } from "./indexViewType";
 
 let url_string = window.location.href;
 let url = new URL(url_string);
@@ -27,6 +27,7 @@ let currentViewTypeContent: ViewTypeContent<any, any>;
 
 function setViewType(viewType: ViewType) {
     if (viewType !== currentViewType) {
+        loadpage = 1;
         if (currentViewType) searchInput = "";
         currentViewType = viewType;
         currentViewTypeContent = viewTypes.get(viewType);
@@ -46,7 +47,7 @@ const pageTemplate = () => {
         <div style="height: 100%; width: 1280px; max-width: 100%; margin: 0 auto;">
             <div style="margin: 0; position: relative;">
                 <div style="position: absolute; right: 0; bottom: 0;">
-                    <viewtype-element .selectedType=${currentViewType} .afterLoad=${(type: ViewType, pageindex: number) => replaceUrl(type, pageindex, searchInput)} .onClick=${(viewType: ViewType) => setViewType(viewType)}></viewtype-element>
+                    <viewtype-element .selectedType=${currentViewType} .afterLoad=${(type: ViewType, pageindex: number) => replaceUrl(type, 1, searchInput)} .onClick=${(viewType: ViewType) => setViewType(viewType)}></viewtype-element>
                 </div>
                 <h1 style="margin: 20px 0;">
                     ${currentViewTypeContent.title}
