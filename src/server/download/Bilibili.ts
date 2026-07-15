@@ -40,6 +40,41 @@ export class Bilibili {
         await httpsdownload(url, `repo/${folder}/thumb.jpg`);
     }
 
+    static async downloadMemberFace(mid: number, url: string) {
+        if (!url) return undefined;
+
+        url = url.replace(/^http:\/\//, "https://");
+        const folder = "repo/member";
+        const file = `${folder}/${mid}.jpg`;
+        const temporary = `${file}.tmp`;
+
+        fs.mkdirSync(folder, {recursive: true});
+        if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
+
+        try {
+            await httpsdownload(url, temporary);
+            if (!this.isImageFile(temporary)) {
+                throw new Error(`invalid member face response: ${url}`);
+            }
+            fs.copyFileSync(temporary, file);
+            fs.unlinkSync(temporary);
+        } catch (error) {
+            if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
+            throw error;
+        }
+
+        return file.replace(/\\/g, "/");
+    }
+
+    private static isImageFile(file: string) {
+        const header: Buffer = fs.readFileSync(file).slice(0, 12);
+        const isJpeg = header.length >= 3 && header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
+        const isPng = header.length >= 8 && header.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+        const isGif = header.length >= 6 && /^GIF8[79]a$/.test(header.slice(0, 6).toString("ascii"));
+        const isWebp = header.length >= 12 && header.slice(0, 4).toString("ascii") === "RIFF" && header.slice(8, 12).toString("ascii") === "WEBP";
+        return isJpeg || isPng || isGif || isWebp;
+    }
+
     static async downloadDanmaku(aid: number, cid: number, page: number, isUpdate: boolean = false) {
         let folder = isUpdate ? `${aid}` : `${aid}_download`;
 

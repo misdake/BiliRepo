@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
+        "strictNullChecks": false,
         "rootDir": "./src/",
         "module": "commonjs",
         "target": "es6",

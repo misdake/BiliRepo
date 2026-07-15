@@ -166,6 +166,13 @@ export class VideoDownloadProgress {
         let thumb = video.pic;
         await Bilibili.downloadThumb(folder, thumb);
 
+        console.log("download member face:", video.owner.mid);
+        try {
+            await Bilibili.downloadMemberFace(video.owner.mid, video.owner.face);
+        } catch (error) {
+            console.warn("download member face failed:", video.owner.mid, error);
+        }
+
         for (let part of this.parts) {
             this.downloadingPart = part;
             let success = await part.start();

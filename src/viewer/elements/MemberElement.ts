@@ -27,9 +27,13 @@ export class MemberElement extends LitElement {
     `;
 
     render() {
+        const faceSrc = this.member
+            ? `${serverConfig.repoRoot}repo/member/${this.member.mid}.jpg`
+            : "";
+
         return this.member ? html`
             <div class="member"><a href="/member.html?mid=${this.member.mid}">
-                <img src="${this.member.face}" crossOrigin = "Anonymous" alt="face"/>
+                <img src="${faceSrc}" crossOrigin = "Anonymous" alt="face"/>
                 <div class="name">${this.member.name}</div>
             </a></div>
         ` : html``;
