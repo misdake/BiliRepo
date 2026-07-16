@@ -2,15 +2,18 @@ import { MemberDB, PartDB, PlaylistDB, PlaylistVideoParts, PlaylistVideos, Times
 import { Paged } from '../page';
 import { BilibiliVideoJson, BilibiliVideoListJson } from '../types';
 import { DownloadStatus } from '../DownloadStatus';
-import { Request } from 'express';
+import type { Request } from 'express';
+import type { ParamsFlatDictionary } from 'express-serve-static-core';
 import { DayData } from '../../server/fanCount';
 
+export type ApiRequest = Request<ParamsFlatDictionary>;
+
 export let server = {
-    serveGet: (_api: any, param: (req: Request) => any, callback: (param: any) => any) => {
+    serveGet: (_api: any, param: (req: ApiRequest) => any, callback: (param: any) => any) => {
     },
-    serveGetAsync: (_api: any, param: (req: Request) => any, callback: (param: any) => any) => {
+    serveGetAsync: (_api: any, param: (req: ApiRequest) => any, callback: (param: any) => any) => {
     },
-    servePost: (_api: any, param: (req: Request) => any, callback: (param: any, body: any) => any) => {
+    servePost: (_api: any, param: (req: ApiRequest) => any, callback: (param: any, body: any) => any) => {
     },
 };
 export let client = {
@@ -28,10 +31,10 @@ export class ApiGet<Param, Result> {
         this.reqPattern = reqPattern;
     }
 
-    serve(param: (req: Request) => Param, callback: (param: Param) => Result) {
+    serve(param: (req: ApiRequest) => Param, callback: (param: Param) => Result) {
         server.serveGet(this, param, callback);
     }
-    serveAsync(param: (req: Request) => Param, callback: (param: Param) => Promise<Result>) {
+    serveAsync(param: (req: ApiRequest) => Param, callback: (param: Param) => Promise<Result>) {
         server.serveGetAsync(this, param, callback);
     }
     fetch(param: Param): Promise<Result> {
@@ -48,7 +51,7 @@ export class ApiPost<Param, Payload, Result> {
         this.reqPattern = reqPattern;
     }
 
-    serve(param: (req: Request) => Param, callback: (param: Param, body: Payload) => Promise<Result>) {
+    serve(param: (req: ApiRequest) => Param, callback: (param: Param, body: Payload) => Promise<Result>) {
         server.servePost(this, param, callback);
     }
     fetch(param: Param, payload: Payload): Promise<Result> {

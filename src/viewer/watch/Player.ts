@@ -105,8 +105,15 @@ export class Player {
             time: timestamp.time_second,
         }));
 
-        // @ts-ignore
-        const dp: DPlayer = window.createPlayer(this.container, this.apiBackend, { url: `${serverConfig.repoRoot}repo/${aid}/p${part}.mp4` }, highlight);
+        const dp = new DPlayer({
+            container: this.container,
+            screenshot: false,
+            video: { url: `${serverConfig.repoRoot}repo/${aid}/p${part}.mp4` },
+            hotkey: true,
+            danmaku: { id: '', api: '' },
+            apiBackend: this.apiBackend,
+            highlight,
+        });
         this.dp = dp;
         // @ts-ignore
         dp.danmaku.options.height = this.danmakuSetting.lineHeight;

@@ -76,8 +76,12 @@ module.exports = env =>{
         },
         externals: {},
         devServer: {
-            publicPath: "/",
-            contentBase: "./static",
+            devMiddleware: {
+                publicPath: "/",
+            },
+            static: {
+                directory: path.resolve(__dirname, 'static'),
+            },
             host: ip,
             open: true,
             hot: true,
