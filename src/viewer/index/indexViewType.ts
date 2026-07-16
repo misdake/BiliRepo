@@ -1,6 +1,6 @@
 import {Paged} from "../../common/page";
 import {MemberDB, PlaylistDB, Timestamp, VideoDB} from "../../server/storage/dbTypes";
-import {html, TemplateResult} from "lit-html";
+import {html, type TemplateResult} from "lit/html.js";
 import {PagedContainer} from "../elements/PagedContainer";
 import {ApiGet} from "../../common/api/Api";
 import {ClientApis} from "../common/api/ClientApi";

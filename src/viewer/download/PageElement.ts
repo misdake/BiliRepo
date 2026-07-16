@@ -1,4 +1,5 @@
-import {css, customElement, html, LitElement, property} from "lit-element";
+import {css, html, LitElement} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {VideoStatus} from "../../common/DownloadStatus";
 import "../elements/InputElement";
 import "./VideoStatusElement";

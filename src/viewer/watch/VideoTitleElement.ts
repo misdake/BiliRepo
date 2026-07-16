@@ -1,4 +1,5 @@
-import {customElement, html, LitElement, property} from "lit-element";
+import {html, LitElement} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {PartDB, VideoParts} from "../../server/storage/dbTypes";
 
 @customElement('videotitle-element')

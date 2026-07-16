@@ -1,8 +1,9 @@
-import {customElement, html, LitElement, property} from "lit-element";
+import {html, LitElement} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {MemberDB} from "../../server/storage/dbTypes";
 import "./MemberElement";
 import {PagedContainer} from "./PagedContainer";
-import {repeat} from "lit-html/directives/repeat";
+import {repeat} from "lit/directives/repeat.js";
 
 @customElement('memberlist-element')
 export class MemberListElement extends LitElement {

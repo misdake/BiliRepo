@@ -1,4 +1,4 @@
-import {html, render} from 'lit-html';
+import {html, render} from 'lit/html.js';
 import "../elements/PlaylistTitleElement";
 import {PlaylistDB, PlaylistVideos} from "../../server/storage/dbTypes";
 import "../elements/PagedVideoContainer";

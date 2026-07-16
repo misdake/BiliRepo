@@ -1,4 +1,5 @@
-import {customElement, html, LitElement, property} from "lit-element";
+import {html, LitElement} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {PartTimestamps, Timestamp} from "../../server/storage/dbTypes";
 import {ClientApis} from "../common/api/ClientApi";
 import "../elements/InputElement";

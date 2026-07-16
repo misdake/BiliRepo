@@ -1,8 +1,9 @@
-import {customElement, html, LitElement, property} from "lit-element";
+import {html, LitElement, type PropertyValues} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import { PlaylistDB, VideoDB } from '../../server/storage/dbTypes';
 import "./VideoBlockElement";
 import {PagedContainer} from "./PagedContainer";
-import {repeat} from "lit-html/directives/repeat";
+import {repeat} from "lit/directives/repeat.js";
 import {ClientApis} from "../common/api/ClientApi";
 
 @customElement('videolist-element')
@@ -34,7 +35,7 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
     @property()
     params: { key: string, value: number }[];
 
-    protected firstUpdated(_changedProperties: Map<PropertyKey, unknown>) {
+    protected firstUpdated(_changedProperties: PropertyValues) {
         super.firstUpdated(_changedProperties);
 
         ClientApis.ListAllPlaylists.fetch({}).then(all => {

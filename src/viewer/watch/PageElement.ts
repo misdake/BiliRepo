@@ -1,4 +1,5 @@
-import {css, customElement, html, LitElement, property} from "lit-element";
+import {css, html, LitElement, type PropertyValues} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {Playlist} from "./Playlist";
 import "./VideoTitleElement";
 import "../elements/GuideElement";
@@ -76,7 +77,7 @@ export class PageElement extends LitElement {
         }
     }
 
-    protected firstUpdated(_changedProperties: Map<PropertyKey, unknown>): void {
+    protected firstUpdated(_changedProperties: PropertyValues): void {
         if (this.playlist && this.playindex >= 0 && this.playindex < this.playlist.items.length) {
             this.updatePlayIndex(this.playindex);
         }

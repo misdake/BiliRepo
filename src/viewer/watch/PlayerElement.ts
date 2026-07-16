@@ -1,4 +1,5 @@
-import { css, customElement, html, LitElement, property, PropertyValues } from "lit-element";
+import { css, html, LitElement, type PropertyValues } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { Player } from "./Player";
 import { PartTimestamps, VideoParts } from "../../server/storage/dbTypes";
 

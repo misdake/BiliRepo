@@ -1,4 +1,4 @@
-import {html, render} from 'lit-html';
+import {html, render} from 'lit/html.js';
 import "../elements/MemberElement";
 import {MemberDB, VideoDB} from "../../server/storage/dbTypes";
 import {Paged} from "../../common/page";

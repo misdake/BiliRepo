@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
+        "useDefineForClassFields": false,
         "strictNullChecks": false,
         "rootDir": "./src/",
         "module": "ESNext",

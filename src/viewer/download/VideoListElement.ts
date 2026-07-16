@@ -1,5 +1,6 @@
-import {css, customElement, html, LitElement, property} from "lit-element";
-import {repeat} from "lit-html/directives/repeat";
+import {css, html, LitElement} from "lit";
+import {customElement, property} from "lit/decorators.js";
+import {repeat} from "lit/directives/repeat.js";
 import {VideoStatus} from "../../common/DownloadStatus";
 
 @customElement('videolist-element')

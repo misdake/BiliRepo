@@ -1,7 +1,8 @@
-import {customElement, html, LitElement, property, PropertyValues} from "lit-element";
+import {html, LitElement, type PropertyValues} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {PlaylistDB, VideoDB} from "../../server/storage/dbTypes";
 import {ClientApis} from "../common/api/ClientApi";
-import {repeat} from "lit-html/directives/repeat";
+import {repeat} from "lit/directives/repeat.js";
 
 @customElement('videoplaylistedit-element')
 export class VideoPlaylistEditElement extends LitElement {

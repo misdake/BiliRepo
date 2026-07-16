@@ -1,4 +1,5 @@
-import {css, customElement, html, LitElement, property, TemplateResult} from "lit-element";
+import {css, html, LitElement, type TemplateResult} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {ViewType, viewTypes} from "../index/indexViewType";
 
 @customElement('viewtype-element')

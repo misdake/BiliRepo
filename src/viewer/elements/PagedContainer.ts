@@ -1,4 +1,5 @@
-import {css, html, LitElement, property, TemplateResult} from "lit-element";
+import {css, html, LitElement, type PropertyValues, type TemplateResult} from "lit";
+import {property} from "lit/decorators.js";
 import {Paged} from "../../common/page";
 
 export class PagedContainer<T> extends LitElement {
@@ -31,7 +32,7 @@ export class PagedContainer<T> extends LitElement {
         this.listRenderer = () => html``;
     }
 
-    protected firstUpdated(_changedProperties: Map<PropertyKey, unknown>): void {
+    protected firstUpdated(_changedProperties: PropertyValues): void {
         if (this.autoLoad) this.loadPage(this.firstLoadPage);
         if (this.onElementLoaded) this.onElementLoaded(this);
     }

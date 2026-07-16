@@ -1,6 +1,7 @@
-import {customElement, html, LitElement, property} from "lit-element";
+import {html, LitElement} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {PartDB, VideoDB} from "../../server/storage/dbTypes";
-import {repeat} from "lit-html/directives/repeat";
+import {repeat} from "lit/directives/repeat.js";
 
 @customElement('videodesc-element')
 export class VideoDescElement extends LitElement {

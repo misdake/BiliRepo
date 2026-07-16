@@ -1,8 +1,9 @@
-import {css, customElement, html, LitElement, property} from "lit-element";
+import {css, html, LitElement} from "lit";
+import {customElement, property} from "lit/decorators.js";
 import {Timestamp} from "../../server/storage/dbTypes";
 import "./InputElement";
 import {PagedContainer} from "./PagedContainer";
-import {repeat} from "lit-html/directives/repeat";
+import {repeat} from "lit/directives/repeat.js";
 
 @customElement('timestampblock-element')
 export class TimestampBlockElement extends LitElement {
