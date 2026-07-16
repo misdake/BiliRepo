@@ -1,7 +1,7 @@
 import {html, LitElement} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {PartTimestamps, Timestamp} from "../../server/storage/dbTypes";
-import {ClientApis} from "../common/api/ClientApi";
+import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import "../elements/InputElement";
 
 @customElement('timestampedit-element')
@@ -34,6 +34,8 @@ export class TimestampEditElement extends LitElement {
         ClientApis.AddTimestamp.fetch({}, { aid: aid, part: part, time_second: this.getCurrTime(), name: input }).then(content => {
             this.part_timestamps.timestamps.push(content);
             this.refreshTimestamps();
+        }).catch(error => {
+            showRequestError("新增时间点", error);
         });
     }
 
@@ -42,6 +44,8 @@ export class TimestampEditElement extends LitElement {
         ClientApis.RemoveTimestamp.fetch(tid).then(content => {
             this.part_timestamps.timestamps = this.part_timestamps.timestamps.filter(i => i.tid !== tid);
             this.refreshTimestamps();
+        }).catch(error => {
+            showRequestError("删除时间点", error);
         });
     }
 

@@ -1,5 +1,5 @@
 import {css, html, LitElement, type PropertyValues, type TemplateResult} from "lit";
-import {property} from "lit/decorators.js";
+import {property, state} from "lit/decorators.js";
 import {Paged} from "../../common/page";
 
 export class PagedContainer<T> extends LitElement {
@@ -16,6 +16,13 @@ export class PagedContainer<T> extends LitElement {
     afterLoad: (pageindex: number) => void;
     @property()
     autoLoad: boolean = true;
+
+    @state()
+    private loading: boolean = false;
+    @state()
+    private loadError: string = "";
+
+    private requestId: number = 0;
 
     protected listRenderer: (list: Paged<T>) => TemplateResult;
     protected rightRenderer: (list: Paged<T>) => TemplateResult;
@@ -37,36 +44,72 @@ export class PagedContainer<T> extends LitElement {
         if (this.onElementLoaded) this.onElementLoaded(this);
     }
 
-    loadPage(pageindex: number) {
-        if (this.response) {
-            this.response.pageindex = pageindex;
-            this.response.result = [];
-            this.requestUpdate();
+    async loadPage(pageindex: number) {
+        let requestedPage = Number.isSafeInteger(pageindex) && pageindex >= 1 ? pageindex : 1;
+        const requestId = ++this.requestId;
+
+        this.loading = true;
+        this.loadError = "";
+        this.response = {
+            ...this.response,
+            pageindex: requestedPage,
+            result: [],
+        };
+
+        try {
+            if (!this.request) throw new Error("分页请求尚未初始化");
+
+            const result = await this.request(requestedPage);
+            if (requestId !== this.requestId) return;
+            if (!result) throw new Error("服务器没有返回分页数据");
+
+            const pagecount = Math.max(0, Math.floor(Number(result.pagecount) || 0));
+            const returnedPage = Number.isSafeInteger(result.pageindex) && result.pageindex >= 1 ? result.pageindex : 1;
+            const normalizedPage = pagecount > 0 ? Math.min(returnedPage, pagecount) : 1;
+            if (returnedPage !== normalizedPage) {
+                await this.loadPage(normalizedPage);
+                return;
+            }
+
+            this.response = {
+                ...result,
+                total: Math.max(0, Math.floor(Number(result.total) || 0)),
+                pageindex: normalizedPage,
+                pagecount,
+                pagesize: Math.max(0, Math.floor(Number(result.pagesize) || 0)),
+                result: Array.isArray(result.result) ? result.result : [],
+            };
+            this.loading = false;
+            if (this.afterLoad) this.afterLoad(normalizedPage);
+        } catch (error) {
+            if (requestId !== this.requestId) return;
+            this.loading = false;
+            this.loadError = error instanceof Error ? error.message : String(error);
         }
-        this.request(pageindex).then(result => {
-            this.response = result;
-            if (this.afterLoad) this.afterLoad(pageindex);
-        });
     }
 
     render() {
         let pages: TemplateResult[] = [];
         if (this.response && this.response.pagecount > 1) {
             let pageIndices: number[] = [];
-            if (this.response.pagecount > 10) {
-                let left = this.response.pageindex - 1;
-                let right = this.response.pageindex + 1;
-                pageIndices.push(this.response.pageindex);
-                while (pageIndices.length < 7) {
-                    if (left >= 1) pageIndices.unshift(left--);
-                    if (right <= this.response.pagecount) pageIndices.push(right++);
+            const pagecount = Math.max(1, Math.floor(this.response.pagecount));
+            const currentPage = Math.min(Math.max(1, Math.floor(this.response.pageindex)), pagecount);
+            if (pagecount > 10) {
+                let start = Math.max(1, currentPage - 3);
+                let end = Math.min(pagecount, start + 6);
+                start = Math.max(1, end - 6);
+
+                if (start > 1) {
+                    pageIndices.push(1);
+                    if (start > 2) pageIndices.push(-1);
                 }
-                if (left > 1) pageIndices.unshift(-1);
-                if (left >= 1) pageIndices.unshift(1);
-                if (right < this.response.pagecount) pageIndices.push(-1);
-                if (right <= this.response.pagecount) pageIndices.push(this.response.pagecount);
+                for (let i = start; i <= end; i++) pageIndices.push(i);
+                if (end < pagecount) {
+                    if (end < pagecount - 1) pageIndices.push(-1);
+                    pageIndices.push(pagecount);
+                }
             } else {
-                for (let i = 1; i <= this.response.pagecount; i++) pageIndices.push(i);
+                for (let i = 1; i <= pagecount; i++) pageIndices.push(i);
             }
 
             for (let i of pageIndices) {
@@ -78,7 +121,11 @@ export class PagedContainer<T> extends LitElement {
                 `);
             }
         }
-        let list = this.listRenderer(this.response);
+        let content = this.loading
+            ? html`<div class="status">加载中…</div>`
+            : this.loadError
+                ? html`<div class="status error">加载失败：${this.loadError} <button @click=${() => this.loadPage(this.response.pageindex)}>重试</button></div>`
+                : this.listRenderer(this.response);
         let rightHeader = this.rightRenderer ? this.rightRenderer(this.response) : html``;
 
         return html`
@@ -86,7 +133,7 @@ export class PagedContainer<T> extends LitElement {
                 <div class="header">
                     <span class="header_text">共${this.response.total}项</span>${pages}<span>${rightHeader}</span>
                 </div>
-                ${list}
+                ${content}
             </div>
         `;
     }
@@ -113,6 +160,13 @@ export class PagedContainer<T> extends LitElement {
             background: #87CEEB;
         }
         .otherpage {
+        }
+
+        .status {
+            margin: 20px 0;
+        }
+        .error {
+            color: #B00020;
         }
     `;
 

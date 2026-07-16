@@ -8,7 +8,7 @@ render(html`
             <div style="position: absolute; right: 0;"><guide-element></guide-element></div>
             <h1 style="margin: 20px 0;">视频下载</h1>
         </div>
-        <page-element></page-element>
+        <download-page-element></download-page-element>
     </div>
 `, document.body);
 

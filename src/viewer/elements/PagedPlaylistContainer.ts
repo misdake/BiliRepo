@@ -5,7 +5,7 @@ import "./PlaylistDetailElement";
 import "./InputElement";
 import {PagedContainer} from "./PagedContainer";
 import {repeat} from "lit/directives/repeat.js";
-import {ClientApis} from "../common/api/ClientApi";
+import {ClientApis, showRequestError} from "../common/api/ClientApi";
 
 @customElement('playlistlist-element')
 export class PlaylistListElement extends LitElement {
@@ -34,6 +34,8 @@ export class PagedPlaylistContainer extends PagedContainer<PlaylistDB> {
         ClientApis.AddPlaylist.fetch({}, {title: input.trim(), aids: []}).then(playlist => {
             window.open(`playlist.html?pid=${playlist.pid}`, "_blank");
             window.location.reload();
+        }).catch(error => {
+            showRequestError("新建播放列表", error);
         });
     }
 

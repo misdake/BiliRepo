@@ -4,7 +4,7 @@ import {PageElement} from "./PageElement";
 import "./PlaylistElement";
 import "./TimestampEditElement";
 import "../elements/VideoPlaylistEdit";
-import {ClientApis} from "../common/api/ClientApi";
+import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import {Playlist} from "./Playlist";
 import {Timestamp} from "../../server/storage/dbTypes";
 import {Danmaku} from "../../server/download/Bilibili";
@@ -69,6 +69,8 @@ export class ControlPanelElement extends LitElement {
             } else {
                 alert("danmaku update failed!\nresponse: " + content);
             }
+        }).catch(error => {
+            showRequestError("更新弹幕", error);
         });
     }
 
@@ -81,6 +83,8 @@ export class ControlPanelElement extends LitElement {
                 } else {
                     alert("redownload failed!\nresponse: " + content);
                 }
+            }).catch(error => {
+                showRequestError("重新下载视频", error);
             });
         }, 100);
     }

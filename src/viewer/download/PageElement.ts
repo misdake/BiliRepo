@@ -7,7 +7,7 @@ import "./VideoListElement";
 import "./VideoDownloadElement";
 import {ClientApis} from "../common/api/ClientApi";
 
-@customElement('page-element')
+@customElement('download-page-element')
 export class PageElement extends LitElement {
 
     static styles = css`
@@ -73,9 +73,6 @@ export class PageElement extends LitElement {
         }
     `;
 
-    @property() //property for auto update
-    coinVideos: { title: string; value: string }[];
-
     constructor() {
         super();
         this.inputVideo = null;
@@ -85,21 +82,14 @@ export class PageElement extends LitElement {
         this.done = [];
         this.failed = [];
 
-        this.loadCoinVideos();
-
         this.loop();
     }
 
-    private loadCoinVideos() {
-        ClientApis.GetCoinVideos.fetch(110213, {}).then(value => {
-            value.data = value.data || [];
-            let hints = value.data.map(item => ({value: `av${item.aid}`, title: item.title}));
-            hints.length = Math.min(hints.length, 5);
-            this.coinVideos = hints;
-        });
-    }
+    private statusRequestPending: boolean = false;
 
     private loadStatus() {
+        if (this.statusRequestPending) return;
+        this.statusRequestPending = true;
         ClientApis.StatusDownload.fetch({}).then(status => {
             if (status) {
                 this.message = status.message;
@@ -114,7 +104,16 @@ export class PageElement extends LitElement {
                 this.done = [];
                 this.failed = [];
             }
+        }).catch(error => {
+            this.showError("获取下载状态", error);
+        }).then(() => {
+            this.statusRequestPending = false;
         });
+    }
+
+    private showError(action: string, error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.message = `${action}失败：${message}`;
     }
 
     private loop() {
@@ -154,6 +153,8 @@ export class PageElement extends LitElement {
                 pic: v.pic,
                 title: v.title,
             };
+        }).catch(error => {
+            this.showError("获取视频信息", error);
         });
     }
 
@@ -161,6 +162,8 @@ export class PageElement extends LitElement {
         if (this.inputVideo) {
             ClientApis.AddDownload.fetch(this.inputVideo.aid).then(_r => {
                 this.loadStatus();
+            }).catch(error => {
+                this.showError("加入下载队列", error);
             });
             this.inputVideo = null;
         }
@@ -170,6 +173,8 @@ export class PageElement extends LitElement {
         if (video) {
             ClientApis.RetryDownload.fetch(video.aid).then(_r => {
                 this.loadStatus();
+            }).catch(error => {
+                this.showError("重试下载", error);
             });
         }
     }
@@ -178,12 +183,15 @@ export class PageElement extends LitElement {
         if (video) {
             ClientApis.RemoveDownload.fetch(video.aid).then(_r => {
                 this.loadStatus();
+            }).catch(error => {
+                this.showError("移除下载任务", error);
             });
         }
     }
 
     private updateCookie() {
         let value = window.prompt("Netscape HTTP Cookie File", "");
+        if (!value) return;
         if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
             ClientApis.UpdateCookie.fetch({}, { cookie: value }).then(content => {
                 if (content === "good") {
@@ -193,6 +201,8 @@ export class PageElement extends LitElement {
                     this.message = content;
                     alert("cookie update failed!\nresponse: " + content);
                 }
+            }).catch(error => {
+                this.showError("更新Cookie", error);
             });
         } else {
             alert("copy cookie content into clipboard and retry");
@@ -203,10 +213,10 @@ export class PageElement extends LitElement {
         return html`
             <div id="page">
                 <div id="left_panel">
-                    <input-element .placeholder=${"aid 或 bvid"} .input=${""} .hints=${this.coinVideos} .buttonText=${"查看"} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
+                    <input-element .placeholder=${"aid 或 bvid"} .input=${""} .buttonText=${"查看"} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
                     <ul><videostatus-element .video=${this.inputVideo} .iconShow=${true} .icon=${"添加"} .onIconClick=${() => this.enqueue()}></videostatus-element></ul>
                     <div class="text">下载队列: 共${this.queue.length}个</div>
-                    <div id="queue_container"><videolist-element .videos=${this.queue} .icon=${"删除"} .onIconClick=${(video: VideoStatus) => this.removeVideo(video)}></videolist-element></div>
+                    <div id="queue_container"><download-video-list-element .videos=${this.queue} .icon=${"删除"} .onIconClick=${(video: VideoStatus) => this.removeVideo(video)}></download-video-list-element></div>
                 </div>
                 <div id="right_panel">
                     ${this.message ? html`<div style="color:#F00">${this.message}<button @click=${() => this.updateCookie()}>updateCookie</button></div>` : ""}
@@ -217,11 +227,11 @@ export class PageElement extends LitElement {
                     <div id="done_failed_container">
                         <div id="done_container">
                             <div class="text">完成队列: 共${this.done.length}个</div>
-                            <videolist-element .videos=${this.done}></videolist-element>
+                            <download-video-list-element .videos=${this.done}></download-video-list-element>
                         </div>
                         <div id="failed_container">
                             <div class="text">失败队列: 共${this.failed.length}个</div>
-                            <videolist-element .videos=${this.failed} .icon=${"重试"} .onIconClick=${(video: VideoStatus) => this.retryVideo(video)}></videolist-element>
+                            <download-video-list-element .videos=${this.failed} .icon=${"重试"} .onIconClick=${(video: VideoStatus) => this.retryVideo(video)}></download-video-list-element>
                         </div>
                     </div>
                 </div>

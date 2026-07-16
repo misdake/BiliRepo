@@ -3,7 +3,7 @@ import {customElement, property} from "lit/decorators.js";
 import {repeat} from "lit/directives/repeat.js";
 import {VideoStatus} from "../../common/DownloadStatus";
 
-@customElement('videolist-element')
+@customElement('download-video-list-element')
 export class VideoListElement extends LitElement {
 
     @property()

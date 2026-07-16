@@ -29,12 +29,6 @@ export class Bilibili {
         let content = await httpsget(`https://api.bilibili.com/x/web-interface/view?aid=${aid}`);
         return JSON.parse(content).data as BilibiliVideo;
     }
-    static async getCoinVideos(mid: number) {
-        let content = await httpsget(`https://api.bilibili.com/x/space/coin/video?vmid=${mid}`);
-        let obj = JSON.parse(content);
-        let aidArray: number[] = obj.data.map((videoInfo: any) => videoInfo.aid);
-        return aidArray;
-    }
     static async downloadThumb(folder: string, url: string) {
         url = url.replace("http://", "https://");
         await httpsdownload(url, `repo/${folder}/thumb.jpg`);

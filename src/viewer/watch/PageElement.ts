@@ -11,7 +11,7 @@ import {PartDB, PartTimestamps, VideoParts} from "../../server/storage/dbTypes";
 import {Player} from "./Player";
 import {Danmaku} from "../../server/download/Bilibili";
 
-@customElement('page-element')
+@customElement('watch-page-element')
 export class PageElement extends LitElement {
 
     @property() //property for auto update

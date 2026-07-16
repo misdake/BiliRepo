@@ -96,8 +96,13 @@ export class Table<T extends Object, K extends keyof T> {
 
     private page(r: Resultset<T & LokiObj>, pageindex: number, pagesize: number) {
         let total = r.count();
-        let result = r.offset(pagesize * (pageindex - 1)).limit(pagesize).data();
-        return new Paged<T>(result, pageindex, pagesize, total);
+        let normalizedPagesize = Number.isSafeInteger(pagesize) && pagesize > 0 ? pagesize : 1;
+        let pagecount = Math.ceil(total / normalizedPagesize);
+        let normalizedPageindex = Number.isSafeInteger(pageindex) && pageindex >= 1 ? pageindex : 1;
+        normalizedPageindex = pagecount > 0 ? Math.min(normalizedPageindex, pagecount) : 1;
+
+        let result = r.offset(normalizedPagesize * (normalizedPageindex - 1)).limit(normalizedPagesize).data();
+        return new Paged<T>(result, normalizedPageindex, normalizedPagesize, total);
     }
 
 }

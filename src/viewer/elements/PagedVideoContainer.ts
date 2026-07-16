@@ -4,9 +4,9 @@ import { PlaylistDB, VideoDB } from '../../server/storage/dbTypes';
 import "./VideoBlockElement";
 import {PagedContainer} from "./PagedContainer";
 import {repeat} from "lit/directives/repeat.js";
-import {ClientApis} from "../common/api/ClientApi";
+import {ClientApis, showRequestError} from "../common/api/ClientApi";
 
-@customElement('videolist-element')
+@customElement('video-grid-element')
 export class VideoListElement extends LitElement {
 
     @property()
@@ -40,12 +40,17 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
 
         ClientApis.ListAllPlaylists.fetch({}).then(all => {
             this.allPlaylists = all;
+        }).catch(error => {
+            this.allPlaylists = [];
+            showRequestError("加载播放列表", error);
         });
     }
 
     private openRandom() {
         ClientApis.GetVideoRandom.fetch({}).then(video => {
             window.open(`watch.html?aid=${video.aid}`, '_blank');
+        }).catch(error => {
+            showRequestError("打开随机视频", error);
         });
     }
 
@@ -78,6 +83,8 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
                 ClientApis.UpdatePlaylist.fetch(playlist.pid, { title: undefined, add: to_add }).then(_playlist => {
                     this.selectedAdd = undefined;
                     this.elementAdd.selectedIndex = 0;
+                }).catch(error => {
+                    showRequestError("批量添加到播放列表", error);
                 });
             }
         }
@@ -99,7 +106,7 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
             </span>
         `;
         this.listRenderer = list => html`
-            <videolist-element .videos=${list.result} .params=${this.params}></videolist-element>`;
+            <video-grid-element .videos=${list.result} .params=${this.params}></video-grid-element>`;
     }
 
 }

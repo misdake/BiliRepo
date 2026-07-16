@@ -1,6 +1,6 @@
 import { MemberDB, PartDB, PlaylistDB, PlaylistVideoParts, PlaylistVideos, Timestamp, VideoDB, VideoParts } from '../../server/storage/dbTypes';
 import { Paged } from '../page';
-import { BilibiliVideoJson, BilibiliVideoListJson } from '../types';
+import { BilibiliVideoJson } from '../types';
 import { DownloadStatus } from '../DownloadStatus';
 import type { Request } from 'express';
 import type { ParamsFlatDictionary } from 'express-serve-static-core';
@@ -89,14 +89,13 @@ export let RawApis = {
     RemoveTimestamp: new ApiGet<number, boolean>('/api/timestamp/remove/:tid', tid => `api/timestamp/remove/${tid}`),
 
     //Search
-    SearchVideo: new ApiGet<{ input: string, page: number }, Paged<VideoDB>>('/api/video/search/:input/:page', ({ input, page }) => `api/video/search/${input}/${page}`),
-    SearchMember: new ApiGet<{ input: string, page: number }, Paged<MemberDB>>('/api/member/search/:input/:page', ({ input, page }) => `api/member/search/${input}/${page}`),
-    SearchPlaylist: new ApiGet<{ input: string, page: number }, Paged<PlaylistDB>>('/api/playlist/search/:input/:page', ({ input, page }) => `api/playlist/search/${input}/${page}`),
-    SearchTimestamp: new ApiGet<{ input: string, page: number }, Paged<Timestamp>>('/api/timestamp/search/:input/:page', ({ input, page }) => `api/timestamp/search/${input}/${page}`),
+    SearchVideo: new ApiGet<{ input: string, page: number }, Paged<VideoDB>>('/api/video/search/:input/:page', ({ input, page }) => `api/video/search/${encodeURIComponent(input)}/${page}`),
+    SearchMember: new ApiGet<{ input: string, page: number }, Paged<MemberDB>>('/api/member/search/:input/:page', ({ input, page }) => `api/member/search/${encodeURIComponent(input)}/${page}`),
+    SearchPlaylist: new ApiGet<{ input: string, page: number }, Paged<PlaylistDB>>('/api/playlist/search/:input/:page', ({ input, page }) => `api/playlist/search/${encodeURIComponent(input)}/${page}`),
+    SearchTimestamp: new ApiGet<{ input: string, page: number }, Paged<Timestamp>>('/api/timestamp/search/:input/:page', ({ input, page }) => `api/timestamp/search/${encodeURIComponent(input)}/${page}`),
 
     //Proxy
     GetVideoInfo: new ApiPost<string, {}, BilibiliVideoJson>('/proxy/videoinfo/:id', id => `proxy/videoinfo/${id}`),
-    GetCoinVideos: new ApiPost<number, {}, BilibiliVideoListJson>('/proxy/coinvideos/:mid', mid => `proxy/coinvideos/${mid}`),
 
     //Download
     AddDownload: new ApiGet<number, boolean>('/download/add/:aid', aid => `download/add/${aid}`),

@@ -6,17 +6,18 @@ import "../elements/PagedTimestampContainer";
 import "../elements/ViewTypeElement";
 import "../elements/InputElement";
 import { ViewType, ViewTypeContent, viewTypes } from "./indexViewType";
+import {positiveIntegerParam} from "../common/url";
 
-let url_string = window.location.href;
-let url = new URL(url_string);
-let loadpage = parseInt(url.searchParams.get("page") || "1");
-let viewtype = parseInt(url.searchParams.get("type") || "1");
-let searchInput = url.searchParams.get("search") && decodeURIComponent(url.searchParams.get("search"));
+let url = new URL(window.location.href);
+let loadpage = positiveIntegerParam(url.searchParams, "page") || 1;
+let requestedViewType = positiveIntegerParam(url.searchParams, "type") as ViewType;
+let viewtype = viewTypes.has(requestedViewType) ? requestedViewType : ViewType.video;
+let searchInput = url.searchParams.get("search") || "";
 
-function replaceUrl(type: ViewType, pageindex: number, input: string) {
-    viewtype = type || viewtype;
-    loadpage = pageindex || loadpage;
-    searchInput = input || searchInput;
+function replaceUrl(type?: ViewType, pageindex?: number, input?: string) {
+    if (type !== undefined && viewTypes.has(type)) viewtype = type;
+    if (pageindex !== undefined && Number.isSafeInteger(pageindex) && pageindex >= 1) loadpage = pageindex;
+    if (input !== undefined) searchInput = input;
     let url = `${location.pathname}?type=${viewtype}&page=${loadpage}`;
     if (searchInput) url += `&search=${encodeURIComponent(searchInput)}`;
     history.replaceState(null, "", url);
@@ -26,9 +27,12 @@ let currentViewType: ViewType = undefined;
 let currentViewTypeContent: ViewTypeContent<any, any>;
 
 function setViewType(viewType: ViewType) {
+    if (!viewTypes.has(viewType)) viewType = ViewType.video;
     if (viewType !== currentViewType) {
-        loadpage = 1;
-        if (currentViewType) searchInput = "";
+        if (currentViewType !== undefined) {
+            loadpage = 1;
+            searchInput = "";
+        }
         currentViewType = viewType;
         currentViewTypeContent = viewTypes.get(viewType);
         renderPage();
@@ -36,8 +40,9 @@ function setViewType(viewType: ViewType) {
 }
 
 function checkInput(input: string) {
-    searchInput = input;
-    currentViewTypeContent.search(input);
+    searchInput = (input || "").trim();
+    loadpage = 1;
+    currentViewTypeContent.search(searchInput, loadpage);
 }
 
 const pageTemplate = () => {

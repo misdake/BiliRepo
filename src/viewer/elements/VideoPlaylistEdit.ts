@@ -1,7 +1,7 @@
 import {html, LitElement, type PropertyValues} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {PlaylistDB, VideoDB} from "../../server/storage/dbTypes";
-import {ClientApis} from "../common/api/ClientApi";
+import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import {repeat} from "lit/directives/repeat.js";
 
 @customElement('videoplaylistedit-element')
@@ -24,9 +24,13 @@ export class VideoPlaylistEditElement extends LitElement {
     private load() {
         ClientApis.GetVideoPlaylists.fetch(this.video.aid).then(playlists => {
             this.videoPlaylists = playlists;
+        }).catch(error => {
+            showRequestError("加载视频所属播放列表", error);
         });
         ClientApis.ListAllPlaylists.fetch({}).then(all => {
             this.allPlaylists = all;
+        }).catch(error => {
+            showRequestError("加载播放列表", error);
         });
     }
 
@@ -72,6 +76,8 @@ export class VideoPlaylistEditElement extends LitElement {
                 this.videoPlaylists = this.videoPlaylists.filter(p => p.pid !== playlist.pid);
                 this.selectedRemove = undefined;
                 this.elementRemove.selectedIndex = 0;
+            }).catch(error => {
+                showRequestError("从播放列表删除", error);
             });
         }
     }
@@ -86,6 +92,8 @@ export class VideoPlaylistEditElement extends LitElement {
                 this.videoPlaylists = newArray;
                 this.selectedAdd = undefined;
                 this.elementAdd.selectedIndex = 0;
+            }).catch(error => {
+                showRequestError("添加到播放列表", error);
             });
         }
     }

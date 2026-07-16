@@ -3,7 +3,7 @@ import { Storage } from './storage/Storage';
 import { Downloader } from './download/Downloader';
 import { httpsget } from './network';
 import { initServerApi, ServerApis } from './ServerApi';
-import { BilibiliVideoJson, BilibiliVideoListJson } from '../common/types';
+import { BilibiliVideoJson } from '../common/types';
 import { updateFanCountDefault } from './fanCount';
 
 const express = require('express');
@@ -48,12 +48,6 @@ Storage.createInstance().then(storage => {
             resolve(JSON.parse(value) as BilibiliVideoJson);
         });
     }));
-    ServerApis.GetCoinVideos.serve(req => parseInt(req.params['mid']), (mid) => new Promise<BilibiliVideoListJson>(resolve => {
-        httpsget(`https://api.bilibili.com/x/space/coin/video?vmid=${mid}`).then(value => {
-            resolve(JSON.parse(value) as BilibiliVideoListJson);
-        });
-    }));
-
     //download
     ServerApis.AddDownload.serve(req => parseInt(req.params['aid']), aid => {
         downloader.enqueue(aid);

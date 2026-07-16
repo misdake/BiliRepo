@@ -1,21 +1,16 @@
 import {html, render} from 'lit/html.js';
 import "../elements/MemberElement";
-import {MemberDB, VideoDB} from "../../server/storage/dbTypes";
-import {Paged} from "../../common/page";
+import {MemberDB} from "../../server/storage/dbTypes";
 import "../elements/PagedVideoContainer";
 import "../elements/GuideElement";
 import {ClientApis} from "../common/api/ClientApi";
+import {positiveIntegerParam} from "../common/url";
 
-let url_string = window.location.href;
-let url = new URL(url_string);
-let mid = parseInt(url.searchParams.get("mid")) || 212230;
+let url = new URL(window.location.href);
+let mid = positiveIntegerParam(url.searchParams, "mid") || 212230;
 
 function request(page: number) {
-    return new Promise<Paged<VideoDB>>(resolve => {
-        ClientApis.ListVideoByMember.fetch({mid, page}).then(paged => {
-            resolve(paged);
-        });
-    });
+    return ClientApis.ListVideoByMember.fetch({mid, page});
 }
 
 const pageTemplate = (member: MemberDB) => html`
@@ -31,6 +26,11 @@ const pageTemplate = (member: MemberDB) => html`
     </div>
 `;
 
+render(html`<div style="width: 1280px; max-width: 100%; margin: 20px auto;">加载中…</div>`, document.body);
 ClientApis.GetMember.fetch(mid).then(member => {
+    if (!member) throw new Error("没有找到该UP主");
     render(pageTemplate(member), document.body);
+}).catch(error => {
+    const message = error instanceof Error ? error.message : String(error);
+    render(html`<div style="width: 1280px; max-width: 100%; margin: 20px auto; color: #B00020;">加载UP主失败：${message} <button @click=${() => window.location.reload()}>重试</button> <a href="index.html?type=2">返回UP主列表</a></div>`, document.body);
 });

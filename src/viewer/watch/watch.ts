@@ -4,84 +4,90 @@ import { Playlist, PlaylistItem } from './Playlist';
 import { ClientApis } from '../common/api/ClientApi';
 import { PartDB, VideoParts } from '../../server/storage/dbTypes';
 import { PageElement } from './PageElement';
+import {nonNegativeIntegerParam, positiveIntegerParam} from '../common/url';
 
-let url_string = window.location.href;
-let url = new URL(url_string);
+const url = new URL(window.location.href);
+const pid = positiveIntegerParam(url.searchParams, 'pid');
+const aid = positiveIntegerParam(url.searchParams, 'aid');
+const part = positiveIntegerParam(url.searchParams, 'p') || 1;
+let timestamp = nonNegativeIntegerParam(url.searchParams, 't');
 
-//input params
-let pidstr = url.searchParams.get('pid');
-let pid = parseInt(pidstr);
-let aidstr = url.searchParams.get('aid');
-let aid = parseInt(aidstr);
-let part = parseInt(url.searchParams.get('p')) || 1;
+async function loadPlaylist(): Promise<Playlist | undefined> {
+    const playlist = new Playlist();
+    playlist.items = [];
 
-let tstr = url.searchParams.get('t');
-let t = parseInt(tstr);
-
-//start loading
-let playlist = new Playlist();
-let currentIndex: number = undefined;
-let loadPromise: Promise<Playlist>;
-
-if (pidstr) {
-    loadPromise = new Promise<Playlist>(resolve => {
-        ClientApis.GetPlaylistVideoParts.fetch(pid).then(res => {
-            playlist.items = [];
-            for (let vp of res.videoParts) {
-                for (let p of vp.parts) {
-                    playlist.items.push(new PlaylistItem(vp, p));
-                }
-            }
-            //TODO what if playlist is not found?
-            resolve(null);
-        });
-    });
-} else if (aidstr) {
-    loadPromise = new Promise<Playlist>(resolve => {
-        ClientApis.GetVideoParts.fetch(aid).then(res => {
-            playlist.items = [];
-            for (let p of res.parts) {
-                playlist.items.push(new PlaylistItem(res, p));
-            }
-            //TODO what if video is not found?
-            resolve(null);
-        });
-    });
-}
-
-loadPromise.then(() => {
-    if (aid) {
-        for (let i = 0; i < playlist.items.length; i++) {
-            let item = playlist.items[i];
-            if (aid === item.video.aid && part == item.part.index) {
-                currentIndex = i;
+    if (pid !== undefined) {
+        const response = await ClientApis.GetPlaylistVideoParts.fetch(pid);
+        if (!response || !Array.isArray(response.videoParts)) return undefined;
+        for (let video of response.videoParts) {
+            for (let videoPart of video.parts || []) {
+                playlist.items.push(new PlaylistItem(video, videoPart));
             }
         }
+    } else if (aid !== undefined) {
+        const response = await ClientApis.GetVideoParts.fetch(aid);
+        if (!response || !Array.isArray(response.parts)) return undefined;
+        for (let videoPart of response.parts) {
+            playlist.items.push(new PlaylistItem(response, videoPart));
+        }
+    } else {
+        return undefined;
+    }
 
-        if (currentIndex === undefined) {
-            //TODO what if currentIndex is not found?
-            window.location.replace('index.html');
+    return playlist.items.length ? playlist : undefined;
+}
+
+function renderLoadError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    render(html`
+        <div style="width: 1280px; max-width: 100%; margin: 20px auto; color: #B00020;">
+            加载视频失败：${message}
+            <button @click=${() => window.location.reload()}>重试</button>
+            <a href="index.html">返回主页</a>
+        </div>
+    `, document.body);
+}
+
+async function start() {
+    if (pid === undefined && aid === undefined) {
+        window.location.replace('index.html');
+        return;
+    }
+
+    render(html`<div style="width: 1280px; max-width: 100%; margin: 20px auto;">加载中…</div>`, document.body);
+    const playlist = await loadPlaylist();
+    if (!playlist) {
+        renderLoadError(new Error('没有找到可播放的视频'));
+        return;
+    }
+
+    let currentIndex = 0;
+    if (aid !== undefined) {
+        currentIndex = playlist.items.findIndex(item => aid === item.video.aid && part === item.part.index);
+        if (currentIndex < 0) {
+            renderLoadError(new Error('指定的视频或分P不在当前列表中'));
+            return;
         }
     }
 
-    currentIndex |= 0;
-
-    let onPlayerLoaded = (pageelement: PageElement) => {
-        if (t) { //jump to timestamp
-            pageelement.player.setTimeOnCanplay(t);
-            t = undefined;
+    const onPlayerLoaded = (pageelement: PageElement) => {
+        if (timestamp !== undefined) {
+            pageelement.player.setTimeOnCanplay(timestamp);
+            timestamp = undefined;
         }
     };
 
-    let onBeginPart = (video: VideoParts, part: PartDB) => {
-        let url = location.pathname;
-        let params: { key: string, value: number }[] = [];
-        if (pid) params.push({ key: 'pid', value: pid });
-        params.push({ key: 'aid', value: video.aid });
-        params.push({ key: 'p', value: part.index });
-        history.replaceState(null, '', `${url}?${params.map(i => `${i.key}=${i.value}`).join('&')}`);
+    const onBeginPart = (video: VideoParts, currentPart: PartDB) => {
+        const params = new URLSearchParams();
+        if (pid !== undefined) params.set('pid', String(pid));
+        params.set('aid', String(video.aid));
+        params.set('p', String(currentPart.index));
+        history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
     };
 
     render(html`
-        <page-element .onBeginPart=${onBeginPart} .onPlayerLoaded=${onPlayerLoaded} .playlist=${playlist} .playindex=${currentIndex}></page-element>`, document.body);
-});
+        <watch-page-element .onBeginPart=${onBeginPart} .onPlayerLoaded=${onPlayerLoaded} .playlist=${playlist} .playindex=${currentIndex}></watch-page-element>
+    `, document.body);
+}
+
+start().catch(renderLoadError);
