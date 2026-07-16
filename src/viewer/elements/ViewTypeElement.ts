@@ -6,63 +6,79 @@ import {ViewType, viewTypes} from "../index/indexViewType";
 export class ViewTypeElement extends LitElement {
 
     static styles = css`
+        .nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 112px;
+            padding: 6px;
+            border: 1px solid var(--border, #dfe4ec);
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 4px 16px rgba(16, 24, 40, .04);
+        }
+        .tabs {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
         span {
-            display: inline-block;
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
             text-align: center;
-            margin: 5px;
-            padding: 5px 10px;
+            padding: 9px 8px;
             cursor: pointer;
-            min-width: 48px;
             user-select: none;
         }
-        
         .viewtype {
-            border-radius: 5px;
-            border-width: 1px;
-            border-style: solid;
-            border-color: rgb(135, 206, 235);
-            border-image: initial;
+            border-radius: 8px;
+            color: #475467;
+            font-weight: 600;
         }
-        
+        .viewtype:hover {
+            color: #2563eb;
+            background: #f5f8ff;
+        }
         a {
+            display: block;
+            width: 100%;
             text-decoration: none;
-            color: blue;
         }
-        
-        .download {
-            border-width: 1px;
-            border-color: rgb(0, 0, 128);
-            color: rgb(0, 0, 128);
-            margin-right: 0;
-        }
-        
         .selectedtype {
-            background: rgb(135, 206, 235);
+            background: #2563eb;
+            color: #fff;
+        }
+        .selectedtype:hover {
+            background: #2563eb;
+            color: #fff;
         }
     `;
 
     @property()
     onClick: (viewType: ViewType) => void;
     @property()
-    afterLoad: (viewType: ViewType, pageindex: number) => void;
-    @property()
     selectedType: ViewType;
 
     render() {
         let types: TemplateResult[] = [];
-        viewTypes.forEach((value, key) => {
-            let classes = key === this.selectedType ? " selectedtype" : "";
-            types.push(html`<a href="index.html?type=${value.type}" @click=${(e: Event) => {
-                this.onClick(value.type);
+        const renderType = (type: ViewType, title: string) => {
+            const classes = type === this.selectedType ? " selectedtype" : "";
+            return html`<a href="index.html?type=${type}" @click=${(e: Event) => {
+                this.onClick(type);
                 e.preventDefault();
                 return true;
-            }}><span class="viewtype${classes}">${value.title}</span></a>`)
+            }}><span class="viewtype${classes}">${title}</span></a>`;
+        };
+        viewTypes.forEach((value, key) => {
+            types.push(renderType(key, value.title));
         });
+        types.push(renderType(ViewType.download, "下载"));
 
         return html`
-            <div style="text-align: right;">
-                ${types}
-                <a href="download.html"><span class="viewtype download">下载</span></a>
+            <div class="nav">
+                <div class="tabs">${types}</div>
             </div>
         `;
     }

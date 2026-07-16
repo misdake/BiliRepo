@@ -1,5 +1,5 @@
-import {html, LitElement, type PropertyValues} from "lit";
-import {customElement, property} from "lit/decorators.js";
+import {css, html, LitElement, type PropertyValues} from "lit";
+import {customElement, property, state} from "lit/decorators.js";
 import {PlaylistDB, VideoDB} from "../../server/storage/dbTypes";
 import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import {repeat} from "lit/directives/repeat.js";
@@ -34,7 +34,9 @@ export class VideoPlaylistEditElement extends LitElement {
         });
     }
 
+    @state()
     private selectedRemove: PlaylistDB;
+    @state()
     private selectedAdd: PlaylistDB;
 
     private elementRemove: HTMLSelectElement;
@@ -65,14 +67,14 @@ export class VideoPlaylistEditElement extends LitElement {
     private jumpFromPlaylist() {
         let playlist = this.selectedRemove;
         if (playlist) {
-            window.open(`playlist.html?pid=${playlist.pid}`, "_blank");
+            window.open(`index.html?type=3&pid=${playlist.pid}`, "_blank");
         }
     }
     private removeFromPlaylist() {
         let playlist = this.selectedRemove;
         if (playlist) {
-            playlist.videosAid = playlist.videosAid.filter(aid => aid !== this.video.aid);
-            ClientApis.UpdatePlaylist.fetch(playlist.pid, {title: undefined, remove: [this.video.aid]}).then(_playlist => {
+            ClientApis.UpdatePlaylist.fetch(playlist.pid, {remove: [this.video.aid]}).then(updatedPlaylist => {
+                playlist.videosAid = [...updatedPlaylist.videosAid];
                 this.videoPlaylists = this.videoPlaylists.filter(p => p.pid !== playlist.pid);
                 this.selectedRemove = undefined;
                 this.elementRemove.selectedIndex = 0;
@@ -84,9 +86,8 @@ export class VideoPlaylistEditElement extends LitElement {
     private addToPlaylist() {
         let playlist = this.selectedAdd;
         if (playlist) {
-            playlist.videosAid = playlist.videosAid.filter(aid => aid !== this.video.aid);
-            playlist.videosAid.push(this.video.aid);
-            ClientApis.UpdatePlaylist.fetch(playlist.pid, {title: undefined, add: [this.video.aid]}).then(_playlist => {
+            ClientApis.UpdatePlaylist.fetch(playlist.pid, {add: [this.video.aid]}).then(updatedPlaylist => {
+                playlist.videosAid = [...updatedPlaylist.videosAid];
                 let newArray = this.videoPlaylists.filter(p => p.pid !== playlist.pid);
                 newArray.push(playlist);
                 this.videoPlaylists = newArray;
@@ -100,27 +101,64 @@ export class VideoPlaylistEditElement extends LitElement {
 
     render() {
         return html`
-            <div>播放列表</div>
-            <div style="margin: 5px;">
+            <section>
+                <h4>播放列表</h4>
+                <p>当前视频所在列表</p>
+                <div class="action-row">
                 <select @change=${(e: Event) => this.selectRemove(e)}>
                     <option>(在${this.videoPlaylists.length}个列表中)</option>
                     ${repeat(this.videoPlaylists, (playlist: PlaylistDB) => html`
                         <option>${playlist.title}</option>
                     `)}
                 </select>
-                <button @click=${() => this.jumpFromPlaylist()}>跳转</button>
-                <button @click=${() => this.removeFromPlaylist()}>删除</button>
-            </div>
-            <div style="margin: 5px;">
+                <button ?disabled=${!this.selectedRemove} @click=${() => this.jumpFromPlaylist()}>打开</button>
+                <button class="danger" ?disabled=${!this.selectedRemove} @click=${() => this.removeFromPlaylist()}>移除</button>
+                </div>
+                <p>添加到其他列表</p>
+                <div class="action-row">
                 <select @change=${(e: Event) => this.selectAdd(e)}>
                     <option>(共${this.allPlaylists.length}个列表)</option>
                     ${repeat(this.allPlaylists, (playlist: PlaylistDB) => html`
                         <option>${playlist.title}</option>
                     `)}
                 </select>
-                <button @click=${() => this.addToPlaylist()}>添加</button>
-            </div>
+                <button ?disabled=${!this.selectedAdd} @click=${() => this.addToPlaylist()}>添加</button>
+                </div>
+            </section>
         `;
     }
+
+    static styles = css`
+        :host { display: block; color: #344054; }
+        section {
+            padding: 10px;
+            border: 1px solid #e4e7ec;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+        h4 { margin: 0 0 10px; color: #172033; }
+        p { margin: 10px 0 5px; color: #667085; font-size: 12px; }
+        .action-row { display: flex; align-items: center; gap: 5px; }
+        select {
+            min-width: 0;
+            flex: 1;
+            height: 32px;
+            border: 1px solid #d0d5dd;
+            border-radius: 6px;
+            background: #fff;
+            color: #344054;
+        }
+        button {
+            height: 32px;
+            padding: 5px 8px;
+            border: 1px solid #d0d5dd;
+            border-radius: 6px;
+            background: #fff;
+            color: #344054;
+            cursor: pointer;
+        }
+        button.danger { color: #b42318; }
+        button:disabled { opacity: .45; cursor: default; }
+    `;
 
 }

@@ -10,6 +10,7 @@ export enum ViewType {
     member,
     playlist,
     timestamp,
+    download,
 }
 
 function requestListMaker<T>(api: ApiGet<number, Paged<T>>) {
@@ -62,6 +63,11 @@ export class ViewTypeContent<T, viewType extends ViewType> {
     render(loadPage: number, firstSearch: string, afterLoad: (type: ViewType, pageindex: number, input: string) => void) {
         let onContainerLoaded = (element: PagedContainer<T>) => {
             this.container = element;
+            this.container.searchInput = firstSearch;
+            this.container.onSearch = input => {
+                afterLoad(this.type, 1, input);
+                this.search(input, 1);
+            };
             this.search(firstSearch, loadPage);
         };
         return this.containerRenderer(loadPage, this.allRequest, onContainerLoaded, pageindex => afterLoad(this.type, pageindex, undefined));
@@ -133,3 +139,7 @@ viewTypes.set(ViewType.video, viewType_video);
 viewTypes.set(ViewType.member, viewType_member);
 viewTypes.set(ViewType.playlist, viewType_playlist);
 viewTypes.set(ViewType.timestamp, viewType_timestamp);
+
+export function isViewType(type: ViewType) {
+    return type === ViewType.download || viewTypes.has(type);
+}

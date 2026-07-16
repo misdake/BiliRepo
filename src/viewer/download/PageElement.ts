@@ -11,65 +11,90 @@ import {ClientApis} from "../common/api/ClientApi";
 export class PageElement extends LitElement {
 
     static styles = css`
-        #page {
-            position: relative;
-            width: 960px;
-            max-width: 100%;
-            margin: 20px auto;
-        }
-        .text {
-            margin: 0 10px;
-        }
-                
-        #left_panel {
-            width: 320px;
-            margin-left: -10px;
-        }
-        input-element {
-            padding: 10px;
-        }
-        ul {
-            padding: 0;
-            margin: 0;
-        }
-        
-        #right_panel {
-            position:absolute;
-            left: 320px;
-            top: 0;
-            width: 640px;
-        }
-        #current_container {
-            position: relative;
-            width: 620px;
-            /*background: #CCCCCC;*/
-            padding: 10px;
-            border: 1px solid;
-            margin-bottom: 10px;
-        }
-        #done_failed_container{
-            position: relative;
+        :host {
+            display: block;
+            width: 100%;
             margin: 0 auto;
+            color: var(--text, #172033);
         }
-        #done_container {
-            position: absolute;
-            left: 0;
-            width: 320px;
+        #page {
+            display: grid;
+            grid-template-columns: 360px minmax(0, 1fr);
+            align-items: start;
+            gap: 16px;
         }
-        #failed_container {
-            position: absolute;
-            left: 320px;
-            width: 320px;
+        .panel {
+            border: 1px solid var(--border, #dfe4ec);
+            border-radius: 12px;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(16, 24, 40, .04);
         }
-        
-        .icon {
-            color: #FFF;
-            background: #800;
-            padding: 5px 10px;
+        .panel-header {
+            min-height: 34px;
+            padding: 7px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e8ecf2;
+            background: #f8fafc;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .count {
+            color: var(--muted, #667085);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .input-area {
+            padding: 10px;
+            border-bottom: 1px solid #edf0f5;
+        }
+        .preview {
+            margin-top: 8px;
+        }
+        .queue-list {
+            min-height: 110px;
+            max-height: 520px;
+            overflow-y: auto;
+        }
+        #right_panel {
+            display: grid;
+            gap: 16px;
+        }
+        #done_failed_container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .result-list {
+            min-height: 130px;
+            max-height: 440px;
+            overflow-y: auto;
+        }
+        .message {
+            padding: 11px 14px;
+            border: 1px solid #f5c2c0;
+            border-radius: 10px;
+            background: #fff6f5;
+            color: #b42318;
+        }
+        .message button, .stop-button {
+            margin-left: 10px;
+            padding: 5px 9px;
+            border: 1px solid currentColor;
+            border-radius: 6px;
+            background: transparent;
+            color: inherit;
             cursor: pointer;
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        }
+        .stop-button {
+            color: #b42318;
+        }
+        .empty {
+            padding: 36px 14px;
+            color: var(--muted, #667085);
+            text-align: center;
         }
     `;
 
@@ -82,10 +107,21 @@ export class PageElement extends LitElement {
         this.done = [];
         this.failed = [];
 
-        this.loop();
     }
 
     private statusRequestPending: boolean = false;
+    private refreshTimer: ReturnType<typeof setTimeout>;
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.loop();
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        if (this.refreshTimer) clearTimeout(this.refreshTimer);
+        this.refreshTimer = undefined;
+    }
 
     private loadStatus() {
         if (this.statusRequestPending) return;
@@ -117,9 +153,10 @@ export class PageElement extends LitElement {
     }
 
     private loop() {
+        if (!this.isConnected) return;
         this.loadStatus();
 
-        setTimeout(() => {
+        this.refreshTimer = setTimeout(() => {
             this.loop(); //TODO replace with websocket
         }, 1000);
     }
@@ -212,30 +249,37 @@ export class PageElement extends LitElement {
     render() {
         return html`
             <div id="page">
-                <div id="left_panel">
-                    <input-element .placeholder=${"aid 或 bvid"} .input=${""} .buttonText=${"查看"} .checkInput="${(input: string) => this.checkInput(input)}"></input-element>
-                    <ul><videostatus-element .video=${this.inputVideo} .iconShow=${true} .icon=${"添加"} .onIconClick=${() => this.enqueue()}></videostatus-element></ul>
-                    <div class="text">下载队列: 共${this.queue.length}个</div>
-                    <div id="queue_container"><download-video-list-element .videos=${this.queue} .icon=${"删除"} .onIconClick=${(video: VideoStatus) => this.removeVideo(video)}></download-video-list-element></div>
-                </div>
+                <section id="left_panel" class="panel">
+                    <div class="panel-header"><span>添加视频</span><span class="count">待下载 ${this.queue.length}</span></div>
+                    <div class="input-area">
+                        <input-element .placeholder=${"aid 或 bvid"} .input=${""} .buttonText=${"查看"} .checkInput=${(input: string) => this.checkInput(input)}></input-element>
+                        <div class="preview"><videostatus-element .video=${this.inputVideo} .iconShow=${true} .icon=${"添加"} .onIconClick=${() => this.enqueue()}></videostatus-element></div>
+                    </div>
+                    <div class="panel-header"><span>下载队列</span><span class="count">${this.queue.length} 项</span></div>
+                    <div class="queue-list">${this.queue.length ? html`
+                        <download-video-list-element .videos=${this.queue} .icon=${"删除"} .onIconClick=${(video: VideoStatus) => this.removeVideo(video)}></download-video-list-element>
+                    ` : html`<div class="empty">队列为空</div>`}</div>
+                </section>
                 <div id="right_panel">
-                    ${this.message ? html`<div style="color:#F00">${this.message}<button @click=${() => this.updateCookie()}>updateCookie</button></div>` : ""}
-                    <div id="current_container">
-                        <div class="text">正在下载: ${this.current ? html`<div class="icon" @click="${() => this.removeVideo(this.current)}">停止</div>` : html``}</div>
-                        <videodownload-element .video=${this.current}></videodownload-element>
-                    </div>
+                    ${this.message ? html`<div class="message">${this.message}<button @click=${() => this.updateCookie()}>更新 Cookie</button></div>` : ""}
+                    <section id="current_container" class="panel">
+                        <div class="panel-header">
+                            <span>当前任务</span>
+                            ${this.current ? html`<button class="stop-button" @click=${() => this.removeVideo(this.current)}>停止</button>` : html``}
+                        </div>
+                        ${this.current ? html`<videodownload-element .video=${this.current}></videodownload-element>` : html`<div class="empty">当前没有下载任务</div>`}
+                    </section>
                     <div id="done_failed_container">
-                        <div id="done_container">
-                            <div class="text">完成队列: 共${this.done.length}个</div>
-                            <download-video-list-element .videos=${this.done}></download-video-list-element>
-                        </div>
-                        <div id="failed_container">
-                            <div class="text">失败队列: 共${this.failed.length}个</div>
-                            <download-video-list-element .videos=${this.failed} .icon=${"重试"} .onIconClick=${(video: VideoStatus) => this.retryVideo(video)}></download-video-list-element>
-                        </div>
+                        <section id="done_container" class="panel">
+                            <div class="panel-header"><span>已完成</span><span class="count">${this.done.length} 项</span></div>
+                            <div class="result-list">${this.done.length ? html`<download-video-list-element .videos=${this.done}></download-video-list-element>` : html`<div class="empty">暂无已完成任务</div>`}</div>
+                        </section>
+                        <section id="failed_container" class="panel">
+                            <div class="panel-header"><span>失败</span><span class="count">${this.failed.length} 项</span></div>
+                            <div class="result-list">${this.failed.length ? html`<download-video-list-element .videos=${this.failed} .icon=${"重试"} .onIconClick=${(video: VideoStatus) => this.retryVideo(video)}></download-video-list-element>` : html`<div class="empty">暂无失败任务</div>`}</div>
+                        </section>
                     </div>
                 </div>
-                <div style="clear: both"></div>
             </div>
         `;
     }

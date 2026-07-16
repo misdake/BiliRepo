@@ -10,11 +10,14 @@ export class PlaylistDetailElement extends LitElement {
 
     static styles = css`
         .playlist {
-            width: 630px;
-            padding: 10px;
+            padding: 14px;
+            border: 1px solid #e1e6ee;
+            border-radius: 10px;
+            background: #fff;
         }
         .playlist:hover {
-            background: rgba(224, 224, 224, 1);
+            border-color: #b9c8e2;
+            box-shadow: 0 6px 18px rgba(16, 24, 40, .06);
         }
         .videolist {
             display: flex;
@@ -23,15 +26,17 @@ export class PlaylistDetailElement extends LitElement {
         }
         a {
             text-decoration: none;
-            color: blue;
+            color: #172033;
         }
         .thumblink {
-            width: 144px;
-            height: 90px;
+            width: calc(25% - 6px);
+            aspect-ratio: 16 / 10;
         }
         .thumb {
-            width: 144px;
-            height: 90px;
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
             object-fit: cover;
         }
         .placeholder {
@@ -55,10 +60,9 @@ export class PlaylistDetailElement extends LitElement {
 
         return this.playlist ? html`
             <div class="playlist">
-                <div style="width: 100%; font-size: 30px; padding: 0 0 10px 0;">
-                    <a href="/watch.html?pid=${this.playlist.pid}">${this.playlist.title}</a>
-                    <span style="display: inline-block; width: 20px;"></span>
-                    <a href="/playlist.html?pid=${this.playlist.pid}" style="font-size: 20px;">详情</a>
+                <div style="display:flex; align-items:center; justify-content:space-between; width:100%; padding:0 0 12px;">
+                    <a href="/watch.html?pid=${this.playlist.pid}" style="font-size:20px; font-weight:700;">${this.playlist.title}</a>
+                    <a href="/index.html?type=3&pid=${this.playlist.pid}" style="font-size:13px; color:#2563eb;">管理 · ${this.playlist.videosAid ? this.playlist.videosAid.length : 0} 项</a>
                 </div>
                 <div class="videolist">${videos}</div>
             </div>

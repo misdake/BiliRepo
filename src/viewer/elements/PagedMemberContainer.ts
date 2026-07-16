@@ -1,4 +1,4 @@
-import {html, LitElement} from "lit";
+import {css, html, LitElement} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {MemberDB} from "../../server/storage/dbTypes";
 import "./MemberElement";
@@ -11,17 +11,24 @@ export class MemberListElement extends LitElement {
     @property()
     members: MemberDB[];
 
-    createRenderRoot() {
-        return this;
-    }
-
     render() {
         return html`
-            <ul style="padding: 0; margin: 0 -10px;">
-                ${repeat(this.members, (member: MemberDB) => html`<member-element style="float: left; width: 300px; margin: 10px;" .member=${member}></member-element>`)}
+            <ul>
+                ${repeat(this.members, (member: MemberDB) => html`<member-element .member=${member}></member-element>`)}
             </ul>
         `;
     }
+
+    static styles = css`
+        ul {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+    `;
 
 }
 

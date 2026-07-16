@@ -1,4 +1,4 @@
-import {html, LitElement} from "lit";
+import {css, html, LitElement} from "lit";
 import {customElement, property} from "lit/decorators.js";
 import {PartTimestamps, Timestamp} from "../../server/storage/dbTypes";
 import {ClientApis, showRequestError} from "../common/api/ClientApi";
@@ -16,10 +16,6 @@ export class TimestampEditElement extends LitElement {
     seek: (second: number) => void;
     @property()
     refresh: (timestamps: Timestamp[]) => void;
-
-    createRenderRoot() {
-        return this;
-    }
 
     private refreshTimestamps() {
         if (this.refresh) this.refresh(this.part_timestamps.timestamps);
@@ -59,7 +55,7 @@ export class TimestampEditElement extends LitElement {
 
         for (let timestamp of timestamps) {
             lines.push(html`
-                <li style="margin: 5px 0;"><a style="padding: 0 5px; text-decoration: none;" href="#" @click=${(e: Event) => {
+                <li><a href="#" @click=${(e: Event) => {
                     this.seek(timestamp.time_second);
                     e.preventDefault();
                     return true;
@@ -70,11 +66,41 @@ export class TimestampEditElement extends LitElement {
         }
 
         return html`
-            <input-element .placeholder=${"新增时间点名称"} .input=${""} .buttonText=${"新增"} .checkInput="${(input: string) => this.addTimestamp(input)}" .showClearButton=${false}></input-element>
-            <ul style="padding: 0; margin: 0; max-width: 100%;">
+            <input-element .placeholder=${"新增时间点名称"} .input=${""} .buttonText=${"新增"} .checkInput=${(input: string) => this.addTimestamp(input)}></input-element>
+            <ul>
                 ${lines}
             </ul>
         `;
     }
+
+    static styles = css`
+        :host { display: block; color: #344054; }
+        ul { padding: 0; margin: 10px 0 0; list-style: none; }
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-height: 38px;
+            padding: 5px 7px;
+            border-bottom: 1px solid #edf0f5;
+        }
+        a {
+            min-width: 0;
+            overflow: hidden;
+            color: #2563eb;
+            text-decoration: none;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        button {
+            padding: 5px 8px;
+            border: 1px solid #d0d5dd;
+            border-radius: 6px;
+            background: #fff;
+            color: #b42318;
+            cursor: pointer;
+        }
+    `;
 
 }

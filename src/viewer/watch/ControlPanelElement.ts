@@ -79,7 +79,7 @@ export class ControlPanelElement extends LitElement {
         setTimeout(() => {
             ClientApis.Redownload.fetch(this.pageelement.currentVideo.aid).then(content => {
                 if (content === "good") {
-                    window.location.replace(`download.html`);
+                    window.location.replace(`index.html?type=5`);
                 } else {
                     alert("redownload failed!\nresponse: " + content);
                 }
@@ -105,34 +105,80 @@ export class ControlPanelElement extends LitElement {
         }
 
         return html`
-            <div style="display:flex; height: 30px; line-height: 30px;">${headers}</div>
-            ${this.tabs[this.currentTab].content()}
+            <div class="tabs">${headers}</div>
+            <div class="tab-content">${this.tabs[this.currentTab].content()}</div>
         `;
     }
 
     static styles = css`
+        :host {
+            display: block;
+            box-sizing: border-box;
+            width: 320px;
+            height: 540px;
+            border-left: 1px solid #2a3141;
+            border-right: 1px solid #dfe4ec;
+            border-top: 1px solid #dfe4ec;
+            border-bottom: 1px solid #dfe4ec;
+            background: #fff;
+            color: #172033;
+        }
+        .tabs {
+            display: flex;
+            height: 42px;
+            line-height: 42px;
+            border-bottom: 1px solid #dfe4ec;
+            background: #f3f5f8;
+        }
         .tab {
             flex: 1;
-            color: blue;
-            background: rgb(224, 224, 224);
+            color: #667085;
             text-align: center;
             user-select: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
         }
+        .tab:hover { color: #2563eb; }
         .tab-selected {
-            background: rgb(135, 206, 235);
-        }
-        playlist-element {
             position: relative;
-            height: 510px;
+            background: #dbeafe;
+            color: #1d4ed8;
         }
-        ul {
-            overflow-x: hidden;
-            overflow-y: hidden;
+        .tab-selected::after {
+            content: "";
+            position: absolute;
+            left: 22px;
+            right: 22px;
+            bottom: 0;
+            height: 3px;
+            border-radius: 3px 3px 0 0;
+            background: #2563eb;
         }
-        ul:hover {
-            overflow-x: hidden;
+        .tab-content {
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 0;
+            height: 496px;
             overflow-y: auto;
         }
+        playlist-element {
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 0;
+            position: relative;
+            height: 496px;
+        }
+        button, select {
+            min-height: 32px;
+            border: 1px solid #d0d5dd;
+            border-radius: 6px;
+            background: #fff;
+            color: #344054;
+            font: inherit;
+        }
+        button { padding: 5px 9px; cursor: pointer; }
     `;
 
 }

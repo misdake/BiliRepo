@@ -104,8 +104,9 @@ Storage.createInstance().then(storage => {
 
 
     const videoPagesize = 12;
-    const memberPagesize = 24;
+    const memberPagesize = 40;
     const playlistPagesize = 8;
+    const timestampPagesize = 12;
 
     //video
     ServerApis.GetVideo.serve(
@@ -150,7 +151,7 @@ Storage.createInstance().then(storage => {
     ServerApis.UpdatePlaylist.serve(
         req => parseInt(req.params['pid']),
         (param, body) => new Promise(resolve => {
-            let updated = storage.updatePlaylist(param, body.title, body.add, body.remove);
+            let updated = storage.updatePlaylist(param, body.title, body.add, body.remove, body.order);
             resolve(updated);
         }),
     );
@@ -185,7 +186,7 @@ Storage.createInstance().then(storage => {
 
     ServerApis.ListTimestamp.serve(
         req => parseInt(req.params['page']),
-        page => storage.listTimestamp({ pageindex: page, pagesize: playlistPagesize })
+        page => storage.listTimestamp({ pageindex: page, pagesize: timestampPagesize })
     );
     ServerApis.AddTimestamp.serve(
         _req => ({}),
@@ -214,7 +215,7 @@ Storage.createInstance().then(storage => {
     );
     ServerApis.SearchTimestamp.serve(
         req => ({ input: req.params['input'], page: parseInt(req.params['page']) }),
-        ({ input, page }) => storage.search_timestamp_by_name(input, { pageindex: page, pagesize: playlistPagesize }),
+        ({ input, page }) => storage.search_timestamp_by_name(input, { pageindex: page, pagesize: timestampPagesize }),
     );
 
     ServerApis.UpdateFanCount.serveAsync(

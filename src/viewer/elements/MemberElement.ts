@@ -9,21 +9,51 @@ export class MemberElement extends LitElement {
     member: MemberDB;
 
     static styles = css`
+        :host {
+            display: block;
+            min-width: 0;
+        }
         .member {
-            margin: 0;
-            width: 236px;
-            height: 64px;
+            box-sizing: border-box;
+            height: var(--member-card-height, 56px);
+            padding: var(--member-card-padding, 7px);
+            border: 1px solid #e1e6ee;
+            border-radius: 10px;
+            background: #fff;
             overflow: hidden;
         }
+        .member:hover {
+            border-color: #b9c8e2;
+            background: #fbfcfe;
+        }
+        a {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            align-items: center;
+            gap: 9px;
+            color: #172033;
+            text-decoration: none;
+        }
         img {
-            float: left;
-            width: 64px;
-            height: 64px;
+            flex: 0 0 var(--member-avatar-size, 40px);
+            width: var(--member-avatar-size, 40px);
+            height: var(--member-avatar-size, 40px);
+            border-radius: 50%;
             object-fit: cover;
+            background: #eef1f5;
         }
         .name {
-            margin-left: 10px;
-            float: left;
+            display: -webkit-box;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            font-weight: 600;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
         }
     `;
 
@@ -33,7 +63,7 @@ export class MemberElement extends LitElement {
             : "";
 
         return this.member ? html`
-            <div class="member"><a href="/member.html?mid=${this.member.mid}">
+            <div class="member"><a href="/index.html?type=2&mid=${this.member.mid}">
                 <img src="${faceSrc}" crossOrigin = "Anonymous" alt="face"/>
                 <div class="name">${this.member.name}</div>
             </a></div>

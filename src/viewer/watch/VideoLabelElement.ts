@@ -19,40 +19,49 @@ export class VideoLabelElement extends LitElement {
     onitemclick: () => void;
 
     static styles = css`
+        :host {
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 0;
+        }
         .videoItem {
-            display: inline;
-            float: left;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 112px minmax(0, 1fr);
+            gap: 10px;
             padding: 10px;
-            width: 300px;
-            height: 100px;
+            width: 100%;
+            min-height: 84px;
             position: relative;
-            overflow: hidden;
-            cursor: default;
+            cursor: pointer;
+            border-bottom: 1px solid #edf0f5;
         }
         .videoItemSelected {
-            background: #e5f5fb;
+            background: #eaf1ff;
         }
         
         .thumbContainer {
-            width: 160px;
-            height: 100px;
+            width: 112px;
+            height: 63px;
             position: relative;
         }
         
         .thumb {
             object-fit: cover;
-            max-width: 160px;
-            max-height: 100px;
             width: 100%;
             height: 100%;
+            border-radius: 6px;
         }
         
         .title {
-            position: absolute;
-            left: 175px;
-            top: 10px;
-            width: 140px;
-            display: inline;
+            display: -webkit-box;
+            color: #344054;
+            font-size: 13px;
+            line-height: 1.45;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            overflow: hidden;
         }
         
         span {
@@ -60,17 +69,21 @@ export class VideoLabelElement extends LitElement {
         }
         
         .part {
-            display: inline;
-            float: left;
-            margin-left: 20px;
-            padding: 10px;
-            width: 280px;
+            box-sizing: border-box;
+            display: block;
+            margin-left: 24px;
+            padding: 9px 12px;
+            width: calc(100% - 24px);
             position: relative;
-            overflow: hidden;
-            cursor: default;
+            cursor: pointer;
+            border-bottom: 1px solid #edf0f5;
+            color: #475467;
+            font-size: 13px;
+            overflow-wrap: anywhere;
         }
         .partSelected {
-            background: #e5f5fb;
+            background: #eaf1ff;
+            color: #2563eb;
         }
     `;
 

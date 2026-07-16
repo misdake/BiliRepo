@@ -62,6 +62,7 @@ export class Player {
     private onEnded: () => void;
     private danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
     private isFullscreen: boolean = false;
+    private readonly resizeObserver: ResizeObserver;
 
     onResize!: (w: number, h: number) => void;
 
@@ -71,6 +72,8 @@ export class Player {
     constructor(container: HTMLElement, onEnded: () => void, danmakuSetting: { fontSize: number, lineHeight: number, speed: number }) {
         this.container = container;
         this.danmakuSetting = danmakuSetting;
+        this.resizeObserver = new ResizeObserver(() => this.triggerResize());
+        this.resizeObserver.observe(this.container);
         this.apiBackend = {
             read: (options) => {
                 if (!(this.aid && this.part)) return;
@@ -160,8 +163,9 @@ export class Player {
 
     triggerResize() {
         if (!this.dp) return;
-        let w = this.dp.video.clientWidth;
-        let h = this.dp.video.clientHeight;
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
+        if (w <= 0 || h <= 0) return;
         if (this.onResize) {
             this.onResize(w, h);
             // @ts-ignore

@@ -156,7 +156,7 @@ export class Storage {
         }
     }
     private registerVideoPlaylist(playlist: PlaylistDB) {
-        let aids = playlist.videosAid;
+        let aids = playlist.videosAid || [];
         for (let aid of aids) {
             if (!this.video_playlist.has(aid)) {
                 this.video_playlist.set(aid, new Set<number>([playlist.pid]));
@@ -166,7 +166,7 @@ export class Storage {
         }
     }
     private unregisterVideoPlaylist(playlist: PlaylistDB) {
-        for (let aid of playlist.videosAid) {
+        for (let aid of playlist.videosAid || []) {
             let set = this.video_playlist.get(aid);
             if (set) set.delete(playlist.pid);
         }
@@ -175,25 +175,40 @@ export class Storage {
         let p = new PlaylistDB();
         p.pid = ++this.lastPid;
         p.title = title;
-        p.videosAid = withAids;
+        p.videosAid = this.sortNewPlaylistAids([], withAids);
         this.table_playlist.insert(p);
         this.registerVideoPlaylist(p);
         return p;
     }
-    public updatePlaylist(pid: number, title: string | null, add: number[] | undefined, remove: number[] | undefined) {
+    private sortNewPlaylistAids(existing: number[], add: number[]) {
+        let existingSet = new Set(existing);
+        let uniqueAdd = Array.from(new Set(add || [])).filter(aid => !existingSet.has(aid));
+        let videos: VideoDB[] = this.table_video.find({aid: {'$in': uniqueAdd}});
+        videos.sort((a, b) => a.ctime - b.ctime || a.aid - b.aid);
+        return videos.map(video => video.aid);
+    }
+    public updatePlaylist(pid: number, title: string | null, add: number[] | undefined, remove: number[] | undefined, order: number[] | undefined) {
         let playlist = this.table_playlist.get(pid);
         if (playlist) {
             if (title) {
                 playlist.title = title;
             }
-            if (add || remove) {
+            if (add || remove || order) {
                 this.unregisterVideoPlaylist(playlist);
-                //modify
-                if (remove) playlist.videosAid = playlist.videosAid.filter(i => remove.indexOf(i) < 0);
-                if (add) playlist.videosAid.push(...add);
-                //reorder
-                let array: VideoDB[] = this.table_video.find({aid: {'$in': playlist.videosAid}});
-                playlist.videosAid = array.sort((a, b) => a.ctime - b.ctime).map(i => i.aid);
+                playlist.videosAid = playlist.videosAid || [];
+                if (remove) {
+                    let removeSet = new Set(remove);
+                    playlist.videosAid = playlist.videosAid.filter(aid => !removeSet.has(aid));
+                }
+                if (add) {
+                    playlist.videosAid.push(...this.sortNewPlaylistAids(playlist.videosAid, add));
+                }
+                if (order) {
+                    let currentSet = new Set(playlist.videosAid);
+                    let ordered = Array.from(new Set(order)).filter(aid => currentSet.has(aid));
+                    let orderedSet = new Set(ordered);
+                    playlist.videosAid = ordered.concat(playlist.videosAid.filter(aid => !orderedSet.has(aid)));
+                }
                 this.registerVideoPlaylist(playlist);
             }
             this.table_playlist.update(playlist);
@@ -221,11 +236,13 @@ export class Storage {
     }
     public getPlaylistVideos(pid: number) {
         let playlist = this.table_playlist.get(pid);
+        if (!playlist) return undefined;
         let pv = new PlaylistVideos();
         Object.assign(pv, playlist);
         if (playlist.videosAid) {
             let array: VideoDB[] = this.table_video.find({aid: {'$in': playlist.videosAid}});
-            pv.videos = array.sort((a, b) => a.ctime - b.ctime);
+            let videoMap = new Map(array.map(video => [video.aid, video]));
+            pv.videos = playlist.videosAid.map(aid => videoMap.get(aid)).filter(video => video !== undefined);
         } else {
             pv.videos = [];
         }
@@ -274,7 +291,7 @@ export class Storage {
                 video.parts.sort((a, b) => a.index - b.index);
             }
 
-            pv.videoParts = Array.from(videoMap.values()).sort((a, b) => a.ctime - b.ctime);
+            pv.videoParts = playlist.videosAid.map(aid => videoMap.get(aid)).filter(video => video !== undefined);
         } else {
             pv.videoParts = [];
         }

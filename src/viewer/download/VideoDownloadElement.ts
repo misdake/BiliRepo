@@ -9,6 +9,13 @@ export class VideoDownloadElement extends LitElement {
     video: VideoStatus;
 
     static styles = css`        
+        :host { display: block; }
+        .download-detail {
+            display: grid;
+            grid-template-columns: 176px minmax(0, 1fr);
+            gap: 16px;
+            padding: 14px;
+        }
         .thumbContainer {
             width: 160px;
             height: 90px;
@@ -25,9 +32,7 @@ export class VideoDownloadElement extends LitElement {
         }
         
         .left {
-            float: left;
             cursor: default;
-            margin: 10px 0 0 10px;
             width: 160px;
         }
         .title {
@@ -37,10 +42,8 @@ export class VideoDownloadElement extends LitElement {
         }
         
         .right { 
-            float: right;
             cursor: default;
-            margin: 10px 0 0 0;
-            width: 440px;
+            min-width: 0;
         }
         .part_state {
             display: inline-flex;
@@ -50,7 +53,7 @@ export class VideoDownloadElement extends LitElement {
         }
         .part_title {
             display: inline-flex;
-            width: 345px;
+            width: calc(100% - 94px);
             white-space: nowrap;
             overflow: hidden;
         }
@@ -83,7 +86,7 @@ export class VideoDownloadElement extends LitElement {
         }
         .part_progress {
             position: relative;
-            width: 415px;
+            width: calc(100% - 15px);
             left: 15px;
         }
     `;
@@ -123,16 +126,17 @@ export class VideoDownloadElement extends LitElement {
         }
 
         let video = !this.video ? html`` : html`
-            <div class="left">
-                <div class="thumbContainer">
-                    <img class="thumb" src="${this.video.pic}" alt="thumb"/>
+            <div class="download-detail">
+                <div class="left">
+                    <div class="thumbContainer">
+                        <img class="thumb" src="${this.video.pic}" alt="thumb"/>
+                    </div>
+                    <div class="title">${this.video.title}</div>
                 </div>
-                <div class="title">${this.video.title}</div>
+                <div class="right">
+                    ${parts}
+                </div>
             </div>
-            <div class="right">
-                ${parts}
-            </div>
-            <div style="clear:both;"></div>
         `;
 
         return html`

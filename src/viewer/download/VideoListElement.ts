@@ -14,7 +14,9 @@ export class VideoListElement extends LitElement {
     @property()
     onIconClick: (video: VideoStatus) => void;
 
-    static style = css`
+    static styles = css`
+        :host { display: block; }
+        ul { padding: 0; margin: 0; list-style: none; }
     `;
 
     private atIconClick(video: VideoStatus) {
@@ -25,7 +27,7 @@ export class VideoListElement extends LitElement {
 
     render() {
         return !this.videos ? html`` : html`
-            <ul style="padding: 0; margin: 0;">
+            <ul>
                 ${repeat(this.videos, (video: VideoStatus) => html`
                     <videostatus-element .video=${video} .icon=${this.icon ? this.icon : undefined} .onIconClick=${() => this.atIconClick(video)}></videostatus-element>
                 `)}

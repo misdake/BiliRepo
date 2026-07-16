@@ -15,52 +15,53 @@ export class VideoStatusElement extends LitElement {
     onIconClick: () => void;
 
     static styles = css`
+        :host { display: block; }
         .videoItem {
-            display: inline;
-            float: left;
+            display: grid;
+            grid-template-columns: 112px minmax(0, 1fr);
+            gap: 10px;
+            min-height: 76px;
             padding: 10px;
-            width: 300px;
-            height: 90px;
+            border-bottom: 1px solid #edf0f5;
             position: relative;
             overflow: hidden;
         }
-        
+        .videoItem:hover { background: #f8fafc; }
         .thumbContainer {
-            width: 160px;
-            height: 90px;
+            width: 112px;
+            height: 63px;
             position: relative;
+            border-radius: 6px;
+            overflow: hidden;
         }
         
         .thumb {
             object-fit: cover;
-            max-width: 160px;
-            max-height: 90px;
             width: 100%;
             height: 100%;
         }
-        
         .title {
-            position: absolute;
-            left: 175px;
-            top: 10px;
-            width: 140px;
-            display: inline;
+            display: -webkit-box;
+            padding-right: 2px;
+            color: #172033;
+            font-size: 13px;
+            line-height: 1.45;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            overflow: hidden;
         }
-        
         .icon {
-            color: #FFF;
-            background: #800;
-            padding: 5px 10px;
+            padding: 5px 8px;
+            border: 1px solid #d0d5dd;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, .94);
+            color: #b42318;
             cursor: pointer;
             position: absolute;
-            bottom: 10px;
-            right: 10px;
-            
-            display: none;
-        }
-        
-        .videoItem:hover .icon {
+            bottom: 8px;
+            right: 8px;
             display: block;
+            font-size: 12px;
         }
     `;
 
@@ -78,19 +79,19 @@ export class VideoStatusElement extends LitElement {
         let icon = this.icon ? html`<div class="icon" style=${iconCss} @click="${() => this.trigger()}">${this.icon}</div>` : html``;
 
         let video = !this.video ? html`
-            <li class="videoItem">
+            <div class="videoItem">
                 <div class="thumbContainer" style="background:#CCCCCC">
                 </div>
-                <span class="title">preview</span>
-            </li>
+                <span class="title">输入视频编号后在这里确认</span>
+            </div>
         ` : html`
-            <li class="videoItem">
+            <div class="videoItem">
                 <div class="thumbContainer">
                     <img class="thumb" src="${this.video.pic}" alt="thumb"/>
                 </div>
                 <span class="title">${this.video.title}</span>
                 ${icon}
-            </li>
+            </div>
         `;
 
         return (this.video && this.video.done) ? html`

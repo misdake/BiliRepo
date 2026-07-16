@@ -1,10 +1,11 @@
 import {html, LitElement, type PropertyValues} from "lit";
-import {customElement, property} from "lit/decorators.js";
-import { PlaylistDB, VideoDB } from '../../server/storage/dbTypes';
+import {customElement, property, state} from "lit/decorators.js";
+import type { PlaylistDB, VideoDB } from '../../server/storage/dbTypes';
 import "./VideoBlockElement";
 import {PagedContainer} from "./PagedContainer";
 import {repeat} from "lit/directives/repeat.js";
 import {ClientApis, showRequestError} from "../common/api/ClientApi";
+import {mediaGridStyles} from "./MediaCardElement";
 
 @customElement('video-grid-element')
 export class VideoListElement extends LitElement {
@@ -15,17 +16,15 @@ export class VideoListElement extends LitElement {
     @property()
     params: { key: string, value: number }[];
 
-    createRenderRoot() {
-        return this;
-    }
-
     render() {
         return html`
-            <ul style="padding: 0; margin: 0 -16px;">
+            <ul>
                 ${repeat(this.videos, (video: VideoDB) => html`<videoblock-element .video=${video} .params=${this.params}></videoblock-element>`)}
             </ul>
         `;
     }
+
+    static styles = mediaGridStyles;
 
 }
 
@@ -57,6 +56,7 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
     @property()
     private allPlaylists: PlaylistDB[] = [];
 
+    @state()
     private selectedAdd: PlaylistDB;
     private elementAdd: HTMLSelectElement;
     private selectAdd(e: Event) {
@@ -72,15 +72,11 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
     private addAllToPlaylist(videos: VideoDB[]) {
         let playlist = this.selectedAdd;
         if (playlist) {
-            let to_add: number[] = [];
-            for (let video of videos) {
-                playlist.videosAid = playlist.videosAid.filter(aid => aid !== video.aid);
-                playlist.videosAid.push(video.aid);
-                to_add.push(video.aid);
-            }
-            console.log("to add:", to_add);
+            let existing = new Set(playlist.videosAid || []);
+            let to_add = videos.map(video => video.aid).filter(aid => !existing.has(aid));
             if (to_add.length > 0) {
-                ClientApis.UpdatePlaylist.fetch(playlist.pid, { title: undefined, add: to_add }).then(_playlist => {
+                ClientApis.UpdatePlaylist.fetch(playlist.pid, {add: to_add}).then(updatedPlaylist => {
+                    playlist.videosAid = [...updatedPlaylist.videosAid];
                     this.selectedAdd = undefined;
                     this.elementAdd.selectedIndex = 0;
                 }).catch(error => {
@@ -93,17 +89,16 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
     constructor() {
         super();
         this.rightRenderer = list => html`
-            <button style="float: right;" @click=${() => this.openRandom()}>随机视频</button>
-            
-            <span style="float: right; margin-right: 20px;">
+            <div class="toolbar">
                 <select @change=${(e: Event) => this.selectAdd(e)}>
-                    <option>(共${this.allPlaylists.length}个列表)</option>
+                    <option>选择播放列表（${this.allPlaylists.length}）</option>
                     ${repeat(this.allPlaylists, (playlist: PlaylistDB) => html`
                         <option>${playlist.title}</option>
                     `)}
                 </select>
-                <button @click=${() => this.addAllToPlaylist(list.result)}>全部添加到列表</button>
-            </span>
+                <button ?disabled=${!this.selectedAdd || list.result.length === 0} @click=${() => this.addAllToPlaylist(list.result)}>本页全部添加</button>
+                <button @click=${() => this.openRandom()}>随机视频</button>
+            </div>
         `;
         this.listRenderer = list => html`
             <video-grid-element .videos=${list.result} .params=${this.params}></video-grid-element>`;

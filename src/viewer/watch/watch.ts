@@ -6,30 +6,48 @@ import { PartDB, VideoParts } from '../../server/storage/dbTypes';
 import { PageElement } from './PageElement';
 import {nonNegativeIntegerParam, positiveIntegerParam} from '../common/url';
 
+document.documentElement.classList.add('watch-page');
+document.body.classList.add('watch-page');
+
 const url = new URL(window.location.href);
 const pid = positiveIntegerParam(url.searchParams, 'pid');
 const aid = positiveIntegerParam(url.searchParams, 'aid');
 const part = positiveIntegerParam(url.searchParams, 'p') || 1;
 let timestamp = nonNegativeIntegerParam(url.searchParams, 't');
+let activePid = pid;
+
+function appendVideoParts(playlist: Playlist, videos: VideoParts[]) {
+    for (const video of videos) {
+        for (const videoPart of video.parts || []) {
+            playlist.items.push(new PlaylistItem(video, videoPart));
+        }
+    }
+}
+
+async function loadPlaylistByPid(playlist: Playlist, targetPid: number): Promise<boolean> {
+    const response = await ClientApis.GetPlaylistVideoParts.fetch(targetPid);
+    if (!response || !Array.isArray(response.videoParts)) return false;
+    appendVideoParts(playlist, response.videoParts);
+    return true;
+}
 
 async function loadPlaylist(): Promise<Playlist | undefined> {
     const playlist = new Playlist();
     playlist.items = [];
 
     if (pid !== undefined) {
-        const response = await ClientApis.GetPlaylistVideoParts.fetch(pid);
-        if (!response || !Array.isArray(response.videoParts)) return undefined;
-        for (let video of response.videoParts) {
-            for (let videoPart of video.parts || []) {
-                playlist.items.push(new PlaylistItem(video, videoPart));
-            }
-        }
+        if (!await loadPlaylistByPid(playlist, pid)) return undefined;
     } else if (aid !== undefined) {
+        const containingPlaylists = await ClientApis.GetVideoPlaylists.fetch(aid);
+        if (Array.isArray(containingPlaylists) && containingPlaylists.length > 0) {
+            activePid = containingPlaylists[0].pid;
+            if (!await loadPlaylistByPid(playlist, activePid)) return undefined;
+            return playlist.items.length ? playlist : undefined;
+        }
+
         const response = await ClientApis.GetVideoParts.fetch(aid);
         if (!response || !Array.isArray(response.parts)) return undefined;
-        for (let videoPart of response.parts) {
-            playlist.items.push(new PlaylistItem(response, videoPart));
-        }
+        appendVideoParts(playlist, [response]);
     } else {
         return undefined;
     }
@@ -40,7 +58,7 @@ async function loadPlaylist(): Promise<Playlist | undefined> {
 function renderLoadError(error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     render(html`
-        <div style="width: 1280px; max-width: 100%; margin: 20px auto; color: #B00020;">
+        <div class="status-panel status-panel--error">
             加载视频失败：${message}
             <button @click=${() => window.location.reload()}>重试</button>
             <a href="index.html">返回主页</a>
@@ -54,7 +72,7 @@ async function start() {
         return;
     }
 
-    render(html`<div style="width: 1280px; max-width: 100%; margin: 20px auto;">加载中…</div>`, document.body);
+    render(html`<div class="status-panel">正在加载视频…</div>`, document.body);
     const playlist = await loadPlaylist();
     if (!playlist) {
         renderLoadError(new Error('没有找到可播放的视频'));
@@ -79,7 +97,7 @@ async function start() {
 
     const onBeginPart = (video: VideoParts, currentPart: PartDB) => {
         const params = new URLSearchParams();
-        if (pid !== undefined) params.set('pid', String(pid));
+        if (activePid !== undefined) params.set('pid', String(activePid));
         params.set('aid', String(video.aid));
         params.set('p', String(currentPart.index));
         history.replaceState(null, '', `${location.pathname}?${params.toString()}`);

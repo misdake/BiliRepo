@@ -19,7 +19,7 @@ export class PlaylistTitleElement extends LitElement {
 
     render() {
         return this.playlist ? html`
-            <div class="playlist"><a href="/playlist.html?pid=${this.playlist.pid}">
+            <div class="playlist"><a href="/index.html?type=3&pid=${this.playlist.pid}">
                 <h1>${this.playlist.title}</h1>
             </a></div>
         ` : html``;
