@@ -13,17 +13,26 @@ export class PageElement extends LitElement {
     static styles = css`
         :host {
             display: block;
+            box-sizing: border-box;
             width: 100%;
+            height: 100%;
+            min-height: 0;
             margin: 0 auto;
             color: var(--text, #172033);
+            overflow: hidden;
         }
         #page {
             display: grid;
             grid-template-columns: 360px minmax(0, 1fr);
-            align-items: start;
+            align-items: stretch;
             gap: 16px;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
         }
         .panel {
+            box-sizing: border-box;
             border: 1px solid var(--border, #dfe4ec);
             border-radius: 12px;
             background: #fff;
@@ -54,22 +63,38 @@ export class PageElement extends LitElement {
             margin-top: 8px;
         }
         .queue-list {
-            min-height: 110px;
-            max-height: 520px;
+            flex: 1;
+            min-height: 0;
             overflow-y: auto;
+        }
+        #left_panel, #done_container, #failed_container {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
         #right_panel {
             display: grid;
+            grid-template-rows: auto minmax(0, 1fr);
             gap: 16px;
+            min-height: 0;
+            overflow: hidden;
+        }
+        #right_top {
+            display: grid;
+            gap: 16px;
+            min-height: 0;
         }
         #done_failed_container {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-row: 2;
             gap: 16px;
+            min-height: 0;
+            overflow: hidden;
         }
         .result-list {
-            min-height: 130px;
-            max-height: 440px;
+            flex: 1;
+            min-height: 0;
             overflow-y: auto;
         }
         .message {
@@ -261,14 +286,16 @@ export class PageElement extends LitElement {
                     ` : html`<div class="empty">队列为空</div>`}</div>
                 </section>
                 <div id="right_panel">
-                    ${this.message ? html`<div class="message">${this.message}<button @click=${() => this.updateCookie()}>更新 Cookie</button></div>` : ""}
-                    <section id="current_container" class="panel">
-                        <div class="panel-header">
-                            <span>当前任务</span>
-                            ${this.current ? html`<button class="stop-button" @click=${() => this.removeVideo(this.current)}>停止</button>` : html``}
-                        </div>
-                        ${this.current ? html`<videodownload-element .video=${this.current}></videodownload-element>` : html`<div class="empty">当前没有下载任务</div>`}
-                    </section>
+                    <div id="right_top">
+                        ${this.message ? html`<div class="message">${this.message}<button @click=${() => this.updateCookie()}>更新 Cookie</button></div>` : ""}
+                        <section id="current_container" class="panel">
+                            <div class="panel-header">
+                                <span>当前任务</span>
+                                ${this.current ? html`<button class="stop-button" @click=${() => this.removeVideo(this.current)}>停止</button>` : html``}
+                            </div>
+                            ${this.current ? html`<videodownload-element .video=${this.current}></videodownload-element>` : html`<div class="empty">当前没有下载任务</div>`}
+                        </section>
+                    </div>
                     <div id="done_failed_container">
                         <section id="done_container" class="panel">
                             <div class="panel-header"><span>已完成</span><span class="count">${this.done.length} 项</span></div>

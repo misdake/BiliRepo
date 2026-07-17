@@ -90,21 +90,18 @@ export class PageElement extends LitElement {
             position: relative;
             box-sizing: border-box;
             width: 1330px;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0 auto;
             color: var(--text, #172033);
         }
         #scroll-viewport {
             width: 100%;
-            height: 100%;
-            overflow-y: auto;
-            overscroll-behavior: contain;
-            scrollbar-gutter: stable both-edges;
+            min-height: 100vh;
         }
         #surface {
             box-sizing: border-box;
             width: 1300px;
-            min-height: 100%;
+            min-height: 100vh;
             margin: 0 auto;
             padding: 10px 0;
             background: #fff;

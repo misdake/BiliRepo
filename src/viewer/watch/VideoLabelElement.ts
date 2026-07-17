@@ -56,6 +56,7 @@ export class VideoLabelElement extends LitElement {
         
         .title {
             display: -webkit-box;
+            max-height: calc(1.45em * 3);
             color: #344054;
             font-size: 13px;
             line-height: 1.45;
@@ -89,6 +90,12 @@ export class VideoLabelElement extends LitElement {
 
 
     protected updated(_changedProperties: PropertyValues) {
+        const titleElement = this.shadowRoot.querySelector<HTMLElement>('.title');
+        if (titleElement && this.video) {
+            const isTruncated = titleElement.scrollHeight > titleElement.clientHeight + 1;
+            titleElement.title = isTruncated ? this.video.title : '';
+        }
+
         if (this.partSelected || (this.videoSelected && !this.part_info)) { //
             //自己是当前播放的内容，需要滚动到指定位置
             let children = this.shadowRoot.children;

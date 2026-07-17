@@ -16,6 +16,11 @@ export class VideoStatusElement extends LitElement {
 
     static styles = css`
         :host { display: block; }
+        a {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
         .videoItem {
             display: grid;
             grid-template-columns: 112px minmax(0, 1fr);
@@ -45,6 +50,7 @@ export class VideoStatusElement extends LitElement {
             padding-right: 2px;
             color: #172033;
             font-size: 13px;
+            font-weight: 600;
             line-height: 1.45;
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 3;

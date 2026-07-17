@@ -30,11 +30,13 @@ html {
 }
 
 html.library-page,
-body.library-page,
-html.watch-page,
-body.watch-page {
+body.library-page {
     height: 100%;
     overflow: hidden;
+}
+
+body.watch-page {
+    min-height: 100vh;
 }
 
 body {
