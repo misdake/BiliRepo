@@ -37,8 +37,10 @@ export class PlaylistElement extends LitElement {
 
         let lines = [];
 
-        let selectedVideo = this.playlist.items[this.playindex].video;
-        let selectedPart = this.playlist.items[this.playindex].part;
+        // playindex is -1 before anything has played
+        let selectedItem = this.playlist.items[this.playindex];
+        let selectedVideo = selectedItem ? selectedItem.video : null;
+        let selectedPart = selectedItem ? selectedItem.part : null;
         let lastVideo = null;
         for (let [index, playlistItem] of this.playlist.items.entries()) {
             let video = playlistItem.video;

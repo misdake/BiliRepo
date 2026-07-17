@@ -92,10 +92,9 @@ export class VideoDownloadElement extends LitElement {
     `;
 
     render() {
-        if (this.video) {
-            this.video.title = this.video.title || "";
-            this.video.pic = this.video.pic || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
-        }
+        const EMPTY_THUMB = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
+        let title = this.video ? (this.video.title || "") : "";
+        let pic = this.video ? (this.video.pic || EMPTY_THUMB) : EMPTY_THUMB;
 
         let parts = [];
         if (this.video && this.video.parts && this.video.parts.length) {
@@ -129,9 +128,9 @@ export class VideoDownloadElement extends LitElement {
             <div class="download-detail">
                 <div class="left">
                     <div class="thumbContainer">
-                        <img class="thumb" src="${this.video.pic}" alt="thumb"/>
+                        <img class="thumb" src="${pic}" alt="thumb"/>
                     </div>
-                    <div class="title">${this.video.title}</div>
+                    <div class="title">${title}</div>
                 </div>
                 <div class="right">
                     ${parts}

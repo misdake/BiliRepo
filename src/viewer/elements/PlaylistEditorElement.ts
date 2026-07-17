@@ -7,6 +7,8 @@ import {ClientApis} from "../common/api/ClientApi";
 export class PlaylistEditorElement extends LitElement {
     @property({attribute: false})
     playlist: PlaylistVideos;
+    @property({attribute: false})
+    onSaved: (videosAid: number[], videos: VideoDB[]) => void;
 
     @state()
     private videos: VideoDB[] = [];
@@ -113,8 +115,8 @@ export class PlaylistEditorElement extends LitElement {
             let videoMap = new Map(this.videos.map(video => [video.aid, video]));
             this.videos = persistedOrder.map(aid => videoMap.get(aid)).filter((video): video is VideoDB => video !== undefined);
             this.originalAids = [...persistedOrder];
-            this.playlist.videosAid = [...persistedOrder];
-            this.playlist.videos = [...this.videos];
+            // don't mutate the playlist prop: the owner updates its own state
+            if (this.onSaved) this.onSaved([...persistedOrder], [...this.videos]);
             this.message = "已保存";
         } catch (error) {
             let message = error instanceof Error ? error.message : String(error);

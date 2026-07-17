@@ -7,68 +7,78 @@ import "../elements/ViewTypeElement";
 import "../download/PageElement";
 import "./MemberDetailPageElement";
 import "./PlaylistDetailPageElement";
-import { isViewType, ViewType, ViewTypeContent, viewTypes } from "./indexViewType";
+import { isViewType, ViewType, viewTypes } from "./indexViewType";
 import {positiveIntegerParam} from "../common/url";
 
 document.documentElement.classList.add("library-page");
 document.body.classList.add("library-page");
 
-let url = new URL(window.location.href);
-let loadpage = positiveIntegerParam(url.searchParams, "page") || 1;
-let requestedViewType = positiveIntegerParam(url.searchParams, "type") as ViewType;
-let viewtype = isViewType(requestedViewType) ? requestedViewType : ViewType.video;
-let searchInput = url.searchParams.get("search") || "";
-let detailMid = viewtype === ViewType.member ? positiveIntegerParam(url.searchParams, "mid") : undefined;
-let detailPid = viewtype === ViewType.playlist ? positiveIntegerParam(url.searchParams, "pid") : undefined;
+// single source of truth for this page: URL -> state -> render -> syncUrl
+interface PageState {
+    type: ViewType;
+    page: number;
+    search: string;
+    mid?: number;
+    pid?: number;
+}
 
-function replaceUrl(type?: ViewType, pageindex?: number, input?: string) {
-    if (type !== undefined && isViewType(type)) viewtype = type;
-    if (pageindex !== undefined && Number.isSafeInteger(pageindex) && pageindex >= 1) loadpage = pageindex;
-    if (input !== undefined) searchInput = input;
-    let url = `${location.pathname}?type=${viewtype}&page=${loadpage}`;
-    if (searchInput) url += `&search=${encodeURIComponent(searchInput)}`;
+function parseState(): PageState {
+    let url = new URL(window.location.href);
+    let requestedViewType = positiveIntegerParam(url.searchParams, "type") as ViewType;
+    let type = isViewType(requestedViewType) ? requestedViewType : ViewType.video;
+    return {
+        type: type,
+        page: positiveIntegerParam(url.searchParams, "page") || 1,
+        search: url.searchParams.get("search") || "",
+        mid: type === ViewType.member ? positiveIntegerParam(url.searchParams, "mid") : undefined,
+        pid: type === ViewType.playlist ? positiveIntegerParam(url.searchParams, "pid") : undefined,
+    };
+}
+
+const state: PageState = parseState();
+
+function syncUrl() {
+    let url = `${location.pathname}?type=${state.type}&page=${state.page}`;
+    if (state.search) url += `&search=${encodeURIComponent(state.search)}`;
+    if (state.mid !== undefined) url += `&mid=${state.mid}`;
+    if (state.pid !== undefined) url += `&pid=${state.pid}`;
     history.replaceState(null, "", url);
 }
 
-let currentViewType: ViewType = undefined;
-let currentViewTypeContent: ViewTypeContent<any, any>;
-
-function setViewType(viewType: ViewType) {
-    if (!isViewType(viewType)) viewType = ViewType.video;
-    if (viewType !== currentViewType) {
-        if (currentViewType !== undefined) {
-            loadpage = 1;
-            searchInput = "";
-        }
-        currentViewType = viewType;
-        currentViewTypeContent = viewType === ViewType.download ? undefined : viewTypes.get(viewType);
-        renderPage();
-    }
-}
-
 const pageTemplate = () => {
-    const isDownload = currentViewType === ViewType.download;
+    const isDownload = state.type === ViewType.download;
     let container;
     if (isDownload) {
         container = html`<download-page-element></download-page-element>`;
-    } else if (currentViewType === ViewType.member && detailMid !== undefined) {
-        container = html`<member-detail-page-element .mid=${detailMid}></member-detail-page-element>`;
-    } else if (currentViewType === ViewType.playlist && detailPid !== undefined) {
-        container = html`<playlist-detail-page-element .pid=${detailPid}></playlist-detail-page-element>`;
+    } else if (state.type === ViewType.member && state.mid !== undefined) {
+        container = html`<member-detail-page-element .mid=${state.mid}></member-detail-page-element>`;
+    } else if (state.type === ViewType.playlist && state.pid !== undefined) {
+        container = html`<playlist-detail-page-element .pid=${state.pid}></playlist-detail-page-element>`;
     } else {
-        container = currentViewTypeContent.render(loadpage, searchInput, replaceUrl);
+        container = viewTypes.get(state.type).render(state.page, state.search,
+            (input: string) => { // onSearch
+                state.search = (input || "").trim();
+                state.page = 1;
+                syncUrl();
+                renderPage();
+            },
+            (pageindex: number) => { // afterLoad
+                state.page = pageindex;
+                syncUrl();
+            });
     }
-    document.title = isDownload ? "下载" : currentViewTypeContent.title;
+    document.title = isDownload ? "下载" : viewTypes.get(state.type).title;
     return html`
         <main class="app-shell app-shell--library">
             <nav class="section-nav">
-                <viewtype-element .selectedType=${currentViewType} .onClick=${(nextViewType: ViewType) => {
-                    const hadDetail = detailMid !== undefined || detailPid !== undefined;
-                    detailMid = undefined;
-                    detailPid = undefined;
-                    replaceUrl(nextViewType, 1, "");
-                    if (nextViewType === currentViewType && hadDetail) renderPage();
-                    else setViewType(nextViewType);
+                <viewtype-element .selectedType=${state.type} .onClick=${(nextViewType: ViewType) => {
+                    state.type = isViewType(nextViewType) ? nextViewType : ViewType.video;
+                    state.page = 1;
+                    state.search = "";
+                    state.mid = undefined;
+                    state.pid = undefined;
+                    syncUrl();
+                    renderPage();
                 }}></viewtype-element>
             </nav>
             <section class="content-surface">${container}</section>
@@ -80,4 +90,5 @@ function renderPage() {
     render(pageTemplate(), document.body);
 }
 
-setViewType(viewtype); //will render page
+syncUrl();
+renderPage();

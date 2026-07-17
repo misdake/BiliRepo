@@ -15,12 +15,7 @@ export class TimestampEditElement extends LitElement {
     @property()
     seek: (second: number) => void;
     @property()
-    refresh: (timestamps: Timestamp[]) => void;
-
-    private refreshTimestamps() {
-        if (this.refresh) this.refresh(this.part_timestamps.timestamps);
-        this.requestUpdate();
-    }
+    onChange: (timestamps: Timestamp[]) => void;
 
     private addTimestamp(input: string) {
         input = input.trim();
@@ -28,8 +23,8 @@ export class TimestampEditElement extends LitElement {
         let aid = this.part_timestamps.aid;
         let part = this.part_timestamps.index;
         ClientApis.AddTimestamp.fetch({}, { aid: aid, part: part, time_second: this.getCurrTime(), name: input }).then(content => {
-            this.part_timestamps.timestamps.push(content);
-            this.refreshTimestamps();
+            // don't mutate the part_timestamps prop: hand a new array to the owner
+            if (this.onChange) this.onChange([...this.part_timestamps.timestamps, content]);
         }).catch(error => {
             showRequestError("新增时间点", error);
         });
@@ -38,8 +33,7 @@ export class TimestampEditElement extends LitElement {
     private removeTimestamp(tid: number) {
         if (!this.part_timestamps.timestamps.find(i => i.tid === tid)) return;
         ClientApis.RemoveTimestamp.fetch(tid).then(content => {
-            this.part_timestamps.timestamps = this.part_timestamps.timestamps.filter(i => i.tid !== tid);
-            this.refreshTimestamps();
+            if (this.onChange) this.onChange(this.part_timestamps.timestamps.filter(i => i.tid !== tid));
         }).catch(error => {
             showRequestError("删除时间点", error);
         });
@@ -48,8 +42,7 @@ export class TimestampEditElement extends LitElement {
     render() {
         if (!this.part_timestamps) return html``;
 
-        let timestamps = this.part_timestamps.timestamps;
-        timestamps.sort((a, b) => a.time_second - b.time_second);
+        let timestamps = [...this.part_timestamps.timestamps].sort((a, b) => a.time_second - b.time_second);
 
         let lines = [];
 

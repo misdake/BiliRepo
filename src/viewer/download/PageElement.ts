@@ -1,11 +1,12 @@
 import {css, html, LitElement} from "lit";
-import {customElement, property} from "lit/decorators.js";
-import {VideoStatus} from "../../common/DownloadStatus";
+import {customElement, property, state} from "lit/decorators.js";
+import {DownloadStatus, VideoStatus} from "../../common/DownloadStatus";
 import "../elements/InputElement";
 import "./VideoStatusElement";
 import "./VideoListElement";
 import "./VideoDownloadElement";
 import {ClientApis} from "../common/api/ClientApi";
+import {LatestRequest} from "../common/LatestRequest";
 
 @customElement('download-page-element')
 export class PageElement extends LitElement {
@@ -134,56 +135,39 @@ export class PageElement extends LitElement {
 
     }
 
-    private statusRequestPending: boolean = false;
-    private refreshTimer: ReturnType<typeof setTimeout>;
+    private statusSource: EventSource;
 
     connectedCallback() {
         super.connectedCallback();
-        this.loop();
+        this.statusSource = new EventSource(`${serverConfig.apiRoot}download/status/stream`);
+        this.statusSource.onmessage = (event: MessageEvent) => {
+            this.statusError = "";
+            let status: DownloadStatus = JSON.parse(event.data);
+            this.message = status ? status.message : null;
+            this.queue = (status && status.queue) || [];
+            this.current = (status && status.current) || null;
+            this.done = (status && status.done) || [];
+            this.failed = (status && status.failed) || [];
+        };
+        this.statusSource.onerror = () => {
+            // EventSource reconnects automatically, just let the user know
+            this.statusError = "与服务器的连接断开，正在自动重连…";
+        };
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        if (this.refreshTimer) clearTimeout(this.refreshTimer);
-        this.refreshTimer = undefined;
-    }
-
-    private loadStatus() {
-        if (this.statusRequestPending) return;
-        this.statusRequestPending = true;
-        ClientApis.StatusDownload.fetch({}).then(status => {
-            if (status) {
-                this.message = status.message;
-                this.queue = status.queue || [];
-                this.current = status.current;
-                this.done = status.done || [];
-                this.failed = status.failed || [];
-            } else {
-                this.message = null;
-                this.queue = [];
-                this.current = null;
-                this.done = [];
-                this.failed = [];
-            }
-        }).catch(error => {
-            this.showError("获取下载状态", error);
-        }).then(() => {
-            this.statusRequestPending = false;
-        });
+        // close the SSE stream, otherwise the connection and its server-side
+        // listener leak for the lifetime of the server
+        if (this.statusSource) {
+            this.statusSource.close();
+            this.statusSource = undefined;
+        }
     }
 
     private showError(action: string, error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
-        this.message = `${action}失败：${message}`;
-    }
-
-    private loop() {
-        if (!this.isConnected) return;
-        this.loadStatus();
-
-        this.refreshTimer = setTimeout(() => {
-            this.loop(); //TODO replace with websocket
-        }, 1000);
+        this.localMessage = `${action}失败：${message}`;
     }
 
     @property()
@@ -200,11 +184,20 @@ export class PageElement extends LitElement {
     @property()
     failed: VideoStatus[];
 
+    @state()
+    private localMessage: string = "";
+    @state()
+    private statusError: string = "";
+
+    private checkInputGuard: LatestRequest = new LatestRequest();
+
     private checkInput(input: string) {
+        const token = this.checkInputGuard.begin();
         this.inputVideo = null;
         if (!input.toLowerCase().startsWith("av") && !input.toLowerCase().startsWith("bv")) return;
 
         ClientApis.GetVideoInfo.fetch(input, {}).then(videoJson => {
+            if (!this.checkInputGuard.isCurrent(token)) return;
             let v = videoJson.data;
             if (!v) return;
             this.inputVideo = {
@@ -216,15 +209,16 @@ export class PageElement extends LitElement {
                 title: v.title,
             };
         }).catch(error => {
+            if (!this.checkInputGuard.isCurrent(token)) return;
             this.showError("获取视频信息", error);
         });
     }
 
     private enqueue() {
         if (this.inputVideo) {
-            ClientApis.AddDownload.fetch(this.inputVideo.aid).then(_r => {
-                this.loadStatus();
-            }).catch(error => {
+            this.checkInputGuard.begin(); // invalidate any in-flight preview request
+            this.localMessage = "";
+            ClientApis.AddDownload.fetch(this.inputVideo.aid).catch(error => {
                 this.showError("加入下载队列", error);
             });
             this.inputVideo = null;
@@ -233,9 +227,8 @@ export class PageElement extends LitElement {
 
     private retryVideo(video: VideoStatus) {
         if (video) {
-            ClientApis.RetryDownload.fetch(video.aid).then(_r => {
-                this.loadStatus();
-            }).catch(error => {
+            this.localMessage = "";
+            ClientApis.RetryDownload.fetch(video.aid).catch(error => {
                 this.showError("重试下载", error);
             });
         }
@@ -243,9 +236,8 @@ export class PageElement extends LitElement {
 
     private removeVideo(video: VideoStatus) {
         if (video) {
-            ClientApis.RemoveDownload.fetch(video.aid).then(_r => {
-                this.loadStatus();
-            }).catch(error => {
+            this.localMessage = "";
+            ClientApis.RemoveDownload.fetch(video.aid).catch(error => {
                 this.showError("移除下载任务", error);
             });
         }
@@ -257,10 +249,10 @@ export class PageElement extends LitElement {
         if (value.indexOf("Netscape HTTP Cookie File") >= 0) {
             ClientApis.UpdateCookie.fetch({}, { cookie: value }).then(content => {
                 if (content === "good") {
-                    this.message = "";
+                    this.localMessage = "";
                     alert("cookie updated!");
                 } else {
-                    this.message = content;
+                    this.localMessage = content;
                     alert("cookie update failed!\nresponse: " + content);
                 }
             }).catch(error => {
@@ -287,6 +279,8 @@ export class PageElement extends LitElement {
                 </section>
                 <div id="right_panel">
                     <div id="right_top">
+                        ${this.statusError ? html`<div class="message">${this.statusError}</div>` : ""}
+                        ${this.localMessage ? html`<div class="message">${this.localMessage}</div>` : ""}
                         ${this.message ? html`<div class="message">${this.message}<button @click=${() => this.updateCookie()}>更新 Cookie</button></div>` : ""}
                         <section id="current_container" class="panel">
                             <div class="panel-header">

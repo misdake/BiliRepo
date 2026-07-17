@@ -1,7 +1,6 @@
 import {Paged} from "../../common/page";
 import {MemberDB, PlaylistDB, Timestamp, VideoDB} from "../../server/storage/dbTypes";
 import {html, type TemplateResult} from "lit/html.js";
-import {PagedContainer} from "../elements/PagedContainer";
 import {ApiGet} from "../../common/api/Api";
 import {ClientApis} from "../common/api/ClientApi";
 
@@ -24,23 +23,25 @@ function requestSearchMaker<T>(input: string, api: ApiGet<{ input: string, page:
     };
 }
 
+type ContainerRenderer<T> = (
+    request: (pageindex: number) => Promise<Paged<T>>,
+    searchInput: string,
+    onSearch: (input: string) => void,
+    afterLoad: (pageindex: number) => void,
+    firstLoadPage: number) => TemplateResult;
+
+// pure per-tab configuration: title, list/search requests and the container
+// template. Holds no element references; the page state flows into the
+// container through properties.
 export class ViewTypeContent<T, viewType extends ViewType> {
     type: ViewType;
     title: string;
     allRequest: (pageindex: number) => Promise<Paged<T>>;
     searchRequestMaker: (input: string) => (pageindex: number) => Promise<Paged<T>>;
-
-    private container: PagedContainer<T>;
-    private containerRenderer: (loadPage: number,
-        request: (pageindex: number) => Promise<Paged<T>>,
-        onContainerLoaded: (element: PagedContainer<T>) => void,
-        afterLoad: (pageindex: number) => void) => TemplateResult;
+    containerRenderer: ContainerRenderer<T>;
 
     constructor(type: ViewType, title: string, allApi: ApiGet<number, Paged<T>>, searchApi: ApiGet<{ input: string, page: number }, Paged<T>>,
-        containerRenderer: (loadPage: number,
-            request: (pageindex: number) => Promise<Paged<T>>,
-            onContainerLoaded: (element: PagedContainer<T>) => void,
-            afterLoad: (pageindex: number) => void) => TemplateResult
+        containerRenderer: ContainerRenderer<T>
     ) {
         this.type = type;
         this.title = title;
@@ -50,40 +51,26 @@ export class ViewTypeContent<T, viewType extends ViewType> {
         this.containerRenderer = containerRenderer;
     }
 
-    search(input: string, loadPage: number = 1) {
-        input = input || "";
-        input = input.trim();
-        if (input.length) {
-            this.container.request = this.searchRequestMaker(input);
-        } else {
-            this.container.request = this.allRequest;
-        }
-        this.container.loadPage(loadPage);
+    requestFor(input: string) {
+        input = (input || "").trim();
+        return input.length ? this.searchRequestMaker(input) : this.allRequest;
     }
-    render(loadPage: number, firstSearch: string, afterLoad: (type: ViewType, pageindex: number, input: string) => void) {
-        let onContainerLoaded = (element: PagedContainer<T>) => {
-            this.container = element;
-            this.container.searchInput = firstSearch;
-            this.container.onSearch = input => {
-                afterLoad(this.type, 1, input);
-                this.search(input, 1);
-            };
-            this.search(firstSearch, loadPage);
-        };
-        return this.containerRenderer(loadPage, this.allRequest, onContainerLoaded, pageindex => afterLoad(this.type, pageindex, undefined));
+
+    render(loadPage: number, searchInput: string, onSearch: (input: string) => void, afterLoad: (pageindex: number) => void) {
+        return this.containerRenderer(this.requestFor(searchInput), searchInput, onSearch, afterLoad, loadPage);
     }
 }
 
 const viewType_video: ViewTypeContent<VideoDB, ViewType.video> = new ViewTypeContent<VideoDB, ViewType.video>(
     ViewType.video, "视频", ClientApis.ListVideo, ClientApis.SearchVideo,
-    (loadPage, request, onContainerLoaded, afterLoad) => {
+    (request, searchInput, onSearch, afterLoad, firstLoadPage) => {
         return html`
             <pagedvideo-container
-                .autoLoad=${false}
-                .request=${request} 
-                .onElementLoaded=${onContainerLoaded} 
-                .firstLoadPage=${loadPage} 
+                .request=${request}
+                .searchInput=${searchInput}
+                .onSearch=${onSearch}
                 .afterLoad=${afterLoad}
+                .firstLoadPage=${firstLoadPage}
             ></pagedvideo-container>
         `;
     }
@@ -91,14 +78,14 @@ const viewType_video: ViewTypeContent<VideoDB, ViewType.video> = new ViewTypeCon
 
 const viewType_member: ViewTypeContent<MemberDB, ViewType.member> = new ViewTypeContent<MemberDB, ViewType.member>(
     ViewType.member, "UP主", ClientApis.ListMember, ClientApis.SearchMember,
-    (loadPage, request, onContainerLoaded, afterLoad) => {
+    (request, searchInput, onSearch, afterLoad, firstLoadPage) => {
         return html`
             <pagedmember-container
-                .autoLoad=${false}
-                .request=${request} 
-                .onElementLoaded=${onContainerLoaded} 
-                .firstLoadPage=${loadPage} 
+                .request=${request}
+                .searchInput=${searchInput}
+                .onSearch=${onSearch}
                 .afterLoad=${afterLoad}
+                .firstLoadPage=${firstLoadPage}
             ></pagedmember-container>
         `;
     }
@@ -106,14 +93,14 @@ const viewType_member: ViewTypeContent<MemberDB, ViewType.member> = new ViewType
 
 const viewType_playlist: ViewTypeContent<PlaylistDB, ViewType.playlist> = new ViewTypeContent<PlaylistDB, ViewType.playlist>(
     ViewType.playlist, "播放列表", ClientApis.ListPlaylist, ClientApis.SearchPlaylist,
-    (loadPage, request, onContainerLoaded, afterLoad) => {
+    (request, searchInput, onSearch, afterLoad, firstLoadPage) => {
         return html`
             <pagedplaylist-container
-                .autoLoad=${false}
-                .request=${request} 
-                .onElementLoaded=${onContainerLoaded} 
-                .firstLoadPage=${loadPage} 
+                .request=${request}
+                .searchInput=${searchInput}
+                .onSearch=${onSearch}
                 .afterLoad=${afterLoad}
+                .firstLoadPage=${firstLoadPage}
             ></pagedplaylist-container>
         `;
     }
@@ -121,14 +108,14 @@ const viewType_playlist: ViewTypeContent<PlaylistDB, ViewType.playlist> = new Vi
 
 const viewType_timestamp: ViewTypeContent<Timestamp, ViewType.timestamp> = new ViewTypeContent<Timestamp, ViewType.timestamp>(
     ViewType.timestamp, "时间点", ClientApis.ListTimestamp, ClientApis.SearchTimestamp,
-    (loadPage, request, onContainerLoaded, afterLoad) => {
+    (request, searchInput, onSearch, afterLoad, firstLoadPage) => {
         return html`
             <pagedtimestamp-container
-                .autoLoad=${false}
-                .request=${request} 
-                .onElementLoaded=${onContainerLoaded} 
-                .firstLoadPage=${loadPage} 
+                .request=${request}
+                .searchInput=${searchInput}
+                .onSearch=${onSearch}
                 .afterLoad=${afterLoad}
+                .firstLoadPage=${firstLoadPage}
             ></pagedtimestamp-container>
         `;
     }

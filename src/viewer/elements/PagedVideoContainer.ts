@@ -58,16 +58,9 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
 
     @state()
     private selectedAdd: PlaylistDB;
-    private elementAdd: HTMLSelectElement;
     private selectAdd(e: Event) {
-        let target = e.target as HTMLSelectElement;
-        this.elementAdd = target;
-        let index = target.selectedIndex - 1;
-        if (index >= 0) {
-            this.selectedAdd = this.allPlaylists[index];
-        } else {
-            this.selectedAdd = undefined;
-        }
+        let pid = parseInt((e.target as HTMLSelectElement).value);
+        this.selectedAdd = this.allPlaylists.find(playlist => playlist.pid === pid);
     }
     private addAllToPlaylist(videos: VideoDB[]) {
         let playlist = this.selectedAdd;
@@ -76,9 +69,9 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
             let to_add = videos.map(video => video.aid).filter(aid => !existing.has(aid));
             if (to_add.length > 0) {
                 ClientApis.UpdatePlaylist.fetch(playlist.pid, {add: to_add}).then(updatedPlaylist => {
-                    playlist.videosAid = [...updatedPlaylist.videosAid];
+                    // replace the local entry with the server-returned playlist
+                    this.allPlaylists = this.allPlaylists.map(p => p.pid === playlist.pid ? updatedPlaylist : p);
                     this.selectedAdd = undefined;
-                    this.elementAdd.selectedIndex = 0;
                 }).catch(error => {
                     showRequestError("批量添加到播放列表", error);
                 });
@@ -90,10 +83,10 @@ export class PagedVideoContainer extends PagedContainer<VideoDB> {
         super();
         this.rightRenderer = list => html`
             <div class="toolbar">
-                <select @change=${(e: Event) => this.selectAdd(e)}>
-                    <option>选择播放列表（${this.allPlaylists.length}）</option>
+                <select .value=${this.selectedAdd ? `${this.selectedAdd.pid}` : ""} @change=${(e: Event) => this.selectAdd(e)}>
+                    <option value="">选择播放列表（${this.allPlaylists.length}）</option>
                     ${repeat(this.allPlaylists, (playlist: PlaylistDB) => html`
-                        <option>${playlist.title}</option>
+                        <option value=${playlist.pid}>${playlist.title}</option>
                     `)}
                 </select>
                 <button ?disabled=${!this.selectedAdd || list.result.length === 0} @click=${() => this.addAllToPlaylist(list.result)}>本页全部添加</button>

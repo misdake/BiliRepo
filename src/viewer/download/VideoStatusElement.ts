@@ -76,10 +76,9 @@ export class VideoStatusElement extends LitElement {
     }
 
     render() {
-        if (this.video) {
-            this.video.title = this.video.title || "";
-            this.video.pic = this.video.pic || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
-        }
+        const EMPTY_THUMB = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
+        let title = this.video ? (this.video.title || "") : "";
+        let pic = this.video ? (this.video.pic || EMPTY_THUMB) : EMPTY_THUMB;
 
         let iconCss = (this.icon && this.iconShow) ? "display: block;" : "";
         let icon = this.icon ? html`<div class="icon" style=${iconCss} @click="${() => this.trigger()}">${this.icon}</div>` : html``;
@@ -93,9 +92,9 @@ export class VideoStatusElement extends LitElement {
         ` : html`
             <div class="videoItem">
                 <div class="thumbContainer">
-                    <img class="thumb" src="${this.video.pic}" alt="thumb"/>
+                    <img class="thumb" src="${pic}" alt="thumb"/>
                 </div>
-                <span class="title">${this.video.title}</span>
+                <span class="title">${title}</span>
                 ${icon}
             </div>
         `;

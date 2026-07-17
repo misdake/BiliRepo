@@ -96,21 +96,11 @@ export class VideoLabelElement extends LitElement {
             titleElement.title = isTruncated ? this.video.title : '';
         }
 
-        if (this.partSelected || (this.videoSelected && !this.part_info)) { //
-            //自己是当前播放的内容，需要滚动到指定位置
+        if (this.partSelected || (this.videoSelected && !this.part_info)) {
+            //自己是当前播放的内容，需要滚动到可见位置
             let children = this.shadowRoot.children;
-            if (!children) return;
-
-            //拿到列表的屏幕范围和自己的屏幕范围
-            let rect = children[0].getClientRects()[0];
-            let parentRect = this.parentElement.getClientRects()[0];
-
-            if (rect.top - parentRect.bottom > 0) { //自己的顶部>列表的底部 => 太靠下了
-                this.parentElement.scrollBy(0, rect.bottom - parentRect.bottom); //滚动使得底边重合
-            }
-            if (parentRect.top - rect.bottom > 0) { //自己的底部<列表的顶部 => 太靠上了
-                this.parentElement.scrollBy(0, rect.top - parentRect.top); //滚动使得顶边重合
-            }
+            if (!children || !children.length) return;
+            (children[0] as HTMLElement).scrollIntoView({block: 'nearest'});
         }
     }
 

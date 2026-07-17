@@ -1,6 +1,6 @@
 import {css, html, LitElement, type PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
-import type {PlaylistVideos} from "../../server/storage/dbTypes";
+import type {PlaylistVideos, VideoDB} from "../../server/storage/dbTypes";
 import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import "../elements/InputElement";
 import "../elements/PlaylistEditorElement";
@@ -83,7 +83,9 @@ export class PlaylistDetailPageElement extends LitElement {
                 </div>
             </div>
             <div class="hint">可拖拽排序，所有编辑操作始终显示。</div>
-            <playlist-editor-element .playlist=${this.playlist}></playlist-editor-element>
+            <playlist-editor-element .playlist=${this.playlist} .onSaved=${(videosAid: number[], videos: VideoDB[]) => {
+                this.playlist = {...this.playlist, videosAid, videos};
+            }}></playlist-editor-element>
         `;
     }
 

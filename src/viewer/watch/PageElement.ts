@@ -7,9 +7,10 @@ import "./PlayerElement";
 import "../elements/MemberElement";
 import "./VideoDescElement";
 import "./ControlPanelElement";
-import {PartDB, PartTimestamps, VideoParts} from "../../server/storage/dbTypes";
+import {PartDB, PartTimestamps, Timestamp, VideoParts} from "../../server/storage/dbTypes";
 import {Player} from "./Player";
 import {Danmaku} from "../../server/download/Bilibili";
+import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import type {ViewType} from "../index/indexViewType";
 
 @customElement('watch-page-element')
@@ -76,6 +77,46 @@ export class PageElement extends LitElement {
         if (this.playindex < this.playlist.items.length - 1) {
             this.updatePlayIndex(this.playindex + 1);
         }
+    }
+
+    // PageElement owns the timestamps of the current part: children request
+    // changes via onTimestampsChanged instead of mutating the prop
+    private setPartTimestamps(timestamps: Timestamp[]) {
+        if (!this.currentPart) return;
+        this.currentPart.timestamps = timestamps;
+        this.currentPart = {...this.currentPart} as PartTimestamps; // new reference so lit updates children
+        if (this.player) this.player.refreshHighlight(timestamps);
+    }
+
+    private updateDanmaku() {
+        if (!this.currentPart) return;
+        ClientApis.UpdateDanmaku.fetch({}, {part: this.currentPart}).then(content => {
+            if (content === "good") {
+                let url = new URL(window.location.href);
+                url.searchParams.set('t', `${~~(this.player ? this.player.currentTime() : 0)}`);
+                window.location.replace(url.toString());
+            } else {
+                alert("danmaku update failed!\nresponse: " + content);
+            }
+        }).catch(error => {
+            showRequestError("更新弹幕", error);
+        });
+    }
+
+    private redownload() {
+        if (!this.currentVideo) return;
+        if (this.player) this.player.unloadPlayer();
+        setTimeout(() => {
+            ClientApis.Redownload.fetch(this.currentVideo.aid).then(content => {
+                if (content === "good") {
+                    window.location.replace(`index.html?type=5`);
+                } else {
+                    alert("redownload failed!\nresponse: " + content);
+                }
+            }).catch(error => {
+                showRequestError("重新下载视频", error);
+            });
+        }, 100);
     }
 
     protected firstUpdated(_changedProperties: PropertyValues): void {
@@ -191,7 +232,7 @@ export class PageElement extends LitElement {
                         </div>
                         <div id="player">
                             <player-element .onLoad=${(player: Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part_timestamps=${this.currentPart}></player-element>
-                            <controlpanel-element .danmakuList=${this.danmakuList} .currentTab=0 .pageelement=${this} .playlist=${this.playlist} .playindex=${this.playindex}></controlpanel-element>
+                            <controlpanel-element .danmakuList=${this.danmakuList} .video=${this.currentVideo} .partInfo=${this.currentPart} .player=${this.player} .playlist=${this.playlist} .playindex=${this.playindex} .onPlayIndex=${(index: number) => this.updatePlayIndex(index)} .onUpdateDanmaku=${() => this.updateDanmaku()} .onRedownload=${() => this.redownload()} .onTimestampsChanged=${(timestamps: Timestamp[]) => this.setPartTimestamps(timestamps)}></controlpanel-element>
                         </div>
                         ${this.currentVideo && this.currentVideo.desc && this.currentVideo.desc.trim() ? html`
                             <div id="info">

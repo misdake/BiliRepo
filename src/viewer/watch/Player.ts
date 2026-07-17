@@ -1,5 +1,6 @@
 import DPlayer, { DPlayerAPIBackend } from "dplayer";
 import { httpget } from "../common/api/ClientApi";
+import { LatestRequest } from "../common/LatestRequest";
 import { Timestamp } from "../../server/storage/dbTypes";
 import { Danmaku } from "../../server/download/Bilibili";
 
@@ -58,6 +59,8 @@ export class Player {
 
     private aid: number = 0;
     private part: number = 0;
+    private danmakuGuard: LatestRequest = new LatestRequest();
+    private pendingDanmaku: { aid: number, part: number, token: number } | null = null;
     private container: HTMLElement;
     private onEnded: () => void;
     private danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
@@ -76,12 +79,23 @@ export class Player {
         this.resizeObserver.observe(this.container);
         this.apiBackend = {
             read: (options) => {
-                if (!(this.aid && this.part)) return;
-                httpget(`${serverConfig.repoRoot}repo/${this.aid}/p${this.part}.json`, content => {
-                    let result = JSON.parse(content).data;
-                    options.success(result);
-                    this.danmakuList = result;
-                    if (this.onDanmakuLoaded) this.onDanmakuLoaded(this.danmakuList);
+                // Snapshot the pending part: by the time DPlayer calls read()
+                // or the response arrives, loadVideoPart() may have moved on
+                // to another aid/part and destroyed this player instance.
+                const pending = this.pendingDanmaku;
+                if (!pending) return;
+                httpget(`${serverConfig.repoRoot}repo/${pending.aid}/p${pending.part}.json`, content => {
+                    if (!this.danmakuGuard.isCurrent(pending.token)) return;
+                    try {
+                        let result = JSON.parse(content).data;
+                        options.success(result);
+                        this.danmakuList = result;
+                        if (this.onDanmakuLoaded) this.onDanmakuLoaded(this.danmakuList);
+                    } catch (error) {
+                        if (options.error) options.error(error);
+                    }
+                }, error => {
+                    if (this.danmakuGuard.isCurrent(pending.token) && options.error) options.error(error);
                 });
             },
             send: (options) => {
@@ -96,6 +110,7 @@ export class Player {
 
         this.aid = aid;
         this.part = part;
+        this.pendingDanmaku = { aid, part, token: this.danmakuGuard.begin() };
 
         if (this.dp) {
             this.dp.pause();
@@ -156,6 +171,7 @@ export class Player {
     }
 
     unloadPlayer() {
+        this.danmakuGuard.begin(); // invalidate any in-flight danmaku request
         if (this.dp) {
             this.dp.destroy();
         }
@@ -268,15 +284,36 @@ export class Player {
      * @param dp - DPlayer instance
      */
     private _patchDanmakuSeek(dp: DPlayer) {
+        // This patch depends on DPlayer 1.27.0 internals (danmaku.js: dan,
+        // danIndex, draw, clear, container, options.time). dplayer is pinned
+        // to 1.27.0 in package.json (exact version, enforced via npm
+        // "overrides"). Verify the internals before patching: if they ever
+        // drift, keep the original seek() instead of breaking playback.
+        // @ts-ignore — dm properties are not covered by DPlayer type declarations
+        const dmProbe = dp.danmaku as any;
+        const internalsOk = dmProbe &&
+            Array.isArray(dmProbe.dan) &&
+            typeof dmProbe.danIndex === "number" &&
+            typeof dmProbe.draw === "function" &&
+            typeof dmProbe.clear === "function" &&
+            dmProbe.container &&
+            dmProbe.options && typeof dmProbe.options.time === "function";
+        if (!internalsOk) {
+            console.error("[Player] DPlayer danmaku internals mismatch; seek patch skipped. Expected dplayer@1.27.0, check node_modules.");
+            return;
+        }
+
         // [NEW] Animation duration constants (must match danmaku.scss and
         //       PlayerElement inline CSS in PlayerElement.ts)
-        const RIGHT_DURATION = this.danmakuSetting.speed;  // right type scrolling danmaku (seconds)
         const FIXED_DURATION = 4;                          // top/bottom fixed danmaku (seconds)
 
-        /** [NEW] Return animation duration for a given danmaku type. */
-        function getDuration(type: number | string): number {
-            return (type === 0 || type === 'right') ? RIGHT_DURATION : FIXED_DURATION;
-        }
+        /** [NEW] Return animation duration for a given danmaku type.
+         *  Read speed at call time: PlayerElement mutates danmakuSetting on
+         *  resize, which also updates the CSS animation duration; a captured
+         *  constant would go stale after the first resize. */
+        const getDuration = (type: number | string): number => {
+            return (type === 0 || type === 'right') ? this.danmakuSetting.speed : FIXED_DURATION;
+        };
 
         /**
          * [NEW] Reposition all existing danmaku DOM elements so their

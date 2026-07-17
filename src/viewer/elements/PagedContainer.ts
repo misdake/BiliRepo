@@ -1,14 +1,13 @@
 import {css, html, LitElement, type PropertyValues, type TemplateResult} from "lit";
 import {property, state} from "lit/decorators.js";
 import {Paged} from "../../common/page";
+import {LatestRequest} from "../common/LatestRequest";
 import "./InputElement";
 
 export class PagedContainer<T> extends LitElement {
 
     @property()
     firstLoadPage: number = 1;
-    @property()
-    onElementLoaded: (element: PagedContainer<T>) => void;
     @property()
     request: (pageindex: number) => Promise<Paged<T>>;
     @property()
@@ -29,7 +28,7 @@ export class PagedContainer<T> extends LitElement {
     @state()
     private jumpPageInput: string = "";
 
-    private requestId: number = 0;
+    private requestGuard: LatestRequest = new LatestRequest();
 
     protected listRenderer: (list: Paged<T>) => TemplateResult;
     protected rightRenderer: (list: Paged<T>) => TemplateResult;
@@ -48,12 +47,22 @@ export class PagedContainer<T> extends LitElement {
 
     protected firstUpdated(_changedProperties: PropertyValues): void {
         if (this.autoLoad) this.loadPage(this.firstLoadPage);
-        if (this.onElementLoaded) this.onElementLoaded(this);
+    }
+
+    // a new request (e.g. the owner changed the search input) reloads at page 1;
+    // the very first assignment is handled by firstUpdated/autoLoad instead
+    private requestInitialized: boolean = false;
+    protected updated(changedProperties: PropertyValues): void {
+        super.updated(changedProperties);
+        if (changedProperties.has("request")) {
+            if (this.requestInitialized && this.request) this.loadPage(1);
+            this.requestInitialized = true;
+        }
     }
 
     async loadPage(pageindex: number) {
         let requestedPage = Number.isSafeInteger(pageindex) && pageindex >= 1 ? pageindex : 1;
-        const requestId = ++this.requestId;
+        const requestToken = this.requestGuard.begin();
 
         this.loading = true;
         this.loadError = "";
@@ -67,7 +76,7 @@ export class PagedContainer<T> extends LitElement {
             if (!this.request) throw new Error("分页请求尚未初始化");
 
             const result = await this.request(requestedPage);
-            if (requestId !== this.requestId) return;
+            if (!this.requestGuard.isCurrent(requestToken)) return;
             if (!result) throw new Error("服务器没有返回分页数据");
 
             const pagecount = Math.max(0, Math.floor(Number(result.pagecount) || 0));
@@ -90,7 +99,7 @@ export class PagedContainer<T> extends LitElement {
             this.loading = false;
             if (this.afterLoad) this.afterLoad(normalizedPage);
         } catch (error) {
-            if (requestId !== this.requestId) return;
+            if (!this.requestGuard.isCurrent(requestToken)) return;
             this.loading = false;
             this.loadError = error instanceof Error ? error.message : String(error);
         }

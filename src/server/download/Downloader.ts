@@ -2,6 +2,7 @@ import {Bilibili} from "./Bilibili";
 import {BilibiliPage, BilibiliVideo, BilibiliVideoJson} from "../../common/types";
 import {DownloadStatus, PartStatus, VideoStatus} from "../../common/DownloadStatus";
 import {PartDB} from "../storage/dbTypes";
+import {EventEmitter} from "events";
 
 const fs = require('fs');
 
@@ -17,12 +18,14 @@ export class PartDownloadProgress {
     progress: number;
 
     private setMessage: (message: string) => void;
+    private onProgress: () => void;
     private shutdownMethod: () => void;
 
-    constructor(video: BilibiliVideo, part: BilibiliPage, setMessage: (message: string) => void) {
+    constructor(video: BilibiliVideo, part: BilibiliPage, setMessage: (message: string) => void, onProgress: () => void) {
         this.video = video;
         this.part = part;
         this.setMessage = setMessage;
+        this.onProgress = onProgress;
         this.done = false;
         this.failed = false;
     }
@@ -35,12 +38,14 @@ export class PartDownloadProgress {
         this.shutdownMethod = undefined;
         if (returncode === 0) {
             this.done = true;
+            this.onProgress();
             console.log(`download part ${this.part.page} success`);
             console.log(`download danmaku: ${this.video.aid} ${this.video.title} part${this.part.part}`);
             await Bilibili.downloadDanmaku(this.video.aid, this.part.cid, this.part.page);
             return true;
         } else {
             this.failed = true;
+            this.onProgress();
             console.log(`download part ${this.part.page} fail`);
             return false;
         }
@@ -88,6 +93,7 @@ export class PartDownloadProgress {
                 }
             }
         }
+        this.onProgress();
     }
 }
 
@@ -103,7 +109,7 @@ export class VideoDownloadProgress {
 
     json: BilibiliVideoJson;
 
-    constructor(aid: number, setMessage: (message: string) => void) {
+    constructor(aid: number, setMessage: (message: string) => void, onProgress: () => void) {
         this.aid = aid;
         this.parts = [];
         this.done = false;
@@ -112,10 +118,14 @@ export class VideoDownloadProgress {
             this.json = result;
             this.video = result.data;
             for (let part of this.video.pages) {
-                this.parts.push(new PartDownloadProgress(this.video, part, setMessage));
+                this.parts.push(new PartDownloadProgress(this.video, part, setMessage, onProgress));
             }
+            // title/pic became available; queued items would otherwise stay
+            // blank until they start downloading
+            onProgress();
         }, () => {
             this.failed = true; //cause downloadEntireVideo to return false
+            onProgress();
         });
     }
 
@@ -202,6 +212,9 @@ export class Downloader {
     private done: VideoDownloadProgress[];
     private failed: VideoDownloadProgress[];
 
+    private emitter: EventEmitter = new EventEmitter();
+    private progressEmitScheduled: boolean = false;
+
     constructor(onDone: (video: BilibiliVideo) => void) {
         this.onDone = onDone;
         this.message = null;
@@ -209,6 +222,28 @@ export class Downloader {
         this.current = null;
         this.done = [];
         this.failed = [];
+    }
+
+    /** Subscribe to download-status changes. Returns an unsubscribe function. */
+    public subscribe(listener: () => void): () => void {
+        this.emitter.on("change", listener);
+        return () => {
+            this.emitter.removeListener("change", listener);
+        };
+    }
+
+    private emitChange() {
+        this.emitter.emit("change");
+    }
+
+    /** Progress updates arrive per lux output chunk; throttle to one event per 300ms. */
+    private emitChangeThrottled() {
+        if (this.progressEmitScheduled) return;
+        this.progressEmitScheduled = true;
+        setTimeout(() => {
+            this.progressEmitScheduled = false;
+            this.emitChange();
+        }, 300);
     }
 
     status() {
@@ -266,6 +301,7 @@ export class Downloader {
     setCookie(cookie: string) {
         fs.writeFileSync("downloader/cookies.txt", cookie);
         this.message = null;
+        this.emitChange();
     }
 
     private static generateVideoStatus(list: VideoDownloadProgress[], enableParts: boolean) {
@@ -310,6 +346,9 @@ export class Downloader {
     enqueue(aid: number) {
         this.queue.push(new VideoDownloadProgress(aid, message => {
             this.message = message;
+            this.emitChangeThrottled();
+        }, () => {
+            this.emitChangeThrottled();
         }));
         this.schedule();
     }
@@ -360,6 +399,8 @@ export class Downloader {
                 });
             }
         }
+
+        this.emitChange();
     }
 
 }

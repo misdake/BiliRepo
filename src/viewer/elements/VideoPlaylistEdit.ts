@@ -2,6 +2,7 @@ import {css, html, LitElement, type PropertyValues} from "lit";
 import {customElement, property, state} from "lit/decorators.js";
 import {PlaylistDB, VideoDB} from "../../server/storage/dbTypes";
 import {ClientApis, showRequestError} from "../common/api/ClientApi";
+import {LatestRequest} from "../common/LatestRequest";
 import {repeat} from "lit/directives/repeat.js";
 
 @customElement('videoplaylistedit-element')
@@ -21,15 +22,22 @@ export class VideoPlaylistEditElement extends LitElement {
         }
     }
 
+    private loadGuard: LatestRequest = new LatestRequest();
+
     private load() {
+        const token = this.loadGuard.begin();
         ClientApis.GetVideoPlaylists.fetch(this.video.aid).then(playlists => {
+            if (!this.loadGuard.isCurrent(token)) return;
             this.videoPlaylists = playlists;
         }).catch(error => {
+            if (!this.loadGuard.isCurrent(token)) return;
             showRequestError("加载视频所属播放列表", error);
         });
         ClientApis.ListAllPlaylists.fetch({}).then(all => {
+            if (!this.loadGuard.isCurrent(token)) return;
             this.allPlaylists = all;
         }).catch(error => {
+            if (!this.loadGuard.isCurrent(token)) return;
             showRequestError("加载播放列表", error);
         });
     }
@@ -39,30 +47,13 @@ export class VideoPlaylistEditElement extends LitElement {
     @state()
     private selectedAdd: PlaylistDB;
 
-    private elementRemove: HTMLSelectElement;
-    private elementAdd: HTMLSelectElement;
-
     private selectRemove(e: Event) {
-        let target = e.target as HTMLSelectElement;
-        this.elementRemove = target;
-        let index = target.selectedIndex - 1;
-        if (index >= 0) {
-            console.log(this.videoPlaylists[index]);
-            this.selectedRemove = this.videoPlaylists[index];
-        } else {
-            this.selectedRemove = undefined;
-        }
+        let pid = parseInt((e.target as HTMLSelectElement).value);
+        this.selectedRemove = this.videoPlaylists.find(playlist => playlist.pid === pid);
     }
     private selectAdd(e: Event) {
-        let target = e.target as HTMLSelectElement;
-        this.elementAdd = target;
-        let index = target.selectedIndex - 1;
-        if (index >= 0) {
-            console.log(this.allPlaylists[index]);
-            this.selectedAdd = this.allPlaylists[index];
-        } else {
-            this.selectedAdd = undefined;
-        }
+        let pid = parseInt((e.target as HTMLSelectElement).value);
+        this.selectedAdd = this.allPlaylists.find(playlist => playlist.pid === pid);
     }
     private jumpFromPlaylist() {
         let playlist = this.selectedRemove;
@@ -74,10 +65,10 @@ export class VideoPlaylistEditElement extends LitElement {
         let playlist = this.selectedRemove;
         if (playlist) {
             ClientApis.UpdatePlaylist.fetch(playlist.pid, {remove: [this.video.aid]}).then(updatedPlaylist => {
-                playlist.videosAid = [...updatedPlaylist.videosAid];
+                // replace local entries with the server-returned playlist
+                this.allPlaylists = this.allPlaylists.map(p => p.pid === playlist.pid ? updatedPlaylist : p);
                 this.videoPlaylists = this.videoPlaylists.filter(p => p.pid !== playlist.pid);
                 this.selectedRemove = undefined;
-                this.elementRemove.selectedIndex = 0;
             }).catch(error => {
                 showRequestError("从播放列表删除", error);
             });
@@ -87,12 +78,10 @@ export class VideoPlaylistEditElement extends LitElement {
         let playlist = this.selectedAdd;
         if (playlist) {
             ClientApis.UpdatePlaylist.fetch(playlist.pid, {add: [this.video.aid]}).then(updatedPlaylist => {
-                playlist.videosAid = [...updatedPlaylist.videosAid];
-                let newArray = this.videoPlaylists.filter(p => p.pid !== playlist.pid);
-                newArray.push(playlist);
-                this.videoPlaylists = newArray;
+                // replace local entries with the server-returned playlist
+                this.allPlaylists = this.allPlaylists.map(p => p.pid === playlist.pid ? updatedPlaylist : p);
+                this.videoPlaylists = [...this.videoPlaylists.filter(p => p.pid !== playlist.pid), updatedPlaylist];
                 this.selectedAdd = undefined;
-                this.elementAdd.selectedIndex = 0;
             }).catch(error => {
                 showRequestError("添加到播放列表", error);
             });
@@ -105,10 +94,10 @@ export class VideoPlaylistEditElement extends LitElement {
                 <h4>播放列表</h4>
                 <p>当前视频所在列表</p>
                 <div class="action-row">
-                <select @change=${(e: Event) => this.selectRemove(e)}>
-                    <option>(在${this.videoPlaylists.length}个列表中)</option>
+                <select .value=${this.selectedRemove ? `${this.selectedRemove.pid}` : ""} @change=${(e: Event) => this.selectRemove(e)}>
+                    <option value="">(在${this.videoPlaylists.length}个列表中)</option>
                     ${repeat(this.videoPlaylists, (playlist: PlaylistDB) => html`
-                        <option>${playlist.title}</option>
+                        <option value=${playlist.pid}>${playlist.title}</option>
                     `)}
                 </select>
                 <button ?disabled=${!this.selectedRemove} @click=${() => this.jumpFromPlaylist()}>打开</button>
@@ -116,10 +105,10 @@ export class VideoPlaylistEditElement extends LitElement {
                 </div>
                 <p>添加到其他列表</p>
                 <div class="action-row">
-                <select @change=${(e: Event) => this.selectAdd(e)}>
-                    <option>(共${this.allPlaylists.length}个列表)</option>
+                <select .value=${this.selectedAdd ? `${this.selectedAdd.pid}` : ""} @change=${(e: Event) => this.selectAdd(e)}>
+                    <option value="">(共${this.allPlaylists.length}个列表)</option>
                     ${repeat(this.allPlaylists, (playlist: PlaylistDB) => html`
-                        <option>${playlist.title}</option>
+                        <option value=${playlist.pid}>${playlist.title}</option>
                     `)}
                 </select>
                 <button ?disabled=${!this.selectedAdd} @click=${() => this.addToPlaylist()}>添加</button>

@@ -1,23 +1,35 @@
 import {css, html, LitElement, type TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
-import {PageElement} from "./PageElement";
 import "./PlaylistElement";
 import "./TimestampEditElement";
 import "../elements/VideoPlaylistEdit";
-import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import {Playlist} from "./Playlist";
-import {Timestamp} from "../../server/storage/dbTypes";
+import {PartTimestamps, Timestamp, VideoParts} from "../../server/storage/dbTypes";
 import {Danmaku} from "../../server/download/Bilibili";
+import {Player} from "./Player";
 
 @customElement('controlpanel-element')
 export class ControlPanelElement extends LitElement {
 
     @property()
-    pageelement: PageElement;
+    video: VideoParts;
+    @property()
+    partInfo: PartTimestamps;
+    @property()
+    player: Player;
+
     @property()
     playlist: Playlist;
     @property()
     playindex: number;
+    @property()
+    onPlayIndex: (index: number) => void;
+    @property()
+    onUpdateDanmaku: () => void;
+    @property()
+    onRedownload: () => void;
+    @property()
+    onTimestampsChanged: (timestamps: Timestamp[]) => void;
 
     @property()
     currentTab: number = 0;
@@ -27,66 +39,33 @@ export class ControlPanelElement extends LitElement {
 
     private tabs: { title: string, content: () => TemplateResult }[] = [
         {title: "当前播放", content: () => html`
-            <playlist-element .onitemclick=${(index: number) => this.pageelement.updatePlayIndex(index)} .playlist=${this.playlist} .playindex=${this.playindex}></playlist-element>
+            <playlist-element .onitemclick=${(index: number) => this.onPlayIndex && this.onPlayIndex(index)} .playlist=${this.playlist} .playindex=${this.playindex}></playlist-element>
         `},
         {title: "时间点", content: () => html`
             <div style="padding: 5px;">
                 <timestampedit-element
-                    .part_timestamps=${this.pageelement.currentPart}
+                    .part_timestamps=${this.partInfo}
                     .getCurrTime=${() => this.getCurrTime()}
                     .seek=${(second: number) => this.seek(second)}
-                    .refresh=${(timestamps: Timestamp[]) => this.refreshTimestamps(timestamps)}
+                    .onChange=${(timestamps: Timestamp[]) => this.onTimestampsChanged && this.onTimestampsChanged(timestamps)}
                 ></timestampedit-element>
             </div>
         `},
         {title: "编辑", content: () => html`
             <div style="padding: 5px;">
-                <videoplaylistedit-element .video=${this.pageelement.currentVideo}></videoplaylistedit-element>
-                <h5>弹幕${this.danmakuList.length}条</h5>
-                <h5><button @click=${() => this.updateDanmaku()}>更新弹幕</button></h5>
-                <h5><button @click=${() => this.redownload()}>重新下载视频</button></h5>
+                <videoplaylistedit-element .video=${this.video}></videoplaylistedit-element>
+                <h5>弹幕${this.danmakuList ? this.danmakuList.length : 0}条</h5>
+                <h5><button @click=${() => this.onUpdateDanmaku && this.onUpdateDanmaku()}>更新弹幕</button></h5>
+                <h5><button @click=${() => this.onRedownload && this.onRedownload()}>重新下载视频</button></h5>
             </div>
         `},
     ];
 
     private getCurrTime() {
-        return this.pageelement.player ? this.pageelement.player.currentTime() : 0;
+        return this.player ? this.player.currentTime() : 0;
     }
     private seek(time_second: number) {
-        if (this.pageelement.player) this.pageelement.player.seek(time_second);
-    }
-    private refreshTimestamps(timestamps: Timestamp[]) {
-        if (!this.pageelement.player) return;
-        let player = this.pageelement.player;
-        player.refreshHighlight(timestamps);
-    }
-
-    private updateDanmaku() {
-        ClientApis.UpdateDanmaku.fetch({}, {part: this.pageelement.currentPart}).then(content => {
-            if (content === "good") {
-                // alert("danmaku updated!");
-                window.location.replace(`${window.location.href}&t=${~~this.pageelement.player.currentTime()}`);
-            } else {
-                alert("danmaku update failed!\nresponse: " + content);
-            }
-        }).catch(error => {
-            showRequestError("更新弹幕", error);
-        });
-    }
-
-    private redownload() {
-        this.pageelement.player.unloadPlayer();
-        setTimeout(() => {
-            ClientApis.Redownload.fetch(this.pageelement.currentVideo.aid).then(content => {
-                if (content === "good") {
-                    window.location.replace(`index.html?type=5`);
-                } else {
-                    alert("redownload failed!\nresponse: " + content);
-                }
-            }).catch(error => {
-                showRequestError("重新下载视频", error);
-            });
-        }, 100);
+        if (this.player) this.player.seek(time_second);
     }
 
     private clickHeader(index: number) {

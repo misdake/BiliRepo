@@ -64,6 +64,32 @@ Storage.createInstance().then(storage => {
     });
     ServerApis.StatusDownload.serve(_req => ({}), _param => downloader.status_mini());
 
+    // server-sent events stream of the download status; the download page
+    // subscribes to this instead of polling StatusDownload
+    app.get('/download/status/stream', (req, res) => {
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+        });
+        res.write('retry: 3000\n\n');
+
+        const send = () => {
+            res.write(`data: ${JSON.stringify(downloader.status_mini())}\n\n`);
+        };
+        send(); // push the current status immediately on connect
+
+        const unsubscribe = downloader.subscribe(send);
+        const heartbeat = setInterval(() => res.write(': ping\n\n'), 25000);
+
+        // release everything when the client disconnects, otherwise each
+        // reconnect would leak a listener and an interval
+        req.on('close', () => {
+            unsubscribe();
+            clearInterval(heartbeat);
+        });
+    });
+
     ServerApis.UpdateCookie.serve(
         _req => ({}),
         (param, body) => new Promise<string>(resolve => {
