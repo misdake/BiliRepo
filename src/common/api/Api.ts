@@ -60,6 +60,11 @@ export class ApiPost<Param, Payload, Result> {
     }
 }
 
+export interface RemoveVideoResult {
+    ok: boolean;
+    reason?: string; // 'not_found' | 'error'
+}
+
 export let RawApis = {
     //Video
     GetVideo: new ApiGet<number, VideoDB>('/api/video/aid/:aid', aid => `api/video/aid/${aid}`),
@@ -67,6 +72,7 @@ export let RawApis = {
     GetVideoParts: new ApiGet<number, VideoParts>('/api/video/withparts/:aid', aid => `api/video/withparts/${aid}`),
     ListVideo: new ApiGet<number, Paged<VideoDB>>('/api/video/list/:page', page => `api/video/list/${page}`), //TODO just call it list instread of recent
     ListVideoByMember: new ApiGet<{ mid: number, page: number }, Paged<VideoDB>>('/api/video/member/:mid/:page', ({ mid, page }) => `api/video/member/${mid}/${page}`),
+    RemoveVideo: new ApiGet<number, RemoveVideoResult>('/api/video/remove/:aid', aid => `api/video/remove/${aid}`),
 
     //Member
     GetMember: new ApiGet<number, MemberDB>('/api/member/mid/:mid', mid => `api/member/mid/${mid}`),

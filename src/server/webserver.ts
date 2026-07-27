@@ -9,6 +9,7 @@ import { updateFanCountDefault } from './fanCount';
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const fs = require('fs');
 
 const app: Application = express();
 
@@ -126,6 +127,50 @@ Storage.createInstance().then(storage => {
                 return 'bad';
             }
         }
+    );
+
+    ServerApis.RemoveVideo.serve(
+        req => parseInt(req.params['aid']),
+        (aid) => {
+            // delete is only offered for fully downloaded videos; a staging
+            // folder means there is nothing deletable under this aid
+            if (fs.existsSync(`repo/${aid}_download/`)) {
+                return {ok: false, reason: 'not_found'};
+            }
+
+            // purge a merely queued (not yet started) aid from the queue
+            downloader.remove(aid);
+
+            let result = storage.removeVideo(aid);
+            if (!result.ok && !fs.existsSync(`repo/${aid}/`)) {
+                return {ok: false, reason: 'not_found'};
+            }
+
+            // delete the whole folder at once; importAllVideos expects every
+            // numeric folder to contain info.json, so partial deletes are worse
+            if (fs.existsSync(`repo/${aid}/`)) {
+                try {
+                    fs.rmSync(`repo/${aid}/`, {recursive: true, force: true});
+                } catch (e) {
+                    console.log("cannot delete video folder", aid, e);
+                    return {ok: false, reason: 'error'};
+                }
+            }
+
+            // the member row was removed too: its avatar file is now orphaned
+            if (result.removedMemberMid !== null) {
+                let face = `repo/member/${result.removedMemberMid}.jpg`;
+                if (fs.existsSync(face)) {
+                    try {
+                        fs.unlinkSync(face);
+                    } catch (e) {
+                        console.log("cannot delete member face", result.removedMemberMid, e);
+                    }
+                }
+            }
+
+            return {ok: true};
+        },
     );
 
 

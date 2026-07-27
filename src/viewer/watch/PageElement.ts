@@ -119,6 +119,31 @@ export class PageElement extends LitElement {
         }, 100);
     }
 
+    private deleteVideo() {
+        if (!this.currentVideo) return;
+        let aid = this.currentVideo.aid;
+        let input = window.prompt(`此操作将永久删除本地视频文件，不可恢复！\n请输入该视频的 aid（${aid}）以确认删除：`);
+        if (input === null) return;
+        if (input.trim() !== String(aid)) {
+            alert("输入不匹配，已取消删除。");
+            return;
+        }
+        if (this.player) this.player.unloadPlayer();
+        setTimeout(() => {
+            ClientApis.RemoveVideo.fetch(aid).then(result => {
+                if (result.ok) {
+                    window.location.replace(`index.html`);
+                } else if (result.reason === 'not_found') {
+                    alert("删除失败：视频不存在或正在下载中");
+                } else {
+                    alert("删除失败：请稍后重试");
+                }
+            }).catch(error => {
+                showRequestError("删除视频", error);
+            });
+        }, 100);
+    }
+
     protected firstUpdated(_changedProperties: PropertyValues): void {
         if (this.playlist && this.playindex >= 0 && this.playindex < this.playlist.items.length) {
             this.updatePlayIndex(this.playindex);
@@ -232,7 +257,7 @@ export class PageElement extends LitElement {
                         </div>
                         <div id="player">
                             <player-element .onLoad=${(player: Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part_timestamps=${this.currentPart}></player-element>
-                            <controlpanel-element .danmakuList=${this.danmakuList} .video=${this.currentVideo} .partInfo=${this.currentPart} .player=${this.player} .playlist=${this.playlist} .playindex=${this.playindex} .onPlayIndex=${(index: number) => this.updatePlayIndex(index)} .onUpdateDanmaku=${() => this.updateDanmaku()} .onRedownload=${() => this.redownload()} .onTimestampsChanged=${(timestamps: Timestamp[]) => this.setPartTimestamps(timestamps)}></controlpanel-element>
+                            <controlpanel-element .danmakuList=${this.danmakuList} .video=${this.currentVideo} .partInfo=${this.currentPart} .player=${this.player} .playlist=${this.playlist} .playindex=${this.playindex} .onPlayIndex=${(index: number) => this.updatePlayIndex(index)} .onUpdateDanmaku=${() => this.updateDanmaku()} .onRedownload=${() => this.redownload()} .onDelete=${() => this.deleteVideo()} .onTimestampsChanged=${(timestamps: Timestamp[]) => this.setPartTimestamps(timestamps)}></controlpanel-element>
                         </div>
                         ${this.currentVideo && this.currentVideo.desc && this.currentVideo.desc.trim() ? html`
                             <div id="info">

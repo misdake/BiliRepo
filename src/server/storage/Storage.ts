@@ -146,6 +146,48 @@ export class Storage {
         return this.table_video.find_paged({mid: mid}, page.pageindex, page.pagesize, "ctime", true);
     }
 
+    public removeVideo(aid: number): { ok: boolean, removedMemberMid: number | null } {
+        let video = this.table_video.get(aid);
+        if (!video) return {ok: false, removedMemberMid: null};
+
+        // remove from every playlist containing this video
+        let pids = this.video_playlist.get(aid);
+        if (pids) {
+            for (let pid of Array.from(pids)) {
+                let playlist = this.table_playlist.get(pid);
+                if (playlist) {
+                    this.unregisterVideoPlaylist(playlist);
+                    playlist.videosAid = (playlist.videosAid || []).filter(a => a !== aid);
+                    this.table_playlist.update(playlist);
+                    this.registerVideoPlaylist(playlist);
+                }
+            }
+        }
+
+        for (let timestamp of this.table_timestamp.find({aid: aid})) {
+            this.table_timestamp.delete(timestamp);
+        }
+        for (let part of this.table_part.find({aid: aid})) {
+            this.table_part.delete(part);
+        }
+
+        this.table_video.delete(video);
+
+        // the member row is shared between videos; only remove it when no
+        // other video references it (the avatar file is removed by the caller)
+        let removedMemberMid: number | null = null;
+        let remaining = this.table_video.find({mid: video.mid});
+        if (remaining.length === 0) {
+            let member = this.table_member.get(video.mid);
+            if (member) {
+                this.table_member.delete(member);
+                removedMemberMid = video.mid;
+            }
+        }
+
+        return {ok: true, removedMemberMid};
+    }
+
     //playlist
     private lastPid = 1;
     private video_playlist: Map<number, Set<number>> = new Map<number, Set<number>>();

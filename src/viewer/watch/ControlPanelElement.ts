@@ -29,6 +29,8 @@ export class ControlPanelElement extends LitElement {
     @property()
     onRedownload: () => void;
     @property()
+    onDelete: () => void;
+    @property()
     onTimestampsChanged: (timestamps: Timestamp[]) => void;
 
     @property()
@@ -57,6 +59,7 @@ export class ControlPanelElement extends LitElement {
                 <h5>弹幕${this.danmakuList ? this.danmakuList.length : 0}条</h5>
                 <h5><button @click=${() => this.onUpdateDanmaku && this.onUpdateDanmaku()}>更新弹幕</button></h5>
                 <h5><button @click=${() => this.onRedownload && this.onRedownload()}>重新下载视频</button></h5>
+                <h5><button class="danger" @click=${() => this.onDelete && this.onDelete()}>删除视频</button></h5>
             </div>
         `},
     ];
@@ -158,6 +161,7 @@ export class ControlPanelElement extends LitElement {
             font: inherit;
         }
         button { padding: 5px 9px; cursor: pointer; }
+        button.danger { border-color: #f4c7c3; color: #b42318; }
     `;
 
 }
