@@ -1,5 +1,6 @@
 import {BilibiliVideo, BilibiliVideoJson} from "../../common/types";
 import {httpsdownload, httpsget} from "../network";
+import {DanmakuProto} from "./DanmakuProto";
 import {ChildProcess} from "child_process";
 
 const fs = require('fs');
@@ -83,7 +84,14 @@ export class Bilibili {
             }
         }
 
-        await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/p${page}.xml`);
+        //protobuf api (dm/view + wbi seg.so) returns more danmaku than the xml api, fallback to xml api on failure
+        try {
+            let xml = await DanmakuProto.fetchXml(aid, cid);
+            fs.writeFileSync(`repo/${folder}/p${page}.xml`, xml);
+        } catch (e) {
+            console.warn('protobuf danmaku failed, fallback to xml api', e);
+            await httpsdownload(`https://comment.bilibili.com/${cid}.xml`, `repo/${folder}/p${page}.xml`);
+        }
         let array = this.readDanmaku(folder, page);
 
         for (let d of array) {
