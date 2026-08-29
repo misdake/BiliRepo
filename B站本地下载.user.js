@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         B站本地下载
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  将当前 B 站视频发送到本地下载服务
 // @author       z
 // @match        https://www.bilibili.com/video/*
@@ -119,29 +119,39 @@
      * 精准限制父容器为 .video-toolbar-right，且排除 .video-tool-more 兄弟
      */
     function createDownloadButton() {
-        // 如果已经加过了，直接返回 true 停止定时器
-        if (document.querySelector("#local-download-button")) return true;
+        const existing = document.querySelector("#local-download-button");
+        if (existing) {
+            console.debug("[B站本地下载][debug] 下载按钮已存在", existing);
+            return true;
+        }
 
-        // 1. 精准定位父容器 .video-toolbar-right
         const parent = document.querySelector(".video-toolbar-right");
-        if (!parent) return false;
+        if (!parent) {
+            console.debug("[B站本地下载][debug] 尚未找到 .video-toolbar-right");
+            return false;
+        }
+        console.debug("[B站本地下载][debug] 找到工具栏", parent);
 
-        // 2. 从这个特定的父容器内部获取所有的子按钮
         const brothers = parent.querySelectorAll(".video-toolbar-right-item");
+        console.debug(`[B站本地下载][debug] 工具栏候选兄弟数: ${brothers.length}`);
         if (brothers.length === 0) return false;
 
-        // 3. 寻找一个合适的兄弟节点（排除掉含有 video-tool-more 类名的节点）
         let brother = null;
         for (const el of brothers) {
-            // 确保该节点确实是 parent 的直接子节点，且不包含 video-tool-more
+            console.debug("[B站本地下载][debug] 检查兄弟节点", el, {
+                directChild: el.parentElement === parent,
+                isMore: el.classList.contains("video-tool-more")
+            });
             if (el.parentElement === parent && !el.classList.contains("video-tool-more")) {
                 brother = el;
                 break;
             }
         }
 
-        // 如果没找到合适的常规子按钮，继续等待
-        if (!brother) return false;
+        if (!brother) {
+            console.warn("[B站本地下载][debug] 找到了工具栏，但没找到可用于插入的普通兄弟节点");
+            return false;
+        }
 
         const button = document.createElement("div");
         button.id = "local-download-button";
@@ -155,40 +165,72 @@
         `;
 
         button.addEventListener("click", () => startDownload(button));
-
-        // 安全地插入到精准匹配的父容器中
         parent.insertBefore(button, brother);
-        console.log("[B站本地下载] 下载按钮已成功挂载");
+        console.log("[B站本地下载] 下载按钮已成功挂载", button);
         return true;
     }
-
-    // 轮询添加下载按钮
-    const buttonInterval = setInterval(() => {
-        if (getAid() && createDownloadButton()) {
-            clearInterval(buttonInterval);
-        }
-    }, 1000);
 
     /**
      * 取消播放结束后的自动跳转
      */
-    function cancelAutoSkip() {
-        const button = document.querySelector(".bpx-player-ending-related-item-cancel");
-        if (!button) return;
+    function cancelAutoSkip(root = document) {
+        const button = root.matches?.(".bpx-player-ending-related-item-cancel")
+            ? root
+            : root.querySelector?.(".bpx-player-ending-related-item-cancel");
+        if (!button) return false;
 
-        const container = button.closest('.bpx-player-ending');
-        const isVisible = button.offsetWidth > 0 || button.offsetHeight > 0 || (container && window.getComputedStyle(container).display !== 'none');
+        const container = button.closest(".bpx-player-ending");
+        const isVisible = button.offsetWidth > 0 ||
+            button.offsetHeight > 0 ||
+            (container && window.getComputedStyle(container).display !== "none");
 
-        if (isVisible) {
-            setTimeout(() => {
-                if (typeof button.click === 'function') {
-                    button.click();
-                    console.log("[B站本地下载] 已成功取消自动跳转");
-                }
-            }, 50);
-        }
+        if (!isVisible) return false;
+
+        setTimeout(() => {
+            if (button.isConnected && typeof button.click === "function") {
+                button.click();
+                console.log("[B站本地下载] 已成功取消自动跳转");
+            }
+        }, 50);
+        return true;
     }
 
-    setInterval(cancelAutoSkip, 3000);
-    console.log("[B站本地下载] 脚本已加载");
+    function handleDomChange(root = document, reason = "unknown") {
+        console.debug(`[B站本地下载][debug] handleDomChange: ${reason}`, {
+            aid: getAid() || "<empty>",
+            root
+        });
+
+        // 挂按钮本身不依赖 aid；aid 只在点击下载时读取。
+        createDownloadButton();
+        cancelAutoSkip(root);
+    }
+
+    // 初始页面先尝试一次。B站是 SPA，后续工具栏/结尾界面重建由 observer 接管。
+    console.log("[B站本地下载][debug] 初始状态", {
+        readyState: document.readyState,
+        aid: getAid() || "<empty>",
+        toolbar: document.querySelector(".video-toolbar-right")
+    });
+    handleDomChange(document, "initial");
+
+    const observer = new MutationObserver(mutations => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (!(node instanceof Element)) continue;
+
+                const relevant =
+                    node.matches?.(".video-toolbar-right, .video-toolbar-right-item, .bpx-player-ending-related-item-cancel") ||
+                    node.querySelector?.(".video-toolbar-right, .video-toolbar-right-item, .bpx-player-ending-related-item-cancel");
+
+                if (relevant) {
+                    console.debug("[B站本地下载][debug] observer 捕获相关 DOM", node);
+                    handleDomChange(node, "mutation");
+                }
+            }
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    console.log("[B站本地下载] 脚本已加载，MutationObserver 已启动");
 })();
