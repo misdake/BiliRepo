@@ -64,6 +64,7 @@ export class VideoPlaylistEditElement extends LitElement {
     private removeFromPlaylist() {
         let playlist = this.selectedRemove;
         if (playlist) {
+            if (!window.confirm(`确认将当前视频从播放列表「${playlist.title}」中移除吗？`)) return;
             ClientApis.UpdatePlaylist.fetch(playlist.pid, {remove: [this.video.aid]}).then(updatedPlaylist => {
                 // replace local entries with the server-returned playlist
                 this.allPlaylists = this.allPlaylists.map(p => p.pid === playlist.pid ? updatedPlaylist : p);
@@ -120,33 +121,74 @@ export class VideoPlaylistEditElement extends LitElement {
     static styles = css`
         :host { display: block; color: #344054; }
         section {
-            padding: 10px;
-            border: 1px solid #e4e7ec;
-            border-radius: 8px;
-            background: #f8fafc;
+            padding: 12px;
+            border: 1px solid var(--border, #dfe4ec);
+            border-radius: 10px;
+            background: var(--surface-subtle, #f8fafc);
         }
-        h4 { margin: 0 0 10px; color: #172033; }
-        p { margin: 10px 0 5px; color: #667085; font-size: 12px; }
-        .action-row { display: flex; align-items: center; gap: 5px; }
+        h4 {
+            margin: 0 0 8px;
+            color: var(--text, #172033);
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        p {
+            margin: 10px 0 6px;
+            color: var(--muted, #667085);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        h4 + p { margin-top: 0; }
+        .action-row { display: flex; align-items: center; gap: 6px; }
         select {
+            box-sizing: border-box;
             min-width: 0;
             flex: 1;
             height: 32px;
+            padding: 0 8px;
             border: 1px solid #d0d5dd;
             border-radius: 6px;
             background: #fff;
             color: #344054;
+            font: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+        select:focus {
+            border-color: var(--primary, #2563eb);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
         }
         button {
+            box-sizing: border-box;
+            flex-shrink: 0;
             height: 32px;
-            padding: 5px 8px;
+            padding: 0 10px;
             border: 1px solid #d0d5dd;
             border-radius: 6px;
             background: #fff;
             color: #344054;
+            font: inherit;
+            font-size: 12px;
+            white-space: nowrap;
             cursor: pointer;
+            transition: background-color .15s ease, border-color .15s ease, color .15s ease;
         }
-        button.danger { color: #b42318; }
+        button:hover:not(:disabled) {
+            border-color: #98a2b3;
+            background: #f8fafc;
+            color: var(--text, #172033);
+        }
+        button.danger {
+            border-color: #f4c7c3;
+            color: var(--danger, #b42318);
+        }
+        button.danger:hover:not(:disabled) {
+            border-color: #e9a39d;
+            background: #fff6f5;
+            color: var(--danger, #b42318);
+        }
         button:disabled { opacity: .45; cursor: default; }
     `;
 

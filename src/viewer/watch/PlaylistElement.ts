@@ -27,7 +27,10 @@ export class PlaylistElement extends LitElement {
             height: 100%;
             padding: 0;
             margin: 0;
+            overflow-x: hidden;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
             list-style: none;
         }
     `;

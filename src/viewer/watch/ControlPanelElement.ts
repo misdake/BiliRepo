@@ -44,7 +44,7 @@ export class ControlPanelElement extends LitElement {
             <playlist-element .onitemclick=${(index: number) => this.onPlayIndex && this.onPlayIndex(index)} .playlist=${this.playlist} .playindex=${this.playindex}></playlist-element>
         `},
         {title: "时间点", content: () => html`
-            <div style="padding: 5px;">
+            <div class="tab-panel">
                 <timestampedit-element
                     .part_timestamps=${this.partInfo}
                     .getCurrTime=${() => this.getCurrTime()}
@@ -54,12 +54,24 @@ export class ControlPanelElement extends LitElement {
             </div>
         `},
         {title: "编辑", content: () => html`
-            <div style="padding: 5px;">
+            <div class="tab-panel edit-panel">
                 <videoplaylistedit-element .video=${this.video}></videoplaylistedit-element>
-                <h5>弹幕${this.danmakuList ? this.danmakuList.length : 0}条</h5>
-                <h5><button @click=${() => this.onUpdateDanmaku && this.onUpdateDanmaku()}>更新弹幕</button></h5>
-                <h5><button @click=${() => this.onRedownload && this.onRedownload()}>重新下载视频</button></h5>
-                <h5><button class="danger" @click=${() => this.onDelete && this.onDelete()}>删除视频</button></h5>
+                <section class="edit-card">
+                    <div class="edit-card-header">
+                        <h4>视频操作</h4>
+                        <span class="badge">弹幕 ${this.danmakuList ? this.danmakuList.length : 0} 条</span>
+                    </div>
+                    <div class="edit-actions">
+                        <button @click=${() => this.onUpdateDanmaku && this.onUpdateDanmaku()}>更新弹幕</button>
+                        <button @click=${() => this.onRedownload && this.onRedownload()}>重新下载视频</button>
+                    </div>
+                </section>
+                <section class="edit-card edit-card--danger">
+                    <div class="edit-card-header">
+                        <h4>危险操作</h4>
+                    </div>
+                    <button class="danger full-width" @click=${() => this.onDelete && this.onDelete()}>删除视频</button>
+                </section>
             </div>
         `},
     ];
@@ -88,61 +100,95 @@ export class ControlPanelElement extends LitElement {
 
         return html`
             <div class="tabs">${headers}</div>
-            <div class="tab-content">${this.tabs[this.currentTab].content()}</div>
+            <div class="tab-content ${this.currentTab === 0 ? "tab-content--flush" : ""}">${this.tabs[this.currentTab].content()}</div>
         `;
     }
 
     static styles = css`
         :host {
-            display: block;
+            display: flex;
+            flex-direction: column;
             box-sizing: border-box;
             width: 320px;
             height: 540px;
             border-left: 1px solid #2a3141;
-            border-right: 1px solid #dfe4ec;
-            border-top: 1px solid #dfe4ec;
-            border-bottom: 1px solid #dfe4ec;
-            background: #fff;
-            color: #172033;
+            border-right: 1px solid var(--border, #dfe4ec);
+            border-top: 1px solid var(--border, #dfe4ec);
+            border-bottom: 1px solid var(--border, #dfe4ec);
+            background: var(--surface, #fff);
+            color: var(--text, #172033);
         }
         .tabs {
             display: flex;
+            flex: 0 0 42px;
+            box-sizing: border-box;
             height: 42px;
-            line-height: 42px;
-            border-bottom: 1px solid #dfe4ec;
-            background: #f3f5f8;
+            border-bottom: 1px solid var(--border, #dfe4ec);
+            background: var(--surface-subtle, #f8fafc);
         }
         .tab {
+            position: relative;
             flex: 1;
-            color: #667085;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted, #667085);
             user-select: none;
             cursor: pointer;
             font-size: 13px;
             font-weight: 600;
+            transition: background-color .15s ease, color .15s ease;
         }
-        .tab:hover { color: #2563eb; }
-        .tab-selected {
-            position: relative;
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-        .tab-selected::after {
+        .tab::after {
             content: "";
             position: absolute;
-            left: 22px;
-            right: 22px;
-            bottom: 0;
+            left: 36px;
+            right: 36px;
+            bottom: -1px;
+            height: 2px;
+            border-radius: 2px 2px 0 0;
+            background: rgba(37, 99, 235, .35);
+            transition: left .15s ease, right .15s ease, height .15s ease, background-color .15s ease;
+        }
+        .tab:hover {
+            background: rgba(37, 99, 235, .05);
+            color: var(--primary, #2563eb);
+        }
+        .tab:not(.tab-selected):hover::after {
+            left: 28px;
+            right: 28px;
+            background: rgba(37, 99, 235, .65);
+        }
+        .tab-selected {
+            background: var(--surface, #fff);
+            color: var(--primary, #2563eb);
+        }
+        .tab-selected:hover {
+            background: var(--surface, #fff);
+        }
+        .tab-selected::after {
+            left: 20px;
+            right: 20px;
             height: 3px;
-            border-radius: 3px 3px 0 0;
-            background: #2563eb;
+            background: var(--primary, #2563eb);
         }
         .tab-content {
             box-sizing: border-box;
+            flex: 1;
             width: 100%;
             min-width: 0;
-            height: 496px;
+            min-height: 0;
+            overflow-x: hidden;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+        .tab-content--flush {
+            overflow: hidden;
+        }
+        .tab-panel {
+            box-sizing: border-box;
+            padding: 12px;
         }
         playlist-element {
             display: block;
@@ -150,18 +196,87 @@ export class ControlPanelElement extends LitElement {
             width: 100%;
             min-width: 0;
             position: relative;
-            height: 496px;
+            height: 100%;
+            min-height: 0;
         }
-        button, select {
-            min-height: 32px;
+        .edit-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .edit-card {
+            padding: 12px;
+            border: 1px solid var(--border, #dfe4ec);
+            border-radius: 10px;
+            background: var(--surface-subtle, #f8fafc);
+        }
+        .edit-card--danger {
+            border-color: #f4c7c3;
+            background: #fffafa;
+        }
+        .edit-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .edit-card h4 {
+            margin: 0;
+            color: var(--text, #172033);
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        .edit-card--danger h4 {
+            color: var(--danger, #b42318);
+        }
+        .badge {
+            padding: 2px 8px;
+            border: 1px solid var(--border, #dfe4ec);
+            border-radius: 999px;
+            background: var(--surface, #fff);
+            color: var(--muted, #667085);
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+        .edit-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        button {
+            box-sizing: border-box;
+            height: 34px;
+            padding: 0 10px;
             border: 1px solid #d0d5dd;
             border-radius: 6px;
             background: #fff;
             color: #344054;
             font: inherit;
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color .15s ease, border-color .15s ease, color .15s ease;
         }
-        button { padding: 5px 9px; cursor: pointer; }
-        button.danger { border-color: #f4c7c3; color: #b42318; }
+        button:hover {
+            border-color: #98a2b3;
+            background: #f8fafc;
+            color: var(--text, #172033);
+        }
+        button.danger {
+            border-color: #f4c7c3;
+            color: var(--danger, #b42318);
+        }
+        button.danger:hover {
+            border-color: #e9a39d;
+            background: #fff6f5;
+            color: var(--danger, #b42318);
+        }
+        button.full-width {
+            width: 100%;
+        }
     `;
 
 }

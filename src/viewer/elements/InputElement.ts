@@ -54,15 +54,18 @@ export class InputElement extends LitElement {
             display: inline-block;
         }
         .input-group {
-            display: inline-flex;
+            display: flex;
+            width: 100%;
             align-items: center;
             gap: 7px;
         }
         input {
             box-sizing: border-box;
+            flex: 1 1 auto;
+            min-width: 0;
             width: var(--input-width, 200px);
             height: var(--control-height, 38px);
-            padding: 8px 11px;
+            padding: 0 11px;
             border: 1px solid #d0d5dd;
             border-radius: 8px;
             background: #fff;
@@ -76,14 +79,20 @@ export class InputElement extends LitElement {
         }
         button {
             box-sizing: border-box;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             height: var(--control-height, 38px);
-            padding: 8px 13px;
+            padding: 0 13px;
             border: 1px solid #d0d5dd;
             border-radius: 8px;
             background: #fff;
             color: #344054;
             font: inherit;
+            white-space: nowrap;
             cursor: pointer;
+            transition: background-color .15s ease, border-color .15s ease;
         }
         button:hover {
             background: #f8fafc;
