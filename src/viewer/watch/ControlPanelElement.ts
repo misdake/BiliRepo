@@ -10,6 +10,7 @@ import {Danmaku} from "../../server/download/Bilibili";
 import {Player} from "./Player";
 import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import {LatestRequest} from "../common/LatestRequest";
+import {DanmakuPrefs, DEFAULT_DANMAKU_PREFS} from "./danmakuPrefs";
 
 type TabId = "playlist" | "danmaku" | "timestamp" | "edit";
 
@@ -40,6 +41,10 @@ export class ControlPanelElement extends LitElement {
 
     @property()
     danmakuList: Danmaku[];
+    @property({attribute: false})
+    danmakuPrefs: DanmakuPrefs = DEFAULT_DANMAKU_PREFS;
+    @property({attribute: false})
+    onDanmakuPrefsChange: (prefs: DanmakuPrefs) => void;
 
     @state()
     private currentTab: TabId | null = null;
@@ -249,6 +254,8 @@ export class ControlPanelElement extends LitElement {
                 return html`
                     <danmakulist-element
                         .danmakuList=${this.danmakuList}
+                        .danmakuPrefs=${this.danmakuPrefs}
+                        .onDanmakuPrefsChange=${this.onDanmakuPrefsChange}
                         .seek=${(second: number) => this.seek(second)}
                         .onUpdateDanmaku=${() => this.onUpdateDanmaku && this.onUpdateDanmaku()}
                     ></danmakulist-element>

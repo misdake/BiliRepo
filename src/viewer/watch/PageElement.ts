@@ -1,5 +1,5 @@
 import {css, html, LitElement, type PropertyValues} from "lit";
-import {customElement, property} from "lit/decorators.js";
+import {customElement, property, state} from "lit/decorators.js";
 import {Playlist} from "./Playlist";
 import "./VideoTitleElement";
 import "../elements/ViewTypeElement";
@@ -12,6 +12,7 @@ import {Player} from "./Player";
 import {Danmaku} from "../../server/download/Bilibili";
 import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import type {ViewType} from "../index/indexViewType";
+import {DanmakuPrefs, loadDanmakuPrefs, saveDanmakuPrefs} from "./danmakuPrefs";
 
 @customElement('watch-page-element')
 export class PageElement extends LitElement {
@@ -22,6 +23,9 @@ export class PageElement extends LitElement {
     currentPart: PartTimestamps;
     @property()
     danmakuList: Danmaku[];
+
+    @state()
+    private danmakuPrefs: DanmakuPrefs = loadDanmakuPrefs();
 
     player: Player;
 
@@ -144,6 +148,11 @@ export class PageElement extends LitElement {
         }, 100);
     }
 
+    private updateDanmakuPrefs(next: DanmakuPrefs) {
+        saveDanmakuPrefs(next);
+        this.danmakuPrefs = next;
+    }
+
     protected firstUpdated(_changedProperties: PropertyValues): void {
         if (this.playlist && this.playindex >= 0 && this.playindex < this.playlist.items.length) {
             this.updatePlayIndex(this.playindex);
@@ -256,8 +265,8 @@ export class PageElement extends LitElement {
                             </div>
                         </div>
                         <div id="player">
-                            <player-element .onLoad=${(player: Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part_timestamps=${this.currentPart}></player-element>
-                            <controlpanel-element .danmakuList=${this.danmakuList} .video=${this.currentVideo} .partInfo=${this.currentPart} .player=${this.player} .playlist=${this.playlist} .playindex=${this.playindex} .onPlayIndex=${(index: number) => this.updatePlayIndex(index)} .onUpdateDanmaku=${() => this.updateDanmaku()} .onRedownload=${() => this.redownload()} .onDelete=${() => this.deleteVideo()} .onTimestampsChanged=${(timestamps: Timestamp[]) => this.setPartTimestamps(timestamps)}></controlpanel-element>
+                            <player-element .onLoad=${(player: Player) => this.onPlayerLoad(player)} .onEnded=${() => this.onPartEnded()} .video=${this.currentVideo} .part_timestamps=${this.currentPart} .danmakuPrefs=${this.danmakuPrefs}></player-element>
+                            <controlpanel-element .danmakuList=${this.danmakuList} .danmakuPrefs=${this.danmakuPrefs} .onDanmakuPrefsChange=${(next: DanmakuPrefs) => this.updateDanmakuPrefs(next)} .video=${this.currentVideo} .partInfo=${this.currentPart} .player=${this.player} .playlist=${this.playlist} .playindex=${this.playindex} .onPlayIndex=${(index: number) => this.updatePlayIndex(index)} .onUpdateDanmaku=${() => this.updateDanmaku()} .onRedownload=${() => this.redownload()} .onDelete=${() => this.deleteVideo()} .onTimestampsChanged=${(timestamps: Timestamp[]) => this.setPartTimestamps(timestamps)}></controlpanel-element>
                         </div>
                         ${this.currentVideo && this.currentVideo.desc && this.currentVideo.desc.trim() ? html`
                             <div id="info">

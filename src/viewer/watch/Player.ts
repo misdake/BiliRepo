@@ -52,6 +52,13 @@ enum DPlayerEvents {
     subtitle_change = 'subtitle_change'
 }
 
+export interface DanmakuSetting {
+    fontSize: number;
+    lineHeight: number;
+    velocity: number;
+    speedScale: number;
+}
+
 export class Player {
 
     private dp: DPlayer | null = null;
@@ -63,16 +70,18 @@ export class Player {
     private pendingDanmaku: { aid: number, part: number, token: number } | null = null;
     private container: HTMLElement;
     private onEnded: () => void;
-    private danmakuSetting: { fontSize: number; lineHeight: number; speed: number };
+    private danmakuSetting: DanmakuSetting;
     private isFullscreen: boolean = false;
     private readonly resizeObserver: ResizeObserver;
+    private lastContainerWidth: number = 0;
+    private resizeSeekRaf: number = 0;
 
     onResize!: (w: number, h: number) => void;
 
     danmakuList!: Danmaku[];
     onDanmakuLoaded!: (danmakuList: Danmaku[]) => void;
 
-    constructor(container: HTMLElement, onEnded: () => void, danmakuSetting: { fontSize: number, lineHeight: number, speed: number }) {
+    constructor(container: HTMLElement, onEnded: () => void, danmakuSetting: DanmakuSetting) {
         this.container = container;
         this.danmakuSetting = danmakuSetting;
         this.resizeObserver = new ResizeObserver(() => this.triggerResize());
@@ -113,6 +122,7 @@ export class Player {
         this.pendingDanmaku = { aid, part, token: this.danmakuGuard.begin() };
 
         if (this.dp) {
+            this.cancelPendingResizeSeek();
             this.dp.pause();
             this.dp.destroy();
             this.dp = null;
@@ -136,13 +146,7 @@ export class Player {
         // @ts-ignore
         dp.danmaku.options.height = this.danmakuSetting.lineHeight;
 
-        // --- [NEW] Monkey-patch: fix empty danmaku screen after seek ---
-        // Replaces danmaku.seek() with a "simulated replay": clear →
-        // synchronously call draw() for all historical danmaku up to targetTime
-        // → use negative animation-delay to skip the already-elapsed portion,
-        // reusing draw()'s tunnel lane assignment and collision detection.
-        // Original behavior: dm.clear() only, which blanks the screen.
-        this._patchDanmakuSeek(dp);
+        this._patchDanmakuEngine(dp);
 
         dp.on(DPlayerEvents.canplay, () => {
             if (this.timeOnCanplay) {
@@ -170,8 +174,26 @@ export class Player {
         }
     }
 
+    private cancelPendingResizeSeek() {
+        if (this.resizeSeekRaf) {
+            cancelAnimationFrame(this.resizeSeekRaf);
+            this.resizeSeekRaf = 0;
+        }
+    }
+
+    private scheduleResizeSeek() {
+        if (this.resizeSeekRaf || !this.dp) return;
+        this.resizeSeekRaf = requestAnimationFrame(() => {
+            this.resizeSeekRaf = 0;
+            if (!this.dp) return;
+            // @ts-ignore
+            this.dp.danmaku.seek();
+        });
+    }
+
     unloadPlayer() {
         this.danmakuGuard.begin(); // invalidate any in-flight danmaku request
+        this.cancelPendingResizeSeek();
         if (this.dp) {
             this.dp.destroy();
         }
@@ -182,34 +204,29 @@ export class Player {
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
         if (w <= 0 || h <= 0) return;
+
+        const prevFontSize = this.danmakuSetting.fontSize;
+        const prevLineHeight = this.danmakuSetting.lineHeight;
+        const prevVelocity = this.danmakuSetting.velocity;
+        const prevSpeedScale = this.danmakuSetting.speedScale;
+        const prevWidth = this.lastContainerWidth;
+
         if (this.onResize) {
             this.onResize(w, h);
-            // @ts-ignore
-            if (this.dp.danmaku.options.height !== this.danmakuSetting.lineHeight) {
-                // @ts-ignore
-                this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
-                // @ts-ignore
-                const tunnel = this.dp.danmaku.danTunnel;
-                const lineHeight = this.danmakuSetting.lineHeight;
-                const reposition = (list: { [index: number]: HTMLDivElement[] }, position: 'top' | 'bottom', clearTransform: boolean) => {
-                    for (const index in list) {
-                        const items = list[index];
-                        if (!items) continue;
-                        const idx = Number(index);
-                        for (const item of items) {
-                            item.style[position] = (idx * lineHeight) + 'px';
-                            if (clearTransform) {
-                                item.style.transform = '';
-                            }
-                        }
-                    }
-                };
-                if (tunnel) {
-                    reposition(tunnel.right, 'top', false);
-                    reposition(tunnel.top, 'top', true);
-                    reposition(tunnel.bottom, 'bottom', true);
-                }
-            }
+        }
+
+        // @ts-ignore
+        this.dp.danmaku.options.height = this.danmakuSetting.lineHeight;
+
+        const changed = prevFontSize !== this.danmakuSetting.fontSize
+            || prevLineHeight !== this.danmakuSetting.lineHeight
+            || prevVelocity !== this.danmakuSetting.velocity
+            || prevSpeedScale !== this.danmakuSetting.speedScale
+            || prevWidth !== w;
+
+        if (changed) {
+            this.lastContainerWidth = w;
+            this.scheduleResizeSeek();
         }
     }
 
@@ -258,72 +275,188 @@ export class Player {
     }
 
     // ============================================================
-    // Monkey-patch: fix empty danmaku screen after seek
+    // Monkey-patch: dynamic danmaku measure, constant velocity,
+    //               and simulated-replay seek
     // ============================================================
 
-    /**
-     * [NEW] Monkey-patch: replace DPlayer's built-in danmaku.seek().
-     *
-     * **Original behavior** (danmaku.js seek):
-     *   seek() { this.clear(); }
-     *   Simply clears all on-screen danmaku, resulting in a blank screen.
-     *
-     * **New behavior** (this replacement):
-     *   clear → filter danmaku visible at targetTime → sequential draw() with
-     *   dynamic CSS correction → use negative animation-delay to jump each
-     *   danmaku to its correct on-screen position at targetTime.
-     *
-     *   This fully reuses draw()'s tunnel lane assignment and collision
-     *   detection logic (getTunnel / AABB), ensuring the result matches
-     *   normal playback as if the video had been playing to targetTime.
-     *
-     *   **All logic below is NEW** except for:
-     *   - dm.clear()              ← from original seek()
-     *   - danIndex update loop    ← from original seek()
-     *
-     * @param dp - DPlayer instance
-     */
-    private _patchDanmakuSeek(dp: DPlayer) {
+    private _patchDanmakuEngine(dp: DPlayer) {
         // This patch depends on DPlayer 1.27.0 internals (danmaku.js: dan,
-        // danIndex, draw, clear, container, options.time). dplayer is pinned
-        // to 1.27.0 in package.json (exact version, enforced via npm
-        // "overrides"). Verify the internals before patching: if they ever
-        // drift, keep the original seek() instead of breaking playback.
+        // danIndex, danTunnel, draw, clear, container, options.time,
+        // options.height, _measure, _danAnimation). dplayer is pinned to
+        // 1.27.0 in package.json. Verify internals before patching.
         // @ts-ignore — dm properties are not covered by DPlayer type declarations
         const dmProbe = dp.danmaku as any;
         const internalsOk = dmProbe &&
             Array.isArray(dmProbe.dan) &&
             typeof dmProbe.danIndex === "number" &&
+            dmProbe.danTunnel &&
             typeof dmProbe.draw === "function" &&
             typeof dmProbe.clear === "function" &&
             dmProbe.container &&
-            dmProbe.options && typeof dmProbe.options.time === "function";
+            dmProbe.options &&
+            typeof dmProbe.options.time === "function" &&
+            typeof dmProbe._measure === "function" &&
+            typeof dmProbe._danAnimation === "function";
         if (!internalsOk) {
-            console.error("[Player] DPlayer danmaku internals mismatch; seek patch skipped. Expected dplayer@1.27.0, check node_modules.");
+            console.error("[Player] DPlayer danmaku internals mismatch; danmaku patch skipped. Expected dplayer@1.27.0, check node_modules.");
             return;
         }
 
-        // [NEW] Animation duration constants (must match danmaku.scss and
-        //       PlayerElement inline CSS in PlayerElement.ts)
-        const FIXED_DURATION = 4;                          // top/bottom fixed danmaku (seconds)
-
-        /** [NEW] Return animation duration for a given danmaku type.
-         *  Read speed at call time: PlayerElement mutates danmakuSetting on
-         *  resize, which also updates the CSS animation duration; a captured
-         *  constant would go stale after the first resize. */
-        const getDuration = (type: number | string): number => {
-            return (type === 0 || type === 'right') ? this.danmakuSetting.speed : FIXED_DURATION;
+        const getVelocity = (): number => Math.max(10, this.danmakuSetting.velocity || 160);
+        const getRightDuration = (itemWidth: number, containerWidth: number): number => {
+            return (containerWidth + itemWidth) / getVelocity();
+        };
+        const getFixedDuration = (): number => {
+            return Math.max(0.75, 4 / (this.danmakuSetting.speedScale || 1));
         };
 
-        /**
-         * [NEW] Reposition all existing danmaku DOM elements so their
-         * animation-delay reflects a negative offset from each element's
-         * original time to baseTime.
-         *
-         * This ensures getBoundingClientRect() inside getTunnel() sees each
-         * element at the correct on-screen position for the baseTime moment,
-         * so lane assignment (collision detection) works correctly.
-         */
+        const normalizeType = (type: number | string | undefined): 'right' | 'top' | 'bottom' => {
+            if (type === 1 || type === 'top') return 'top';
+            if (type === 2 || type === 'bottom') return 'bottom';
+            return 'right';
+        };
+
+        const normalizeColor = (color: number | string | undefined): string => {
+            if (typeof color === 'string') {
+                return color.startsWith('#') ? color : `#${color}`;
+            }
+            if (typeof color === 'number' && Number.isFinite(color)) {
+                return `#${('000000' + Math.floor(color).toString(16)).slice(-6)}`;
+            }
+            return '#ffffff';
+        };
+
+        let measureCtx: CanvasRenderingContext2D | null = null;
+        let measuredFontSize = -1;
+
+        dmProbe._measure = (text: string): number => {
+            const targetFontSize = this.danmakuSetting.fontSize || 18;
+            if (!measureCtx || measuredFontSize !== targetFontSize) {
+                if (!measureCtx) {
+                    measureCtx = document.createElement('canvas').getContext('2d');
+                }
+                if (measureCtx) {
+                    const demoEl = dmProbe.container.querySelector('.dplayer-danmaku-item--demo')
+                        || dmProbe.container.querySelector('.dplayer-danmaku-item');
+                    const cs = demoEl ? getComputedStyle(demoEl) : null;
+                    const fontWeight = cs ? cs.fontWeight : 'normal';
+                    const fontFamily = cs ? cs.fontFamily : 'sans-serif';
+                    measureCtx.font = `${fontWeight} ${targetFontSize}px ${fontFamily}`;
+                    measuredFontSize = targetFontSize;
+                }
+            }
+            if (!measureCtx) return Math.ceil((text || '').length * targetFontSize) + 10;
+            return Math.ceil(measureCtx.measureText(text || '').width) + 10;
+        };
+
+        dmProbe._danAnimation = (type: number | string): string => {
+            const norm = normalizeType(type);
+            if (norm === 'right') {
+                const containerWidth = dmProbe.container.offsetWidth || 960;
+                return `${getRightDuration(160, containerWidth)}s`;
+            }
+            return `${getFixedDuration()}s`;
+        };
+
+        dmProbe.draw = (dan: any) => {
+            if (!dmProbe.showing) return undefined;
+            const list = Array.isArray(dan) ? dan : [dan];
+            if (!list.length) return undefined;
+
+            const containerWidth = dmProbe.container.offsetWidth || 960;
+            const containerHeight = dmProbe.container.offsetHeight || 540;
+            const fontSize = this.danmakuSetting.fontSize || 18;
+            const topMargin = fontSize * 0.2;
+            const lineHeight = Math.max(1, dmProbe.options.height || this.danmakuSetting.lineHeight || 22.5);
+            const maxTunnel = Math.max(1, Math.floor((containerHeight - topMargin) / lineHeight));
+            const containerRect = dmProbe.container.getBoundingClientRect();
+
+            const findLane = (el: HTMLDivElement, type: 'right' | 'top' | 'bottom'): number => {
+                if (!dmProbe.danTunnel[type]) dmProbe.danTunnel[type] = {};
+                const typeTunnels = dmProbe.danTunnel[type];
+
+                const bindRemove = (tunnelArr: HTMLDivElement[]) => {
+                    el.addEventListener('animationend', () => {
+                        const idx = tunnelArr.indexOf(el);
+                        if (idx >= 0) tunnelArr.splice(idx, 1);
+                    });
+                };
+
+                for (let lane = 0; dmProbe.unlimited || lane < maxTunnel; lane++) {
+                    const key = String(lane);
+                    const arr: HTMLDivElement[] | undefined = typeTunnels[key];
+                    if (!arr || !arr.length) {
+                        typeTunnels[key] = [el];
+                        bindRemove(typeTunnels[key]);
+                        return lane % maxTunnel;
+                    }
+                    if (type !== 'right') continue;
+
+                    const lastEl = arr[arr.length - 1];
+                    const lastRect = lastEl.getBoundingClientRect();
+                    const hasLayout = lastRect.width > 0 || lastRect.height > 0;
+                    const entered = hasLayout ? containerRect.right - lastRect.right : 0;
+                    if (entered >= 16) {
+                        arr.push(el);
+                        bindRemove(arr);
+                        return lane % maxTunnel;
+                    }
+                }
+                return -1;
+            };
+
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < list.length; i++) {
+                const raw = list[i];
+                if (!raw) continue;
+                const type = normalizeType(raw.type);
+                const el = document.createElement('div');
+                el.classList.add('dplayer-danmaku-item', `dplayer-danmaku-${type}`);
+
+                if (raw.border) {
+                    const span = document.createElement('span');
+                    span.style.border = String(raw.border);
+                    span.textContent = raw.text ?? '';
+                    el.appendChild(span);
+                } else {
+                    el.textContent = raw.text ?? '';
+                }
+
+                el.style.opacity = String(dmProbe._opacity ?? 1);
+                el.style.color = normalizeColor(raw.color);
+                el.addEventListener('animationend', () => {
+                    if (el.parentNode === dmProbe.container) {
+                        dmProbe.container.removeChild(el);
+                    }
+                });
+
+                const itemWidth = dmProbe._measure(raw.text ?? '');
+                const lane = findLane(el, type);
+                if (lane < 0) continue;
+
+                let duration: number;
+                if (type === 'right') {
+                    el.style.width = `${itemWidth}px`;
+                    el.style.top = `${topMargin + lineHeight * lane}px`;
+                    el.style.transform = `translateX(-${containerWidth}px)`;
+                    duration = getRightDuration(itemWidth, containerWidth);
+                } else if (type === 'top') {
+                    el.style.top = `${topMargin + lineHeight * lane}px`;
+                    duration = getFixedDuration();
+                } else {
+                    el.style.bottom = `${topMargin + lineHeight * lane}px`;
+                    duration = getFixedDuration();
+                }
+
+                el.classList.add('dplayer-danmaku-move');
+                el.style.animationDuration = `${duration}s`;
+                fragment.appendChild(el);
+            }
+
+            dmProbe.container.appendChild(fragment);
+            return fragment;
+        };
+
         function repositionExisting(
             existingEls: { el: HTMLElement; time: number }[],
             baseTime: number
@@ -335,98 +468,60 @@ export class Player {
             }
         }
 
-        // @ts-ignore — [NEW] replace danmaku.seek
-        dp.danmaku.seek = (targetTime?: number) => {
-            // @ts-ignore — dm properties are not covered by DPlayer type declarations
-            const dm = dp.danmaku as any;
-
-            // [NEW] Use current video time when targetTime is not provided
+        dmProbe.seek = (targetTime?: number) => {
             if (targetTime === undefined) {
-                targetTime = dm.options.time();
+                targetTime = dmProbe.options.time();
             }
 
-            // ---- Step 1: clear screen (ORIGINAL seek behavior) ----
-            dm.clear();
+            dmProbe.clear();
 
-            const danList = dm.dan as any[];
+            const danList = dmProbe.dan as any[];
             if (!danList || !danList.length) {
-                // [NEW] No danmaku data leftover after clear, nothing more to do
                 return;
             }
 
-            // ---- Step 2: [NEW] filter danmaku still visible at targetTime ----
-            // Lower bound: danmaku.time + animation-duration > targetTime (not yet finished)
-            // Upper bound: danmaku.time ≤ targetTime (already emitted)
+            const containerWidth = dmProbe.container.offsetWidth || 960;
             const visibleList: any[] = [];
             for (let i = 0; i < danList.length; i++) {
                 const item = danList[i];
-                if (item.time > targetTime!) break;           // not emitted yet
-                const dur = getDuration(item.type);
-                if (item.time + dur <= targetTime!) continue; // already disappeared by targetTime
+                if (item.time > targetTime!) break;
+                const norm = normalizeType(item.type);
+                const dur = norm === 'right'
+                    ? getRightDuration(dmProbe._measure(item.text ?? ''), containerWidth)
+                    : getFixedDuration();
+                if (item.time + dur <= targetTime!) continue;
                 visibleList.push(item);
             }
 
-            // ---- Step 3: [NEW] sequential draw with dynamic CSS correction ----
-            // Key insight (see danmaku.js getTunnel()):
-            //   draw() uses getBoundingClientRect() on existing tunnel elements to
-            //   perform AABB collision detection and assign lanes.
-            //
-            //   Before each draw(), we must reposition all already-created elements
-            //   to the position they would have at "this danmaku's time", so that
-            //   getTunnel() sees the correct collision state.
-            //
-            //   Example: seek to 100s, visibleList = [{time: 92}, {time: 95}, {time: 98}]:
-            //     draw(92) → tunnel empty → lane 0 (elapsed=0)
-            //     reposition all to 95s → 92 is near the right edge (~3s in)
-            //     draw(95) → getTunnel sees 92 on the right → lane 1
-            //     reposition all to 98s → draw(98) ...
-            //     finally reposition all to targetTime.
             const existingElements: { el: HTMLElement; time: number }[] = [];
 
             for (let i = 0; i < visibleList.length; i++) {
                 const item = visibleList[i];
-
-                // ① [NEW] Reposition existing elements to this item's time
                 repositionExisting(existingElements, item.time);
 
-                // ② [NEW] Build danmaku data and call draw()
-                //    getBoundingClientRect inside draw() will see positions from step ①,
-                //    so collision detection produces correct lane assignment.
-                dm.draw([{
+                dmProbe.draw([{
                     text: item.text,
                     color: item.color,
-                    type: (item.type === 'top' ? 1 : item.type === 'bottom' ? 2 : 0),
+                    type: item.type,
                 }]);
 
-                // ③ [NEW] Locate the newly created element and record it
-                const allItems = dm.container.getElementsByClassName('dplayer-danmaku-item');
+                const allItems = dmProbe.container.getElementsByClassName('dplayer-danmaku-item');
                 const newEl = allItems[allItems.length - 1] as HTMLElement;
                 if (newEl) {
-                    // New element starts from the right edge (elapsed = 0)
                     newEl.style.animationDelay = '0s';
                     newEl.style.webkitAnimationDelay = '0s';
-
                     existingElements.push({ el: newEl, time: item.time });
                 }
             }
 
-            // ---- Step 4: [NEW] reposition all elements to targetTime ----
             repositionExisting(existingElements, targetTime!);
 
-            // ---- Step 5: update danIndex (ORIGINAL seek behavior) ----
-            // This logic is copied from the original danmaku.js seek():
-            //   for (let i = 0; i < this.dan.length; i++) {
-            //       if (this.dan[i].time >= this.options.time()) {
-            //           this.danIndex = i; break;
-            //       }
-            //       this.danIndex = this.dan.length;
-            //   }
+            dmProbe.danIndex = danList.length;
             for (let i = 0; i < danList.length; i++) {
-                if (danList[i].time >= targetTime!) {
-                    dm.danIndex = i;
+                if (danList[i].time > targetTime!) {
+                    dmProbe.danIndex = i;
                     break;
                 }
-                dm.danIndex = danList.length;
             }
         };
     }
