@@ -82,6 +82,14 @@ export class PlayerElement extends LitElement {
                 .dplayer-danmaku-item {
                     font-size: ${this.danmakuSetting.fontSize}px !important;
                 }
+
+                .dplayer-notice.remove-notice {
+                    animation: dplayer-notice-hide .3s ease-in-out forwards;
+                }
+
+                @keyframes dplayer-notice-hide {
+                    to { opacity: 0; }
+                }
             </style>
             <div id="dplayer"></div>
         `;
