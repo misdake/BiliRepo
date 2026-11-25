@@ -236,6 +236,10 @@ export class PageElement extends LitElement {
 
     private removeVideo(video: VideoStatus) {
         if (video) {
+            const isCurrent = this.current && this.current.aid === video.aid;
+            const label = video.title || `AV${video.aid}`;
+            const prompt = isCurrent ? `确认停止当前下载任务「${label}」吗？` : `确认从下载队列删除「${label}」吗？`;
+            if (!window.confirm(prompt)) return;
             this.localMessage = "";
             ClientApis.RemoveDownload.fetch(video.aid).catch(error => {
                 this.showError("移除下载任务", error);

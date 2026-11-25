@@ -47,12 +47,15 @@ export class PlaylistEditorElement extends LitElement {
         let [video] = next.splice(index, 1);
         next.unshift(video);
         this.videos = next;
-        this.message = "顺序尚未保存";
+        this.message = this.dirty ? (this.videos.length !== this.originalAids.length ? "修改尚未保存" : "顺序尚未保存") : "";
     }
 
     private removeVideo(aid: number) {
+        const target = this.videos.find(video => video.aid === aid);
+        if (!target) return;
+        if (!window.confirm(`确认从播放列表中移除「${target.title}」吗？`)) return;
         this.videos = this.videos.filter(video => video.aid !== aid);
-        this.message = "修改尚未保存";
+        this.message = this.dirty ? "修改尚未保存" : "";
     }
 
     private reset() {
@@ -92,7 +95,7 @@ export class PlaylistEditorElement extends LitElement {
         if (targetIndex < 0) return;
         next.splice(targetIndex + (after ? 1 : 0), 0, source);
         this.videos = next;
-        this.message = "顺序尚未保存";
+        this.message = this.dirty ? (this.videos.length !== this.originalAids.length ? "修改尚未保存" : "顺序尚未保存") : "";
     }
 
     private endDrag() {
