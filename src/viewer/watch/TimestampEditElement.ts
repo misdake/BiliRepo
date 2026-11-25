@@ -3,6 +3,7 @@ import {customElement, property} from "lit/decorators.js";
 import {PartTimestamps, Timestamp} from "../../server/storage/dbTypes";
 import {ClientApis, showRequestError} from "../common/api/ClientApi";
 import "../elements/InputElement";
+import {formatTime} from "./formatTime";
 
 @customElement('timestampedit-element')
 export class TimestampEditElement extends LitElement {
@@ -41,15 +42,6 @@ export class TimestampEditElement extends LitElement {
         });
     }
 
-    private formatTime(seconds: number): string {
-        const total = Math.max(0, Math.floor(Number(seconds) || 0));
-        const hours = Math.floor(total / 3600);
-        const minutes = Math.floor((total % 3600) / 60);
-        const secs = total % 60;
-        const pad = (n: number) => String(n).padStart(2, "0");
-        return hours > 0 ? `${hours}:${pad(minutes)}:${pad(secs)}` : `${pad(minutes)}:${pad(secs)}`;
-    }
-
     render() {
         if (!this.part_timestamps) return html``;
 
@@ -58,7 +50,7 @@ export class TimestampEditElement extends LitElement {
         let lines = [];
 
         for (let timestamp of timestamps) {
-            const timeText = this.formatTime(timestamp.time_second);
+            const timeText = formatTime(timestamp.time_second);
             lines.push(html`
                 <li><a href="#" title="${timeText} ${timestamp.name}" @click=${(e: Event) => {
                     this.seek(timestamp.time_second);
